@@ -1,6 +1,5 @@
-export default async function BuilderPage() {
+import { AppBuilder } from '@/app/components/AppBuilder'
 
-
-  return <h1>Builder Page</h1>
-
+export default function BuilderPage() {
+  return <AppBuilder />
 }
