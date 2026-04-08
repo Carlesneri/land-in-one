@@ -1,4 +1,4 @@
-export async function BuilderIdPage() {
+export default async function BuilderIdPage() {
   const id = 1
 
 

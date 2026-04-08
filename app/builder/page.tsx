@@ -1,4 +1,4 @@
-export async function BuilderPage() {
+export default async function BuilderPage() {
 
 
   return <h1>Builder Page</h1>
