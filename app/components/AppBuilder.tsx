@@ -1,22 +1,23 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { Modal } from '@/app/components/Modal'
-import { savePageElements } from '@/app/actions/pages'
-import { generateSlug } from 'random-word-slugs'
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { Modal } from "@/app/components/Modal"
+import { savePageElements } from "@/app/actions/pages"
+import { generateSlug } from "random-word-slugs"
 
 interface BuilderElement {
   id: string
-  type: 'text' | 'image' | 'headline'
+  type: "text" | "image" | "headline"
   label: string
   icon: string
   content?: string
 }
 
 const AVAILABLE_ELEMENTS: BuilderElement[] = [
-  { id: 'headline-1', type: 'headline', label: 'Headline', icon: '📰' },
-  { id: 'image-1', type: 'image', label: 'Image', icon: '🖼️' },
-  { id: 'text-1', type: 'text', label: 'Text', icon: '📝' },
+  { id: "headline-1", type: "headline", label: "Headline", icon: "📰" },
+  { id: "image-1", type: "image", label: "Image", icon: "🖼️" },
+  { id: "text-1", type: "text", label: "Text", icon: "📝" },
 ]
 
 export function AppBuilder() {
@@ -27,22 +28,22 @@ export function AppBuilder() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteElementId, setDeleteElementId] = useState<string | null>(null)
   const [editingElementId, setEditingElementId] = useState<string | null>(null)
-  const [editingContent, setEditingContent] = useState<string>('')
+  const [editingContent, setEditingContent] = useState<string>("")
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [pageSlug, setPageSlug] = useState<string>('')
+  const [pageSlug, setPageSlug] = useState<string>("")
   const [showSlugModal, setShowSlugModal] = useState(false)
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
-    type: 'success' | 'error'
+    type: "success" | "error"
     title: string
     message: string
   }>({
     isOpen: false,
-    type: 'success',
-    title: '',
-    message: '',
+    type: "success",
+    title: "",
+    message: "",
   })
 
   // Generate initial slug on component mount
@@ -53,17 +54,17 @@ export function AppBuilder() {
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedElement(id)
-    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.effectAllowed = "move"
   }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
+    e.dataTransfer.dropEffect = "move"
   }
 
   const handleDragOverPosition = (e: React.DragEvent, position: number) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
+    e.dataTransfer.dropEffect = "move"
     setDragOverPosition(position)
   }
 
@@ -79,8 +80,8 @@ export function AppBuilder() {
     const draggedIndex = elements.findIndex((el) => el.id === draggedElement)
     const targetIndex = elements.findIndex((el) => el.id === targetId)
 
-    const newElements = [...elements];
-    [newElements[draggedIndex], newElements[targetIndex]] = [
+    const newElements = [...elements]
+    ;[newElements[draggedIndex], newElements[targetIndex]] = [
       newElements[targetIndex],
       newElements[draggedIndex],
     ]
@@ -120,13 +121,13 @@ export function AppBuilder() {
     setDraggedElement(null)
   }
 
-  const handleAddElement = (type: 'text' | 'image' | 'headline') => {
+  const handleAddElement = (type: "text" | "image" | "headline") => {
     const newId = `${type}-${Date.now()}`
     const newElement: BuilderElement = {
       id: newId,
       type,
-      label: AVAILABLE_ELEMENTS.find((el) => el.type === type)?.label || '',
-      icon: AVAILABLE_ELEMENTS.find((el) => el.type === type)?.icon || '',
+      label: AVAILABLE_ELEMENTS.find((el) => el.type === type)?.label || "",
+      icon: AVAILABLE_ELEMENTS.find((el) => el.type === type)?.icon || "",
     }
 
     const newElements = [...elements]
@@ -155,11 +156,7 @@ export function AppBuilder() {
   }
 
   const handleUpdateContent = (id: string, content: string) => {
-    setElements(
-      elements.map((el) =>
-        el.id === id ? { ...el, content } : el
-      )
-    )
+    setElements(elements.map((el) => (el.id === id ? { ...el, content } : el)))
   }
 
   const handleImageSelect = (id: string, file: File) => {
@@ -172,15 +169,15 @@ export function AppBuilder() {
   }
 
   const openEditModal = (element: BuilderElement) => {
-    if (element.type !== 'image') {
+    if (element.type !== "image") {
       setEditingElementId(element.id)
-      setEditingContent(element.content || '')
+      setEditingContent(element.content || "")
     }
   }
 
   const closeEditModal = () => {
     setEditingElementId(null)
-    setEditingContent('')
+    setEditingContent("")
   }
 
   const saveEditingContent = () => {
@@ -196,12 +193,12 @@ export function AppBuilder() {
 
   const handleRemoveImage = () => {
     if (editingImageId) {
-      handleUpdateContent(editingImageId, '')
+      handleUpdateContent(editingImageId, "")
       closeImageEditModal()
     }
   }
 
-  const handleSavePage = async (status: 'preview' | 'publish') => {
+  const handleSavePage = async (status: "preview" | "publish") => {
     if (!pageSlug.trim()) {
       setShowSlugModal(true)
       return
@@ -215,27 +212,28 @@ export function AppBuilder() {
         status,
       })
 
-      if (result && result.success) {
+      if (result?.success) {
         setMessageModal({
           isOpen: true,
-          type: 'success',
-          title: 'Success',
-          message: result.message || 'Page saved successfully',
+          type: "success",
+          title: "Success",
+          message: result.message || "Page saved successfully",
         })
       } else if (result) {
         setMessageModal({
           isOpen: true,
-          type: 'error',
-          title: 'Error',
-          message: result.error || 'An error occurred',
+          type: "error",
+          title: "Error",
+          message: result.error || "An error occurred",
         })
       }
-    } catch (error) {
+    } catch {
+      // Handle error silently - message modal will show error state
       setMessageModal({
         isOpen: true,
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to save page',
+        type: "error",
+        title: "Error",
+        message: "Failed to save page",
       })
     } finally {
       setIsSaving(false)
@@ -248,23 +246,23 @@ export function AppBuilder() {
       <section className="flex-1 p-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Builder Canvas
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">Builder Canvas</h1>
             <div className="flex gap-3">
               <button
-                onClick={() => handleSavePage('preview')}
+                type="button"
+                onClick={() => handleSavePage("preview")}
                 disabled={isSaving}
                 className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
               >
-                {isSaving ? 'Saving...' : 'Save Page'}
+                {isSaving ? "Saving..." : "Save Page"}
               </button>
               <button
-                onClick={() => handleSavePage('publish')}
+                type="button"
+                onClick={() => handleSavePage("publish")}
                 disabled={isSaving}
                 className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors"
               >
-                {isSaving ? 'Publishing...' : 'Publish Page'}
+                {isSaving ? "Publishing..." : "Publish Page"}
               </button>
             </div>
           </div>
@@ -273,6 +271,7 @@ export function AppBuilder() {
           <div className="mt-8 space-y-6">
             {/* Add button at start */}
             <button
+              type="button"
               onClick={() => {
                 setModalPosition(0)
                 setShowModal(true)
@@ -280,10 +279,11 @@ export function AppBuilder() {
               onDragOver={(e) => handleDragOverPosition(e, 0)}
               onDragLeave={() => setDragOverPosition(null)}
               onDrop={(e) => handleDropOnPosition(e, 0)}
-              className={`w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${dragOverPosition === 0
-                ? 'border-blue-500 bg-blue-50 text-blue-600'
-                : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400'
-                }`}
+              className={`w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${
+                dragOverPosition === 0
+                  ? "border-blue-500 bg-blue-50 text-blue-600"
+                  : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
+              }`}
             >
               <span className="text-lg">+</span>
               Add element
@@ -291,56 +291,71 @@ export function AppBuilder() {
 
             {elements.map((element, index) => (
               <div key={element.id}>
+                {/** biome-ignore lint/a11y/noStaticElementInteractions: to fix forward */}
                 <div
+                  className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors group relative cursor-move flex items-center justify-between"
                   draggable
                   onDragStart={(e) => handleDragStart(e, element.id)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDropOnElement(e, element.id)}
                   onDragEnd={handleDragEnd}
-                  className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors group relative cursor-move flex items-center justify-between"
                 >
                   <div className="flex-1">
-                    {element.type === 'headline' && (
-                      <h1
+                    {element.type === "headline" && (
+                      <button
+                        type="button"
                         onClick={() => openEditModal(element)}
-                        className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                        className="w-full text-left text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
                         style={{
-                          color: element.content ? '#1f2937' : '#d1d5db',
+                          color: element.content ? "#1f2937" : "#d1d5db",
                         }}
                       >
-                        {element.content || 'Click to edit headline'}
-                      </h1>
+                        {element.content || "Click to edit headline"}
+                      </button>
                     )}
-                    {element.type === 'text' && (
-                      <p
+                    {element.type === "text" && (
+                      <button
+                        type="button"
                         onClick={() => openEditModal(element)}
-                        className="leading-relaxed cursor-pointer hover:opacity-80 transition-opacity"
+                        className="w-full text-left leading-relaxed cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
                         style={{
-                          color: element.content ? '#1f2937' : '#9ca3af',
+                          color: element.content ? "#1f2937" : "#9ca3af",
                         }}
                       >
-                        {element.content || 'Click to edit text'}
-                      </p>
+                        {element.content || "Click to edit text"}
+                      </button>
                     )}
-                    {element.type === 'image' && (
+                    {element.type === "image" && (
                       <>
                         {element.content ? (
-                          <img
-                            src={element.content}
-                            alt="Element image"
-                            className="w-full h-48 rounded object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                          <button
+                            type="button"
                             onClick={() => setEditingImageId(element.id)}
-                          />
+                            className="w-full h-48 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label="Edit image"
+                          >
+                            <Image
+                              src={element.content}
+                              alt="Element content"
+                              width={400}
+                              height={192}
+                              className="w-full h-48 rounded object-cover"
+                            />
+                          </button>
                         ) : (
-                          <div
+                          <button
+                            type="button"
                             onClick={() => setEditingImageId(element.id)}
-                            className="w-full h-48 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
+                            className="w-full h-48 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label="Select image"
                           >
                             <div className="text-center">
                               <span className="text-4xl mb-2 block">🖼️</span>
-                              <p className="text-gray-600">Click to select image</p>
+                              <p className="text-gray-600">
+                                Click to select image
+                              </p>
                             </div>
-                          </div>
+                          </button>
                         )}
                         <input
                           type="file"
@@ -360,7 +375,12 @@ export function AppBuilder() {
 
                   {/* Drag Handle */}
                   <div className="ml-4 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0">
-                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-8 h-8"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <title>Drag to reorder element</title>
                       <path d="M9 3h2v2H9V3zm0 4h2v2H9V7zm0 4h2v2H9v-2zm0 4h2v2H9v-2zm0 4h2v2H9v-2zm4-16h2v2h-2V3zm0 4h2v2h-2V7zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z" />
                     </svg>
                   </div>
@@ -368,6 +388,7 @@ export function AppBuilder() {
 
                 {/* Add button after element */}
                 <button
+                  type="button"
                   onClick={() => {
                     setModalPosition(index + 1)
                     setShowModal(true)
@@ -375,10 +396,11 @@ export function AppBuilder() {
                   onDragOver={(e) => handleDragOverPosition(e, index + 1)}
                   onDragLeave={() => setDragOverPosition(null)}
                   onDrop={(e) => handleDropOnPosition(e, index + 1)}
-                  className={`w-full py-2 mt-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${dragOverPosition === index + 1
-                    ? 'border-blue-500 bg-blue-50 text-blue-600'
-                    : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400'
-                    }`}
+                  className={`w-full py-2 mt-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${
+                    dragOverPosition === index + 1
+                      ? "border-blue-500 bg-blue-50 text-blue-600"
+                      : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
+                  }`}
                 >
                   <span className="text-lg">+</span>
                   Add element
@@ -389,7 +411,10 @@ export function AppBuilder() {
 
           {elements.length === 0 && (
             <div className="mt-8 p-8 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <p className="text-gray-500">No elements added yet. Drag elements from the sidebar to preview them.</p>
+              <p className="text-gray-500">
+                No elements added yet. Drag elements from the sidebar to preview
+                them.
+              </p>
             </div>
           )}
         </div>
@@ -406,7 +431,8 @@ export function AppBuilder() {
       >
         <div className="space-y-3">
           <button
-            onClick={() => handleAddElement('headline')}
+            type="button"
+            onClick={() => handleAddElement("headline")}
             className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
           >
             <span className="text-2xl">📰</span>
@@ -414,7 +440,8 @@ export function AppBuilder() {
           </button>
 
           <button
-            onClick={() => handleAddElement('text')}
+            type="button"
+            onClick={() => handleAddElement("text")}
             className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
           >
             <span className="text-2xl">📝</span>
@@ -422,7 +449,8 @@ export function AppBuilder() {
           </button>
 
           <button
-            onClick={() => handleAddElement('image')}
+            type="button"
+            onClick={() => handleAddElement("image")}
             className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
           >
             <span className="text-2xl">🖼️</span>
@@ -431,6 +459,7 @@ export function AppBuilder() {
         </div>
 
         <button
+          type="button"
           onClick={() => {
             setShowModal(false)
             setModalPosition(null)
@@ -451,11 +480,13 @@ export function AppBuilder() {
         title="Remove Element"
       >
         <p className="text-gray-600 mb-6">
-          Are you sure you want to remove this element? This action cannot be undone.
+          Are you sure you want to remove this element? This action cannot be
+          undone.
         </p>
 
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={() => {
               setShowDeleteModal(false)
               setDeleteElementId(null)
@@ -465,6 +496,7 @@ export function AppBuilder() {
             Cancel
           </button>
           <button
+            type="button"
             onClick={confirmDelete}
             className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
           >
@@ -489,12 +521,14 @@ export function AppBuilder() {
 
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={closeEditModal}
               className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={saveEditingContent}
               className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
             >
@@ -503,6 +537,7 @@ export function AppBuilder() {
           </div>
 
           <button
+            type="button"
             onClick={() => {
               if (editingElementId) {
                 handleDeleteElement(editingElementId)
@@ -543,16 +578,19 @@ export function AppBuilder() {
             }}
           />
 
-          {editingImageId && elements.find((el) => el.id === editingImageId)?.content && (
-            <button
-              onClick={handleRemoveImage}
-              className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors"
-            >
-              Remove Image
-            </button>
-          )}
+          {editingImageId &&
+            elements.find((el) => el.id === editingImageId)?.content && (
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors"
+              >
+                Remove Image
+              </button>
+            )}
 
           <button
+            type="button"
             onClick={() => {
               if (editingImageId) {
                 handleDeleteElement(editingImageId)
@@ -565,6 +603,7 @@ export function AppBuilder() {
           </button>
 
           <button
+            type="button"
             onClick={closeImageEditModal}
             className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
           >
@@ -586,19 +625,25 @@ export function AppBuilder() {
           <input
             type="text"
             value={pageSlug}
-            onChange={(e) => setPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+            onChange={(e) =>
+              setPageSlug(
+                e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+              )
+            }
             placeholder="my-page-name"
             className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
           />
 
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={() => setShowSlugModal(false)}
               className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={() => {
                 if (pageSlug.trim()) {
                   setShowSlugModal(false)
@@ -619,15 +664,21 @@ export function AppBuilder() {
         title={messageModal.title}
       >
         <div className="space-y-4">
-          <p className={messageModal.type === 'success' ? 'text-gray-700' : 'text-red-600'}>
+          <p
+            className={
+              messageModal.type === "success" ? "text-gray-700" : "text-red-600"
+            }
+          >
             {messageModal.message}
           </p>
           <button
+            type="button"
             onClick={() => setMessageModal({ ...messageModal, isOpen: false })}
-            className={`w-full py-2 px-4 font-medium rounded-lg transition-colors text-white ${messageModal.type === 'success'
-              ? 'bg-green-500 hover:bg-green-600'
-              : 'bg-red-500 hover:bg-red-600'
-              }`}
+            className={`w-full py-2 px-4 font-medium rounded-lg transition-colors text-white ${
+              messageModal.type === "success"
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-red-500 hover:bg-red-600"
+            }`}
           >
             Close
           </button>

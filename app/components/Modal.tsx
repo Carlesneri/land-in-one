@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react"
 
 interface ModalProps {
   isOpen: boolean
@@ -15,7 +15,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop with blur */}
-      <div
+      <button
+        type="button"
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />

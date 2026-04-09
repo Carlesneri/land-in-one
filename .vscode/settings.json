@@ -1,0 +1,7 @@
+{
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {},
+  "editor.defaultFormatter": "biomejs.biome"
+}

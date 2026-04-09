@@ -1,17 +1,17 @@
-'use server'
+"use server"
 
 // import { connectToDatabase } from '@/lib/mongodb'
-import { PreviewPage, PublishPage } from '@/lib/models/Page'
-import { connectToDatabase } from '@/lib/mongodb'
+import { PreviewPage, PublishPage } from "@/lib/models/Page"
+import { connectToDatabase } from "@/lib/mongodb"
 
 interface SavePagePayload {
   slug: string
   elements: Array<{
     id: string
-    type: 'text' | 'image' | 'headline'
+    type: "text" | "image" | "headline"
     content?: string
   }>
-  status: 'preview' | 'publish'
+  status: "preview" | "publish"
 }
 
 export async function savePageElements(payload: SavePagePayload) {
@@ -23,19 +23,19 @@ export async function savePageElements(payload: SavePagePayload) {
     if (!slug) {
       return {
         success: false,
-        error: 'Slug is required',
+        error: "Slug is required",
       }
     }
 
     // Convert elements to include position based on array index
     const elementsWithPosition = elements.map((element, index) => ({
       type: element.type,
-      content: element.content || '',
+      content: element.content || "",
       position: index,
     }))
 
     // Get the appropriate model based on status
-    const PageModel = status === 'publish' ? PublishPage : PreviewPage
+    const PageModel = status === "publish" ? PublishPage : PreviewPage
 
     // Check if page exists
     const existingPage = await PageModel.findOne({ slug })
@@ -49,7 +49,7 @@ export async function savePageElements(payload: SavePagePayload) {
         {
           elements: elementsWithPosition,
         },
-        { new: true }
+        { new: true },
       )
     } else {
       // Create new page
@@ -62,13 +62,13 @@ export async function savePageElements(payload: SavePagePayload) {
     return {
       success: true,
       data: page,
-      message: `Page ${status === 'publish' ? 'published' : 'saved'} successfully`,
+      message: `Page ${status === "publish" ? "published" : "saved"} successfully`,
     }
   } catch (error) {
-    console.error('Error saving page elements:', error)
+    console.error("Error saving page elements:", error)
     return {
       success: false,
-      error: 'Failed to save page elements',
+      error: "Failed to save page elements",
     }
   }
 }

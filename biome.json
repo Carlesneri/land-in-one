@@ -30,8 +30,13 @@
   "assist": {
     "actions": {
       "source": {
-        "organizeImports": "on"
+        "organizeImports": "off"
       }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded"
     }
   }
 }
