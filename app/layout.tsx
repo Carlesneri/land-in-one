@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Land In One",
   description: "Create a landing page in less than one minute.",
   icons: {
-    icon: "/favicon.png",
+    icon: "/logo.svg",
   },
 }
 

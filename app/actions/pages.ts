@@ -3,20 +3,56 @@
 // import { connectToDatabase } from '@/lib/mongodb'
 import { PreviewPage, PublishPage } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import { generateSlug } from "random-word-slugs"
 
 interface SavePagePayload {
   slug: string
   elements: Array<{
-    id: string
     type: "text" | "image" | "headline"
     content?: string
+    position: number
   }>
   status: "preview" | "publish"
 }
 
-export async function savePageElements(payload: SavePagePayload) {
+export async function getLandingPageById(id: string) {
   try {
     await connectToDatabase()
+
+    const page = await PreviewPage.findById(id)
+
+    if (!page) {
+      return {
+        success: false,
+        error: "Page not found",
+      }
+    }
+
+    // Convert Mongoose document to plain object to avoid serialization issues
+    return {
+      success: true,
+      page: page.toObject(),
+    }
+  } catch (error) {
+    console.error("Error fetching landing page by ID:", error)
+
+    return {
+      success: false,
+      error: "Failed to fetch landing page",
+    }
+  }
+}
+
+export async function savePageElements(id: string, payload: SavePagePayload) {
+  try {
+    await connectToDatabase()
+    const session = await getServerSession()
+
+    if (!session?.user?.email) {
+      redirect("/login")
+    }
 
     const { slug, elements, status } = payload
 
@@ -27,48 +63,82 @@ export async function savePageElements(payload: SavePagePayload) {
       }
     }
 
-    // Convert elements to include position based on array index
-    const elementsWithPosition = elements.map((element, index) => ({
-      type: element.type,
-      content: element.content || "",
-      position: index,
-    }))
-
     // Get the appropriate model based on status
     const PageModel = status === "publish" ? PublishPage : PreviewPage
 
     // Check if page exists
-    const existingPage = await PageModel.findOne({ slug })
+    const existingPage = await PageModel.findById(id)
 
-    let page
-
-    if (existingPage) {
-      // Update existing page
-      page = await PageModel.findOneAndUpdate(
-        { slug },
-        {
-          elements: elementsWithPosition,
-        },
-        { new: true },
-      )
-    } else {
-      // Create new page
-      page = await PageModel.create({
-        slug,
-        elements: elementsWithPosition,
-      })
+    const modelData = {
+      elements,
+      slug,
     }
+
+    existingPage
+      ? await PageModel.findByIdAndUpdate(id, modelData, { new: true })
+      : await PageModel.create(modelData)
 
     return {
       success: true,
-      data: page,
       message: `Page ${status === "publish" ? "published" : "saved"} successfully`,
     }
   } catch (error) {
     console.error("Error saving page elements:", error)
+
     return {
       success: false,
       error: "Failed to save page elements",
+    }
+  }
+}
+
+export async function createNewPage() {
+  try {
+    await connectToDatabase()
+    const session = await getServerSession()
+
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        error: "User not authenticated",
+      }
+    }
+
+    // Generate a unique slug
+    const slug = generateSlug(3)
+
+    // Create new page with empty elements
+    const newPage = await PreviewPage.create({
+      slug,
+      elements: [
+        {
+          type: "headline",
+          position: 1,
+        },
+        {
+          type: "image",
+          position: 2,
+        },
+        {
+          type: "text",
+          position: 3,
+        },
+      ],
+      userEmail: session.user.email,
+    })
+
+    return {
+      success: true,
+      message: "Page created successfully",
+      pageId: newPage._id.toString(),
+      slug: newPage.slug,
+    }
+  } catch (error) {
+    console.error("Error creating new page:", error)
+
+    return {
+      success: false,
+      error: "Failed to create new page",
     }
   }
 }

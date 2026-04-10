@@ -1,5 +1,25 @@
-export default async function BuilderIdPage() {
-  const id = 1
+import { getLandingPageById } from "../../actions/pages"
+import { AppBuilder } from "../../components/AppBuilder"
 
-  return <h1>Builder Id {id} Page</h1>
+export default async function BuilderIdPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+
+  const landingDoc = await getLandingPageById(id)
+
+  if (!id || !landingDoc?.page) {
+    // Add button for creating new page
+    return <h1>No Landing Page Found</h1>
+  }
+
+  return (
+    <AppBuilder
+      elements={landingDoc.page.elements}
+      slug={landingDoc.page.slug}
+      id={id}
+    />
+  )
 }

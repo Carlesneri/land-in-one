@@ -1,27 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { Modal } from "@/app/components/Modal"
 import { savePageElements } from "@/app/actions/pages"
-import { generateSlug } from "random-word-slugs"
+import type { LandingPage } from "@/lib/models/Page"
 
-interface BuilderElement {
+export function AppBuilder({
+  elements: initialElements,
+  slug,
+  id,
+}: {
+  elements: LandingPage["elements"]
+  slug: LandingPage["slug"]
   id: string
-  type: "text" | "image" | "headline"
-  label: string
-  icon: string
-  content?: string
-}
-
-const AVAILABLE_ELEMENTS: BuilderElement[] = [
-  { id: "headline-1", type: "headline", label: "Headline", icon: "📰" },
-  { id: "image-1", type: "image", label: "Image", icon: "🖼️" },
-  { id: "text-1", type: "text", label: "Text", icon: "📝" },
-]
-
-export function AppBuilder() {
-  const [elements, setElements] = useState<BuilderElement[]>(AVAILABLE_ELEMENTS)
+}) {
+  const [elements, setElements] =
+    useState<LandingPage["elements"]>(initialElements)
+  const [pageId] = useState<string>(id)
   const [draggedElement, setDraggedElement] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [modalPosition, setModalPosition] = useState<number | null>(null)
@@ -32,7 +28,7 @@ export function AppBuilder() {
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [pageSlug, setPageSlug] = useState<string>("")
+  const [pageSlug, setPageSlug] = useState<string>(slug)
   const [showSlugModal, setShowSlugModal] = useState(false)
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
@@ -46,14 +42,8 @@ export function AppBuilder() {
     message: "",
   })
 
-  // Generate initial slug on component mount
-  useEffect(() => {
-    const initialSlug = generateSlug(3)
-    setPageSlug(initialSlug)
-  }, [])
-
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    setDraggedElement(id)
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedElement(String(index))
     e.dataTransfer.effectAllowed = "move"
   }
 
@@ -68,17 +58,21 @@ export function AppBuilder() {
     setDragOverPosition(position)
   }
 
-  const handleDropOnElement = (e: React.DragEvent, targetId: string) => {
+  const handleDropOnElement = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault()
 
-    if (!draggedElement || draggedElement === targetId) {
+    if (!draggedElement) {
       setDraggedElement(null)
       setDragOverPosition(null)
       return
     }
 
-    const draggedIndex = elements.findIndex((el) => el.id === draggedElement)
-    const targetIndex = elements.findIndex((el) => el.id === targetId)
+    const draggedIndex = parseInt(draggedElement, 10)
+    if (draggedIndex === -1 || draggedIndex === targetIndex) {
+      setDraggedElement(null)
+      setDragOverPosition(null)
+      return
+    }
 
     const newElements = [...elements]
     ;[newElements[draggedIndex], newElements[targetIndex]] = [
@@ -100,7 +94,7 @@ export function AppBuilder() {
       return
     }
 
-    const draggedIndex = elements.findIndex((el) => el.id === draggedElement)
+    const draggedIndex = parseInt(draggedElement, 10)
     if (draggedIndex === -1) {
       setDraggedElement(null)
       setDragOverPosition(null)
@@ -111,6 +105,10 @@ export function AppBuilder() {
     const draggedEl = newElements[draggedIndex]
     newElements.splice(draggedIndex, 1)
     newElements.splice(position, 0, draggedEl)
+    // Update positions
+    newElements.forEach((el, idx) => {
+      el.position = idx
+    })
 
     setElements(newElements)
     setDraggedElement(null)
@@ -122,18 +120,21 @@ export function AppBuilder() {
   }
 
   const handleAddElement = (type: "text" | "image" | "headline") => {
-    const newId = `${type}-${Date.now()}`
-    const newElement: BuilderElement = {
-      id: newId,
+    const newElement = {
       type,
-      label: AVAILABLE_ELEMENTS.find((el) => el.type === type)?.label || "",
-      icon: AVAILABLE_ELEMENTS.find((el) => el.type === type)?.icon || "",
-    }
+      content: "",
+      position: modalPosition ?? elements.length,
+    } as LandingPage["elements"][0]
 
     const newElements = [...elements]
     if (modalPosition !== null) {
       newElements.splice(modalPosition, 0, newElement)
+      // Update positions after insertion
+      newElements.forEach((el, idx) => {
+        el.position = idx
+      })
     } else {
+      newElement.position = newElements.length
       newElements.push(newElement)
     }
 
@@ -142,35 +143,46 @@ export function AppBuilder() {
     setModalPosition(null)
   }
 
-  const handleDeleteElement = (id: string) => {
-    setDeleteElementId(id)
+  const handleDeleteElement = (index: number) => {
+    setDeleteElementId(String(index))
     setShowDeleteModal(true)
   }
 
   const confirmDelete = () => {
-    if (deleteElementId) {
-      setElements(elements.filter((el) => el.id !== deleteElementId))
+    if (deleteElementId !== null) {
+      const index = parseInt(deleteElementId, 10)
+      const newElements = elements.filter((_, idx) => idx !== index)
+      // Update positions
+      newElements.forEach((el, idx) => {
+        el.position = idx
+      })
+      setElements(newElements)
       setShowDeleteModal(false)
       setDeleteElementId(null)
     }
   }
 
-  const handleUpdateContent = (id: string, content: string) => {
-    setElements(elements.map((el) => (el.id === id ? { ...el, content } : el)))
+  const handleUpdateContent = (index: number, content: string) => {
+    setElements(
+      elements.map((el, idx) => (idx === index ? { ...el, content } : el)),
+    )
   }
 
-  const handleImageSelect = (id: string, file: File) => {
+  const handleImageSelect = (index: number, file: File) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       const imageDataUrl = e.target?.result as string
-      handleUpdateContent(id, imageDataUrl)
+      handleUpdateContent(index, imageDataUrl)
     }
     reader.readAsDataURL(file)
   }
 
-  const openEditModal = (element: BuilderElement) => {
+  const openEditModal = (
+    element: LandingPage["elements"][0],
+    index: number,
+  ) => {
     if (element.type !== "image") {
-      setEditingElementId(element.id)
+      setEditingElementId(String(index))
       setEditingContent(element.content || "")
     }
   }
@@ -181,8 +193,9 @@ export function AppBuilder() {
   }
 
   const saveEditingContent = () => {
-    if (editingElementId) {
-      handleUpdateContent(editingElementId, editingContent)
+    if (editingElementId !== null) {
+      const index = parseInt(editingElementId, 10)
+      handleUpdateContent(index, editingContent)
       closeEditModal()
     }
   }
@@ -192,8 +205,9 @@ export function AppBuilder() {
   }
 
   const handleRemoveImage = () => {
-    if (editingImageId) {
-      handleUpdateContent(editingImageId, "")
+    if (editingImageId !== null) {
+      const index = parseInt(editingImageId, 10)
+      handleUpdateContent(index, "")
       closeImageEditModal()
     }
   }
@@ -205,8 +219,9 @@ export function AppBuilder() {
     }
 
     setIsSaving(true)
+
     try {
-      const result = await savePageElements({
+      const result = await savePageElements(pageId, {
         slug: pageSlug,
         elements,
         status,
@@ -290,21 +305,21 @@ export function AppBuilder() {
             </button>
 
             {elements.map((element, index) => (
-              <div key={element.id}>
+              <div key={`${element.type}-${element.position}`}>
                 {/** biome-ignore lint/a11y/noStaticElementInteractions: to fix forward */}
                 <div
                   className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors group relative cursor-move flex items-center justify-between"
                   draggable
-                  onDragStart={(e) => handleDragStart(e, element.id)}
+                  onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDropOnElement(e, element.id)}
+                  onDrop={(e) => handleDropOnElement(e, index)}
                   onDragEnd={handleDragEnd}
                 >
                   <div className="flex-1">
                     {element.type === "headline" && (
                       <button
                         type="button"
-                        onClick={() => openEditModal(element)}
+                        onClick={() => openEditModal(element, index)}
                         className="w-full text-left text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
                         style={{
                           color: element.content ? "#1f2937" : "#d1d5db",
@@ -316,7 +331,7 @@ export function AppBuilder() {
                     {element.type === "text" && (
                       <button
                         type="button"
-                        onClick={() => openEditModal(element)}
+                        onClick={() => openEditModal(element, index)}
                         className="w-full text-left leading-relaxed cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
                         style={{
                           color: element.content ? "#1f2937" : "#9ca3af",
@@ -330,7 +345,7 @@ export function AppBuilder() {
                         {element.content ? (
                           <button
                             type="button"
-                            onClick={() => setEditingImageId(element.id)}
+                            onClick={() => setEditingImageId(String(index))}
                             className="w-full h-48 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Edit image"
                           >
@@ -345,7 +360,7 @@ export function AppBuilder() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setEditingImageId(element.id)}
+                            onClick={() => setEditingImageId(String(index))}
                             className="w-full h-48 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Select image"
                           >
@@ -361,11 +376,11 @@ export function AppBuilder() {
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          id={`image-input-${element.id}`}
+                          id={`image-input-${index}`}
                           onChange={(e) => {
                             const file = e.target.files?.[0]
                             if (file) {
-                              handleImageSelect(element.id, file)
+                              handleImageSelect(index, file)
                             }
                           }}
                         />
@@ -539,8 +554,9 @@ export function AppBuilder() {
           <button
             type="button"
             onClick={() => {
-              if (editingElementId) {
-                handleDeleteElement(editingElementId)
+              if (editingElementId !== null) {
+                const index = parseInt(editingElementId, 10)
+                handleDeleteElement(index)
                 closeEditModal()
               }
             }}
@@ -571,15 +587,16 @@ export function AppBuilder() {
             id={`image-input-modal-${editingImageId}`}
             onChange={(e) => {
               const file = e.target.files?.[0]
-              if (file && editingImageId) {
-                handleImageSelect(editingImageId, file)
+              if (file && editingImageId !== null) {
+                const index = parseInt(editingImageId, 10)
+                handleImageSelect(index, file)
                 closeImageEditModal()
               }
             }}
           />
 
-          {editingImageId &&
-            elements.find((el) => el.id === editingImageId)?.content && (
+          {editingImageId !== null &&
+            elements[parseInt(editingImageId, 10)]?.content && (
               <button
                 type="button"
                 onClick={handleRemoveImage}
@@ -592,8 +609,9 @@ export function AppBuilder() {
           <button
             type="button"
             onClick={() => {
-              if (editingImageId) {
-                handleDeleteElement(editingImageId)
+              if (editingImageId !== null) {
+                const index = parseInt(editingImageId, 10)
+                handleDeleteElement(index)
                 closeImageEditModal()
               }
             }}
