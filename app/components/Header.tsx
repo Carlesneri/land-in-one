@@ -18,19 +18,24 @@ export function Header() {
           {session?.user ? (
             <>
               <div className="flex items-center gap-3">
-                {session.user.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt={session.user.name || "User"}
-                    className="w-10 h-10 rounded-full"
-                    width={40}
-                    height={40}
-                  />
-                ) : (
-                  <span className="text-gray-700 font-medium line-clamp-1 max-w-24">
-                    {session.user.name || session.user.email}
-                  </span>
-                )}
+                <Link
+                  href="/dashboard"
+                  className="text-gray-700 hover:text-gray-900 font-medium"
+                >
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || "User"}
+                      className="w-10 h-10 rounded-full"
+                      width={40}
+                      height={40}
+                    />
+                  ) : (
+                    <span className="text-gray-700 font-medium line-clamp-1 max-w-24">
+                      {session.user.name || session.user.email}
+                    </span>
+                  )}
+                </Link>
               </div>
               <button
                 onClick={() => signOut()}

@@ -142,3 +142,23 @@ export async function createNewPage() {
     }
   }
 }
+
+export async function getUserLandings(userEmail: string) {
+  try {
+    await connectToDatabase()
+
+    const pages = await PreviewPage.find({ userEmail })
+
+    return {
+      success: true,
+      pages,
+    }
+  } catch (error) {
+    console.error("Error fetching user landings:", error)
+
+    return {
+      success: false,
+      error: "Failed to fetch user landings",
+    }
+  }
+}
