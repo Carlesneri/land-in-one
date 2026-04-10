@@ -10,6 +10,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@picocss/pico": "^2.1.1",
     "mongoose": "^9.4.1",
     "next": "16.2.2",
     "next-auth": "^4.24.13",
