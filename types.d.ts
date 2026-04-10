@@ -1,0 +1,13 @@
+export interface LandingPageElement {
+  type: "text" | "image" | "headline"
+  content?: string
+  position: number
+}
+
+export interface LandingPage extends Document {
+  slug: string
+  elements: LandingPageElement[]
+  userEmail: string
+  createdAt: Date
+  updatedAt: Date
+}

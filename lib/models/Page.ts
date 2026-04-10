@@ -1,18 +1,5 @@
-import mongoose, { Schema, type Document } from "mongoose"
-
-export interface LandingPageElement {
-  type: "text" | "image" | "headline"
-  content?: string
-  position: number
-}
-
-export interface LandingPage extends Document {
-  slug: string
-  elements: LandingPageElement[]
-  userEmail: string
-  createdAt: Date
-  updatedAt: Date
-}
+import type { LandingPage, LandingPageElement } from "@/types"
+import mongoose, { Schema } from "mongoose"
 
 const elementSchema = new Schema<LandingPageElement>(
   {

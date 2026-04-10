@@ -149,9 +149,14 @@ export async function getUserLandings(userEmail: string) {
 
     const pages = await PreviewPage.find({ userEmail })
 
+    const mappedPages = pages.map((page) => ({
+      id: page._id.toString(),
+      slug: page.slug,
+    }))
+
     return {
       success: true,
-      pages,
+      pages: mappedPages,
     }
   } catch (error) {
     console.error("Error fetching user landings:", error)
@@ -159,6 +164,49 @@ export async function getUserLandings(userEmail: string) {
     return {
       success: false,
       error: "Failed to fetch user landings",
+    }
+  }
+}
+
+export async function deleteLandingPage(id: string) {
+  try {
+    await connectToDatabase()
+    const session = await getServerSession()
+
+    if (!session?.user?.email) {
+      redirect("/login")
+    }
+
+    const page = await PreviewPage.findById(id)
+
+    if (page.userEmail !== session.user.email) {
+      return {
+        success: false,
+        error: "You are not authorized to delete this page",
+      }
+    }
+
+    if (page) {
+      await PreviewPage.findByIdAndDelete(id)
+    }
+
+    if (page?.slug) {
+      await PublishPage.deleteOne({
+        slug: page.slug,
+        userEmail: session.user.email,
+      })
+    }
+
+    return {
+      success: true,
+      message: "Page deleted successfully",
+    }
+  } catch (error) {
+    console.error("Error deleting landing page:", error)
+
+    return {
+      success: false,
+      error: "Failed to delete landing page",
     }
   }
 }

@@ -1,10 +1,9 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Header } from "@/app/components/Header"
-import { AuthProvider } from "@/app/providers/AuthProvider"
-import "./globals.css"
-import "@picocss/pico/css/pico.min.css"
 import { Footer } from "@/app/components/Footer"
+import "@picocss/pico/css/pico.min.css"
+import "@/app/globals.css"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +34,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col px-4">
-        <AuthProvider>
-          <Header />
-        </AuthProvider>
+        <Header />
         <main className="container mx-auto">{children}</main>
         <Footer />
       </body>

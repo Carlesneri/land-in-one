@@ -4,7 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { Modal } from "@/app/components/Modal"
 import { savePageElements } from "@/app/actions/pages"
-import type { LandingPage } from "@/lib/models/Page"
+import type { LandingPage } from "@/types"
 
 export function AppBuilder({
   elements: initialElements,
