@@ -1,8 +1,9 @@
 import { getPageBySlug } from "@/app/actions/pages"
+import { LandingPage } from "@/app/components/LandingPage"
 import { getServerSession } from "next-auth"
 import Link from "next/link"
 
-export default async function PublishedLandingPage({
+export default async function PreviewPage({
   params,
 }: {
   params: Promise<{ slug: string }>
@@ -42,10 +43,10 @@ export default async function PublishedLandingPage({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-slate-900">
-        Published Landing Page: {slug}
-      </h1>
-    </div>
+    <LandingPage
+      elements={previewPage.page?.elements || []}
+      slug={slug}
+      status="preview"
+    />
   )
 }
