@@ -1,49 +1,60 @@
 import { getServerSession } from "next-auth"
-import Image from "next/image"
 import Link from "next/link"
 import { SignInButton } from "./SignInButton"
 import { SignOutButton } from "./SignOutButton"
+import { Container } from "@/app/ui/Container"
+import { Avatar } from "@/app/ui/Avatar"
 
 export async function Header() {
   const session = await getServerSession()
 
   return (
-    <header>
-      <div className="container mx-auto flex items-center justify-between py-4">
-        <Link href="/" className="text-2xl font-bold text-gray-900">
-          Land In One
-        </Link>
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
+      <Container>
+        <div className="flex items-center justify-between py-4">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-bold text-sm group-hover:shadow-lg transition-shadow">
+              L
+            </div>
+            <span className="text-xl font-bold text-slate-900 hidden sm:inline group-hover:text-indigo-600 transition-colors">
+              Land In One
+            </span>
+          </Link>
 
-        <div className="flex items-center gap-4">
-          {session?.user ? (
-            <>
-              <div className="flex items-center gap-3">
+          <nav className="flex items-center gap-3 sm:gap-4">
+            {session?.user ? (
+              <>
                 <Link
                   href="/dashboard"
-                  className="text-gray-700 hover:text-gray-900 font-medium"
+                  className="text-slate-700 hover:text-indigo-600 font-medium text-sm transition-colors"
                 >
-                  {session.user.image ? (
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name || "User"}
-                      className="w-10 h-10 rounded-full"
-                      width={40}
-                      height={40}
-                    />
-                  ) : (
-                    <span className="text-gray-700 font-medium line-clamp-1 max-w-24">
-                      {session.user.name || session.user.email}
-                    </span>
-                  )}
+                  Dashboard
                 </Link>
-              </div>
-              <SignOutButton />
-            </>
-          ) : (
-            <SignInButton />
-          )}
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <Avatar
+                    src={session.user.image || undefined}
+                    alt={session.user.name || "User"}
+                    size="md"
+                    initials={
+                      session.user.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase() || "U"
+                    }
+                  />
+                  <span className="text-slate-700 font-medium line-clamp-1 max-w-24 hidden xs:inline text-sm">
+                    {session.user.name || session.user.email}
+                  </span>
+                </Link>
+                <SignOutButton />
+              </>
+            ) : (
+              <SignInButton />
+            )}
+          </nav>
         </div>
-      </div>
+      </Container>
     </header>
   )
 }

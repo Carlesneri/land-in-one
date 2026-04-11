@@ -2,6 +2,7 @@
 
 import { createNewPage } from "@/app/actions/pages"
 import { useRouter } from "next/navigation"
+import { Button } from "@/app/ui/Button"
 
 export function NewLandingButton() {
   const router = useRouter()
@@ -21,12 +22,13 @@ export function NewLandingButton() {
   }
 
   return (
-    <button
+    <Button
       type="button"
       onClick={onCreateNewProject}
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+      variant="primary"
+      size="lg"
     >
       New Project
-    </button>
+    </Button>
   )
 }

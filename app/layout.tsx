@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Header } from "@/app/components/Header"
 import { Footer } from "@/app/components/Footer"
-import "@picocss/pico/css/pico.min.css"
 import "@/app/globals.css"
 
 const geistSans = Geist({
@@ -32,10 +31,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col px-4">
+      <body className="min-h-full flex flex-col bg-white text-slate-900">
         <Header />
-        <main className="container mx-auto">{children}</main>
+        <main className="flex-1 w-full py-8 sm:py-12">{children}</main>
         <Footer />
       </body>
     </html>

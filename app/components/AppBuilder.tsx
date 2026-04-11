@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Modal } from "@/app/components/Modal"
+import { Modal } from "@/app/ui/Modal"
 import { savePageElements } from "@/app/actions/pages"
 import type { LandingPage } from "@/types"
 
@@ -256,18 +256,20 @@ export function AppBuilder({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Main Content Area */}
-      <section className="flex-1 p-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Builder Canvas</h1>
-            <div className="flex gap-3">
+      <section className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Builder Canvas
+            </h1>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => handleSavePage("preview")}
                 disabled={isSaving}
-                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+                className="px-4 sm:px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
               >
                 {isSaving ? "Saving..." : "Save Page"}
               </button>
@@ -275,7 +277,7 @@ export function AppBuilder({
                 type="button"
                 onClick={() => handleSavePage("publish")}
                 disabled={isSaving}
-                className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors"
+                className="px-4 sm:px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
               >
                 {isSaving ? "Publishing..." : "Publish Page"}
               </button>
@@ -294,7 +296,7 @@ export function AppBuilder({
               onDragOver={(e) => handleDragOverPosition(e, 0)}
               onDragLeave={() => setDragOverPosition(null)}
               onDrop={(e) => handleDropOnPosition(e, 0)}
-              className={`w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${
+              className={`w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors ${
                 dragOverPosition === 0
                   ? "border-blue-500 bg-blue-50 text-blue-600"
                   : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
@@ -346,7 +348,7 @@ export function AppBuilder({
                           <button
                             type="button"
                             onClick={() => setEditingImageId(String(index))}
-                            className="w-full h-48 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Edit image"
                           >
                             <Image
@@ -354,19 +356,19 @@ export function AppBuilder({
                               alt="Element content"
                               width={400}
                               height={192}
-                              className="w-full h-48 rounded object-cover"
+                              className="w-full h-auto rounded object-cover"
                             />
                           </button>
                         ) : (
                           <button
                             type="button"
                             onClick={() => setEditingImageId(String(index))}
-                            className="w-full h-48 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full h-32 sm:h-48 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Select image"
                           >
                             <div className="text-center">
                               <span className="text-4xl mb-2 block">🖼️</span>
-                              <p className="text-gray-600">
+                              <p className="text-gray-600 text-sm sm:text-base">
                                 Click to select image
                               </p>
                             </div>
@@ -411,7 +413,7 @@ export function AppBuilder({
                   onDragOver={(e) => handleDragOverPosition(e, index + 1)}
                   onDragLeave={() => setDragOverPosition(null)}
                   onDrop={(e) => handleDropOnPosition(e, index + 1)}
-                  className={`w-full py-2 mt-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${
+                  className={`w-full py-2 mt-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors ${
                     dragOverPosition === index + 1
                       ? "border-blue-500 bg-blue-50 text-blue-600"
                       : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
@@ -448,28 +450,34 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("headline")}
-            className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
           >
-            <span className="text-2xl">📰</span>
-            <span className="font-semibold text-gray-900">Headline</span>
+            <span className="text-xl sm:text-2xl">📰</span>
+            <span className="font-semibold text-gray-900 text-sm sm:text-base">
+              Headline
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => handleAddElement("text")}
-            className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
           >
-            <span className="text-2xl">📝</span>
-            <span className="font-semibold text-gray-900">Text</span>
+            <span className="text-xl sm:text-2xl">📝</span>
+            <span className="font-semibold text-gray-900 text-sm sm:text-base">
+              Text
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => handleAddElement("image")}
-            className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
           >
-            <span className="text-2xl">🖼️</span>
-            <span className="font-semibold text-gray-900">Image</span>
+            <span className="text-xl sm:text-2xl">🖼️</span>
+            <span className="font-semibold text-gray-900 text-sm sm:text-base">
+              Image
+            </span>
           </button>
         </div>
 
@@ -479,7 +487,7 @@ export function AppBuilder({
             setShowModal(false)
             setModalPosition(null)
           }}
-          className="w-full mt-6 py-2 text-gray-600 hover:text-gray-900 border-t border-gray-200 pt-6 font-medium"
+          className="w-full mt-6 py-2 text-gray-600 hover:text-gray-900 border-t border-gray-200 pt-6 font-medium text-sm sm:text-base"
         >
           Cancel
         </button>
