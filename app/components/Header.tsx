@@ -4,6 +4,7 @@ import { SignInButton } from "./SignInButton"
 import { SignOutButton } from "./SignOutButton"
 import { Container } from "@/app/ui/Container"
 import { Avatar } from "@/app/ui/Avatar"
+import Image from "next/image"
 
 export async function Header() {
   const session = await getServerSession()
@@ -13,12 +14,14 @@ export async function Header() {
       <Container>
         <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-bold text-sm group-hover:shadow-lg transition-shadow">
-              L
-            </div>
-            <span className="text-xl font-bold text-slate-900 hidden sm:inline group-hover:text-indigo-600 transition-colors">
-              Land In One
-            </span>
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={80}
+              height={40}
+              className="h-auto w-auto"
+              loading="eager"
+            />
           </Link>
 
           <nav className="flex items-center gap-3 sm:gap-4">
