@@ -11,3 +11,5 @@ export interface LandingPage extends Document {
   createdAt: Date
   updatedAt: Date
 }
+
+export type Status = "publish" | "preview"

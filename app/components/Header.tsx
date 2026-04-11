@@ -19,7 +19,7 @@ export async function Header() {
               alt="Logo"
               width={80}
               height={40}
-              className="h-auto w-auto"
+              className="h-10 w-auto"
               loading="eager"
             />
           </Link>

@@ -3,6 +3,7 @@
 // import { connectToDatabase } from '@/lib/mongodb'
 import { PreviewPage, PublishPage } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
+import type { Status } from "@/types"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { generateSlug } from "random-word-slugs"
@@ -14,7 +15,7 @@ interface SavePagePayload {
     content?: string
     position: number
   }>
-  status: "preview" | "publish"
+  status: Status
 }
 
 export async function getLandingPageById(id: string) {
@@ -41,6 +42,41 @@ export async function getLandingPageById(id: string) {
     return {
       success: false,
       error: "Failed to fetch landing page",
+    }
+  }
+}
+
+export async function getPageBySlug({
+  slug,
+  status,
+}: {
+  slug: string
+  status: Status
+}) {
+  try {
+    await connectToDatabase()
+
+    const Page = status === "publish" ? PublishPage : PreviewPage
+
+    const page = await Page.findOne({ slug })
+
+    if (!page) {
+      return {
+        success: false,
+        error: "Page not found",
+      }
+    }
+
+    return {
+      success: true,
+      page: page.toObject(),
+    }
+  } catch (error) {
+    console.error("Error fetching published page by slug:", error)
+
+    return {
+      success: false,
+      error: "Failed to fetch published page",
     }
   }
 }
