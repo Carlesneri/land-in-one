@@ -15,7 +15,7 @@ import {
   type PutObjectCommandInput,
 } from "@aws-sdk/client-s3"
 
-export const s3Client = new S3Client({
+const s3Client = new S3Client({
   region: S3_REGION,
   credentials: {
     // biome-ignore lint: Environment variables are guaranteed in production
@@ -25,17 +25,20 @@ export const s3Client = new S3Client({
   },
 })
 
-export const uploadToCloud = async (
+export async function uploadToCloud(
   image: File,
   destinationPath: string,
   params: { ContentType?: string } = {},
-) => {
+) {
   const imageKey = crypto.randomUUID()
+
+  // Convert File to Buffer for S3 upload
+  const buffer = await image.arrayBuffer()
 
   const s3params: PutObjectCommandInput = {
     Bucket: S3_BUCKET_NAME,
-    Body: image,
-    Key: imageKey,
+    Body: new Uint8Array(buffer),
+    Key: `${destinationPath}/${imageKey}`,
     ACL: "public-read",
     ...(params.ContentType ? { ContentType: params.ContentType } : {}),
   }
@@ -49,7 +52,7 @@ export const uploadToCloud = async (
   }
 }
 
-export const deleteImageInCloud = async (image: string) => {
+export async function deleteImageInCloud(image: string) {
   let key = image.split(`${S3_BASE_URL}/`)[1]
 
   const isTempImage = image.includes(S3_BASE_URL_TEMP)
@@ -74,7 +77,7 @@ export const deleteImageInCloud = async (image: string) => {
   }
 }
 
-export const uploadImageFile = async (formData: FormData) => {
+export async function uploadImageFile(formData: FormData) {
   try {
     const file = formData.get("file") as File | null
 

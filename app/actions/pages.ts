@@ -110,7 +110,9 @@ export async function savePageElements(id: string, payload: SavePagePayload) {
     }
 
     existingPage
-      ? await PageModel.findByIdAndUpdate(id, modelData, { new: true })
+      ? await PageModel.findByIdAndUpdate(id, modelData, {
+          returnDocument: "after",
+        })
       : await PageModel.create(modelData)
 
     return {

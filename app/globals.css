@@ -5,15 +5,29 @@
   --foreground: #171717;
 }
 
+@theme {
+  --font-inter: "Inter", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", Arial, Helvetica, sans-serif;
 }
 
 /* Smooth scrolling and general animations */
 html {
   scroll-behavior: smooth;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-poppins;
 }
 
 @supports (scrollbar-gutter: stable) {

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next"
+import { S3_BASE_DOMAIN, S3_BASE_URL_TEMP_DOMAIN } from "@/CONSTANTS"
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -11,7 +12,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "land-in-one.s3.eu-west-1.amazonaws.com",
+        hostname: S3_BASE_DOMAIN,
+      },
+      {
+        protocol: "https",
+        hostname: S3_BASE_URL_TEMP_DOMAIN,
       },
     ],
   },

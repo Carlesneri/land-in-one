@@ -4,7 +4,7 @@ import { SignInButton } from "./SignInButton"
 import { SignOutButton } from "./SignOutButton"
 import { Container } from "@/app/ui/Container"
 import { Avatar } from "@/app/ui/Avatar"
-import Image from "next/image"
+import { Logo } from "@/app/components/Logo"
 
 export async function Header() {
   const session = await getServerSession()
@@ -14,14 +14,7 @@ export async function Header() {
       <Container>
         <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-2 group">
-            <Image
-              src="/logo.svg"
-              alt="Logo"
-              width={80}
-              height={40}
-              className="h-10 w-auto"
-              loading="eager"
-            />
+            <Logo height={40} width={80} />
           </Link>
 
           <nav className="flex items-center gap-3 sm:gap-4">
