@@ -16,13 +16,16 @@ export function Dashboard({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-          Dashboard
-        </h1>
-        <p className="text-slate-600 mt-2">
-          Manage and edit your landing pages
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+            Dashboard
+          </h1>
+          <p className="text-slate-600 mt-2">
+            Manage and edit your landing pages
+          </p>
+        </div>
+        <NewLandingButton />
       </div>
 
       {visiblePages.length === 0 ? (

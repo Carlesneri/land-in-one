@@ -47,6 +47,7 @@ export default async function PreviewPage({
       elements={previewPage.page?.elements || []}
       slug={slug}
       status="preview"
+      id={previewPage.page?._id}
     />
   )
 }

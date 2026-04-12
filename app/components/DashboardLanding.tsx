@@ -1,24 +1,29 @@
 'use client"'
 
-import { deleteLandingPage } from "@/app/actions/pages"
+import { deleteLandingPage, isSlugPublished } from "@/app/actions/pages"
 import { Card, CardHeader, CardTitle } from "@/app/ui/Card"
 import { Badge } from "@/app/ui/Badge"
 import { CardContent } from "@/app/ui/Card"
 import { Button } from "@/app/ui/Button"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export function DashboardLanding({
   landing,
   onDeleted,
-  isPublished,
 }: {
   landing: { id: string; slug: string }
   onDeleted: (id: string) => void
-  isPublished?: boolean
 }) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [isPublished, setIsPublished] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    isSlugPublished(landing.slug).then((published) => {
+      setIsPublished(published)
+    })
+  }, [landing.slug])
 
   async function handleClickDeleteLanding(id: string) {
     try {
@@ -39,19 +44,37 @@ export function DashboardLanding({
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <CardTitle className="truncate text-lg">
+              <CardTitle className="truncate text-lg">{landing.slug}</CardTitle>
+              <div className="flex gap-2 mt-3 flex-wrap">
                 <Link
-                  href={`/${landing.slug}`}
+                  href={`/preview/${landing.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="text-sm"
                 >
-                  {landing.slug}
+                  <Button variant="outline" size="sm">
+                    Preview
+                  </Button>
                 </Link>
-              </CardTitle>
+                {isPublished && (
+                  <Link
+                    href={`/${landing.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm"
+                  >
+                    <Button variant="outline" size="sm">
+                      Published
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
-            <Badge variant="default" className="shrink-0">
-              {isPublished ? "Published" : "Draft"}
-            </Badge>
+            {isPublished != null && (
+              <Badge variant="default" className="shrink-0">
+                {isPublished ? "Published" : "Draft"}
+              </Badge>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -59,16 +82,6 @@ export function DashboardLanding({
             <Link href={`/builder/${landing.id}`} className="flex-1">
               <Button variant="primary" size="md" fullWidth>
                 Edit
-              </Button>
-            </Link>
-            <Link
-              href={`/preview/${landing.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
-            >
-              <Button variant="secondary" size="md" fullWidth>
-                Preview
               </Button>
             </Link>
             <Button

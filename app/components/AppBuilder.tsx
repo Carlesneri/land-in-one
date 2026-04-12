@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useRef } from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
-import { savePageElements } from "@/app/actions/pages"
+import { savePreviewPage, publishPage } from "@/app/actions/pages"
 import { uploadImageFile } from "@/app/actions/cloud-storage"
 import type {
   AppBuilderElements,
@@ -32,7 +33,8 @@ export function AppBuilder({
   const [editingContent, setEditingContent] = useState<string>("")
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
+  const [isSavingPreview, setIsSavingPreview] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
   const [pageSlug, setPageSlug] = useState<string>(slug)
   const [showSlugModal, setShowSlugModal] = useState(false)
   const [messageModal, setMessageModal] = useState<{
@@ -248,7 +250,11 @@ export function AppBuilder({
       return
     }
 
-    setIsSaving(true)
+    if (status === "preview") {
+      setIsSavingPreview(true)
+    } else {
+      setIsPublishing(true)
+    }
 
     try {
       // Upload File objects to cloud and replace with URLs
@@ -291,12 +297,16 @@ export function AppBuilder({
         }),
       )
 
-      // Save page with cloud URLs
-      const result = await savePageElements(pageId, {
-        slug: pageSlug,
-        elements: elementsWithCloudUrls,
-        status,
-      })
+      // Save page with appropriate action based on status
+      const result = await (status === "publish"
+        ? publishPage(pageId, {
+            slug: pageSlug,
+            elements: elementsWithCloudUrls,
+          })
+        : savePreviewPage(pageId, {
+            slug: pageSlug,
+            elements: elementsWithCloudUrls,
+          }))
 
       if (result?.success) {
         // Cleanup object URLs after successful save
@@ -324,7 +334,11 @@ export function AppBuilder({
         message: "Failed to save page",
       })
     } finally {
-      setIsSaving(false)
+      if (status === "preview") {
+        setIsSavingPreview(false)
+      } else {
+        setIsPublishing(false)
+      }
     }
   }
 
@@ -335,25 +349,45 @@ export function AppBuilder({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Builder Canvas
+              {pageSlug}
             </h1>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => handleSavePage("preview")}
-                disabled={isSaving}
-                className="px-4 sm:px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
-              >
-                {isSaving ? "Saving..." : "Save Page"}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSavePage("publish")}
-                disabled={isSaving}
-                className="px-4 sm:px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
-              >
-                {isSaving ? "Publishing..." : "Publish Page"}
-              </button>
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => handleSavePage("preview")}
+                  disabled={isSavingPreview}
+                  className="px-4 sm:px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
+                >
+                  {isSavingPreview ? "Saving..." : "Save Page"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSavePage("publish")}
+                  disabled={isPublishing}
+                  className="px-4 sm:px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
+                >
+                  {isPublishing ? "Publishing..." : "Publish Page"}
+                </button>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 text-xs sm:text-sm">
+                <Link
+                  href={`/preview/${pageSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium rounded-lg transition-colors text-center"
+                >
+                  View Preview
+                </Link>
+                <Link
+                  href={`/${pageSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 font-medium rounded-lg transition-colors text-center"
+                >
+                  View Published
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -429,15 +463,15 @@ export function AppBuilder({
                               src={getContentAsString(element.content)}
                               alt="Element content"
                               width={400}
-                              height={192}
-                              className="w-full h-auto rounded object-cover"
+                              height={160}
+                              className="w-full h-40 object-cover rounded"
                             />
                           </button>
                         ) : (
                           <button
                             type="button"
                             onClick={() => setEditingImageId(String(index))}
-                            className="w-full h-32 sm:h-48 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full h-24 sm:h-32 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Select image"
                           >
                             <div className="text-center">

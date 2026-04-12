@@ -14,7 +14,6 @@ interface SavePagePayload {
     content?: string
     position: number
   }>
-  status: Status
 }
 
 export async function getLandingPageById(id: string) {
@@ -80,7 +79,20 @@ export async function getPageBySlug({
   }
 }
 
-export async function savePageElements(id: string, payload: SavePagePayload) {
+export async function isSlugPublished(slug: string) {
+  try {
+    await connectToDatabase()
+
+    const publishedPage = await PublishPage.findOne({ slug })
+
+    return !!publishedPage
+  } catch (error) {
+    console.error("Error checking if slug is published:", error)
+    return false
+  }
+}
+
+export async function savePreviewPage(id: string, payload: SavePagePayload) {
   try {
     await connectToDatabase()
     const session = await getServerSession()
@@ -89,7 +101,7 @@ export async function savePageElements(id: string, payload: SavePagePayload) {
       redirect("/login")
     }
 
-    const { slug, elements, status } = payload
+    const { slug, elements } = payload
 
     if (!slug) {
       return {
@@ -98,33 +110,89 @@ export async function savePageElements(id: string, payload: SavePagePayload) {
       }
     }
 
-    // Get the appropriate model based on status
-    const PageModel = status === "publish" ? PublishPage : PreviewPage
-
     // Check if page exists
-    const existingPage = await PageModel.findById(id)
+    const existingPage = await PreviewPage.findById(id)
 
-    const modelData = {
+    const modelData: Record<string, unknown> = {
       elements,
       slug,
+      userEmail: session.user.email,
     }
 
     existingPage
-      ? await PageModel.findByIdAndUpdate(id, modelData, {
+      ? await PreviewPage.findByIdAndUpdate(id, modelData, {
           returnDocument: "after",
         })
-      : await PageModel.create(modelData)
+      : await PreviewPage.create(modelData)
 
     return {
       success: true,
-      message: `Page ${status === "publish" ? "published" : "saved"} successfully`,
+      message: "Page saved successfully",
     }
   } catch (error) {
-    console.error("Error saving page elements:", error)
+    console.error("Error saving preview page:", error)
 
     return {
       success: false,
-      error: "Failed to save page elements",
+      error: "Failed to save preview page",
+    }
+  }
+}
+
+export async function publishPage(id: string, payload: SavePagePayload) {
+  try {
+    await connectToDatabase()
+    const session = await getServerSession()
+
+    if (!session?.user?.email) {
+      redirect("/login")
+    }
+
+    const { slug, elements } = payload
+
+    if (!slug) {
+      return {
+        success: false,
+        error: "Slug is required",
+      }
+    }
+
+    // Get the preview page to capture the current updatedAt as date_version
+    const previewPage = await PreviewPage.findById(id)
+
+    if (!previewPage) {
+      return {
+        success: false,
+        error: "Preview page not found",
+      }
+    }
+
+    const modelData: Record<string, unknown> = {
+      elements,
+      slug,
+      userEmail: session.user.email,
+      date_version: previewPage.updatedAt,
+    }
+
+    // Check if a published version already exists
+    const existingPublished = await PublishPage.findOne({ slug })
+
+    existingPublished
+      ? await PublishPage.findByIdAndUpdate(existingPublished._id, modelData, {
+          returnDocument: "after",
+        })
+      : await PublishPage.create(modelData)
+
+    return {
+      success: true,
+      message: "Page published successfully",
+    }
+  } catch (error) {
+    console.error("Error publishing page:", error)
+
+    return {
+      success: false,
+      error: "Failed to publish page",
     }
   }
 }
