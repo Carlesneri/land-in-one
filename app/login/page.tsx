@@ -1,8 +1,16 @@
 import { Container } from "@/app/ui/Container"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/ui/Card"
 import { SignInButton } from "@/app/components/SignInButton"
+import { redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await getServerSession()
+
+  if (session?.user) {
+    redirect("/dashboard")
+  }
+
   return (
     <Container size="sm">
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">

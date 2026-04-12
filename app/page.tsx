@@ -4,8 +4,11 @@ import { Button } from "@/app/ui/Button"
 import Link from "next/link"
 import { HeaderFooterLayout } from "@/app/components/HeaderFooterLayout"
 import { Logo } from "@/app/components/Logo"
+import { getServerSession } from "next-auth"
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession()
+
   return (
     <HeaderFooterLayout>
       <div className="min-h-screen flex flex-col">
@@ -33,11 +36,13 @@ export default function Home() {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <NewLandingButton />
-                <Link href="/dashboard">
-                  <Button variant="outline" size="lg">
-                    View Dashboard
-                  </Button>
-                </Link>
+                {session?.user && (
+                  <Link href="/dashboard">
+                    <Button variant="outline" size="lg">
+                      View Dashboard
+                    </Button>
+                  </Link>
+                )}
               </div>
 
               {/* Features Grid */}
