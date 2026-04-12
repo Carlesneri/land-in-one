@@ -1,22 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
 import { savePageElements } from "@/app/actions/pages"
-import type { LandingPage } from "@/types"
+import { uploadImageFile } from "@/app/actions/cloud-storage"
+import type {
+  AppBuilderElements,
+  LandingPage,
+  LandingPageElement,
+} from "@/types"
+import { MAX_IMAGE_SIZE_MB } from "@/CONSTANTS"
 
 export function AppBuilder({
   elements: initialElements,
   slug,
   id,
 }: {
-  elements: LandingPage["elements"]
+  elements: LandingPageElement[]
   slug: LandingPage["slug"]
   id: string
 }) {
-  const [elements, setElements] =
-    useState<LandingPage["elements"]>(initialElements)
+  const [elements, setElements] = useState<AppBuilderElements>(initialElements)
   const [pageId] = useState<string>(id)
   const [draggedElement, setDraggedElement] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
@@ -41,6 +46,7 @@ export function AppBuilder({
     title: "",
     message: "",
   })
+  const objectUrlsRef = useRef<Set<string>>(new Set())
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedElement(String(index))
@@ -162,28 +168,52 @@ export function AppBuilder({
     }
   }
 
-  const handleUpdateContent = (index: number, content: string) => {
+  const handleUpdateContent = (index: number, content: string | File) => {
     setElements(
       elements.map((el, idx) => (idx === index ? { ...el, content } : el)),
     )
   }
 
-  const handleImageSelect = (index: number, file: File) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const imageDataUrl = e.target?.result as string
-      handleUpdateContent(index, imageDataUrl)
-    }
-    reader.readAsDataURL(file)
+  const getContentAsString = (content?: string | File): string => {
+    if (!content) return ""
+    if (typeof content === "string") return content
+    // For File objects, create a data URL for preview
+    const url = URL.createObjectURL(content)
+    objectUrlsRef.current.add(url)
+    return url
   }
 
-  const openEditModal = (
-    element: LandingPage["elements"][0],
-    index: number,
-  ) => {
+  const cleanupObjectUrls = () => {
+    objectUrlsRef.current.forEach((url) => {
+      URL.revokeObjectURL(url)
+    })
+    objectUrlsRef.current.clear()
+  }
+
+  const isFileObject = (content?: string | File): content is File => {
+    return content instanceof File
+  }
+
+  const handleImageSelect = (index: number, file: File) => {
+    // Validate file size
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      setMessageModal({
+        isOpen: true,
+        type: "error",
+        title: "Error",
+        message: `Image size exceeds ${MAX_IMAGE_SIZE_MB}MB limit`,
+      })
+      return
+    }
+
+    // Store the File object directly
+    handleUpdateContent(index, file)
+  }
+
+  const openEditModal = (element: AppBuilderElements[0], index: number) => {
     if (element.type !== "image") {
       setEditingElementId(String(index))
-      setEditingContent(element.content || "")
+      setEditingContent(getContentAsString(element.content))
     }
   }
 
@@ -221,13 +251,56 @@ export function AppBuilder({
     setIsSaving(true)
 
     try {
+      // Upload File objects to cloud and replace with URLs
+      const elementsWithCloudUrls = await Promise.all(
+        elements.map(async (element) => {
+          // If element is an image with a File object, upload it to cloud
+          if (element.type === "image" && isFileObject(element.content)) {
+            try {
+              const file = element.content as File
+
+              // Create FormData with File
+              const formData = new FormData()
+              formData.append("file", file)
+
+              // Upload via cloud-storage action
+              const uploadResult = await uploadImageFile(formData)
+
+              if (uploadResult.success && uploadResult.url) {
+                return {
+                  ...element,
+                  content: uploadResult.url,
+                }
+              } else {
+                // If upload fails, return element with empty content
+                console.error("Image upload failed:", uploadResult.error)
+                return { ...element, content: "" }
+              }
+            } catch (uploadError) {
+              console.error("Error uploading image to cloud:", uploadError)
+              // If upload fails, return element with empty content
+              return { ...element, content: "" }
+            }
+          }
+
+          // For non-image elements or string content, return as-is
+          return {
+            ...element,
+            content: element.content as string | undefined,
+          }
+        }),
+      )
+
+      // Save page with cloud URLs
       const result = await savePageElements(pageId, {
         slug: pageSlug,
-        elements,
+        elements: elementsWithCloudUrls,
         status,
       })
 
       if (result?.success) {
+        // Cleanup object URLs after successful save
+        cleanupObjectUrls()
         setMessageModal({
           isOpen: true,
           type: "success",
@@ -327,7 +400,8 @@ export function AppBuilder({
                           color: element.content ? "#1f2937" : "#d1d5db",
                         }}
                       >
-                        {element.content || "Click to edit headline"}
+                        {(element.content as string) ||
+                          "Click to edit headline"}
                       </button>
                     )}
                     {element.type === "text" && (
@@ -339,7 +413,7 @@ export function AppBuilder({
                           color: element.content ? "#1f2937" : "#9ca3af",
                         }}
                       >
-                        {element.content || "Click to edit text"}
+                        {(element.content as string) || "Click to edit text"}
                       </button>
                     )}
                     {element.type === "image" && (
@@ -352,7 +426,7 @@ export function AppBuilder({
                             aria-label="Edit image"
                           >
                             <Image
-                              src={element.content}
+                              src={getContentAsString(element.content)}
                               alt="Element content"
                               width={400}
                               height={192}

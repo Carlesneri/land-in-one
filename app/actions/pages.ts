@@ -1,6 +1,5 @@
 "use server"
 
-// import { connectToDatabase } from '@/lib/mongodb'
 import { PreviewPage, PublishPage } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
 import type { Status } from "@/types"

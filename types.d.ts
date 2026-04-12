@@ -4,7 +4,7 @@ export interface LandingPageElement {
   position: number
 }
 
-export interface LandingPage extends Document {
+export interface LandingPage {
   slug: string
   elements: LandingPageElement[]
   userEmail: string
@@ -13,3 +13,9 @@ export interface LandingPage extends Document {
 }
 
 export type Status = "publish" | "preview"
+
+export type AppBuilderElements = {
+  type: "text" | "image" | "headline"
+  content?: string | File
+  position: number
+}[]
