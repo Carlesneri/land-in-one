@@ -18,7 +18,7 @@ export function Modal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 max-w-[100vw]">
+    <div className="fixed inset-0 z-50 w-screen">
       {/* Backdrop */}
       <button
         type="button"
@@ -28,7 +28,7 @@ export function Modal({
       />
 
       {/* Modal content */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4 max-w-100 mx-auto">
         <div
           className={cn(
             "pointer-events-auto bg-white rounded-xl shadow-xl p-6 w-full border border-slate-200 animate-in fade-in zoom-in-95 duration-200",
