@@ -1,20 +1,11 @@
 "use client"
 
 import { createNewPage } from "@/app/actions/pages"
-import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
 import { Button } from "@/app/ui/Button"
-import { AuthProvider } from "@/app/providers/AuthProvider"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export function NewLandingButton() {
-  return (
-    <AuthProvider>
-      <ProvidedNewLandingButton />
-    </AuthProvider>
-  )
-}
-
-function ProvidedNewLandingButton() {
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -30,10 +21,10 @@ function ProvidedNewLandingButton() {
       if (result.success && result.pageId) {
         router.push(`/builder/${result.pageId}`)
       } else {
-        console.error("Failed to create new page:", result.error)
+        console.error("Failed to create new page")
       }
-    } catch (error) {
-      console.error("Error creating new project:", error)
+    } catch {
+      console.error("Error creating new project")
     }
   }
 

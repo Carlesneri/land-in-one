@@ -1,26 +1,22 @@
-import { NewLandingButton } from "./components/NewLandingButton"
 import { Container } from "@/app/ui/Container"
 import { Button } from "@/app/ui/Button"
 import Link from "next/link"
 import { HeaderFooterLayout } from "@/app/components/HeaderFooterLayout"
-import { Logo } from "@/app/components/Logo"
 import { getServerSession } from "next-auth"
+import { NewLandingButton } from "@/app/components/NewLandingButton"
 
 export default async function Home() {
   const session = await getServerSession()
 
   return (
     <HeaderFooterLayout>
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col">
         {/* Hero Section */}
-        <div className="flex items-center justify-center">
-          <Logo height={200} />
-        </div>
         <section className="flex items-center justify-center px-4">
           <Container>
             <div className="text-center max-w-3xl mx-auto animate-in fade-in duration-500">
               {/* Main Heading */}
-              <div className="">
+              <div className="mt-6">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 leading-tight">
                   Create Landing Pages in
                   <span className="block bg-linear-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">

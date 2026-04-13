@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Poppins, Inter } from "next/font/google"
 import "@/app/globals.css"
+import { AuthProvider } from "@/app/providers/AuthProvider"
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -30,11 +31,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${inter.variable} h-full antialiased`}
+      className={`${poppins.variable} ${inter.variable} antialiased`}
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col bg-white text-slate-900">
-        <main>{children}</main>
+      <body className="min-h-screen flex flex-col bg-white text-slate-900">
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )
