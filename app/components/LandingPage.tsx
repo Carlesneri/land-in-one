@@ -47,9 +47,13 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
                     )}
 
                     {element.type === "text" && (
-                      <p className="text-lg text-slate-700 leading-relaxed">
-                        {element.content}
-                      </p>
+                      <div
+                        className="text-lg text-slate-700 leading-relaxed prose prose-slate max-w-none"
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                        dangerouslySetInnerHTML={{
+                          __html: element.content ?? "",
+                        }}
+                      />
                     )}
 
                     {element.type === "image" && element.content && (

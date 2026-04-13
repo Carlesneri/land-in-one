@@ -259,7 +259,7 @@ export function AppBuilder({
   }
 
   const openEditModal = (element: LandingPageElement, index: number) => {
-    if (element.type !== "image") {
+    if (element.type !== "image" && element.type !== "text") {
       setEditingElementId(String(index))
 
       if (element.content) {
@@ -338,6 +338,14 @@ export function AppBuilder({
     }
   }
 
+  const handleSavePreview = async () => {
+    if (pageSlug && pageId) {
+      await savePreviewPage(pageId, { slug: pageSlug, elements }).catch(() => {
+        // Silent failure
+      })
+    }
+  }
+
   const handlePublishPage = async () => {
     if (!pageSlug.trim()) {
       setShowSlugModal(true)
@@ -369,7 +377,6 @@ export function AppBuilder({
         })
       }
     } catch {
-      // Handle error silently - message modal will show error state
       setMessageModal({
         isOpen: true,
         type: "error",
@@ -461,6 +468,9 @@ export function AppBuilder({
                         element={element}
                         index={index}
                         onEdit={openEditModal}
+                        onContentChange={handleUpdateContent}
+                        onDelete={handleDeleteElement}
+                        onSave={handleSavePreview}
                       />
                     )}
                     {element.type === "image" && (
