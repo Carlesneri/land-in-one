@@ -151,6 +151,21 @@ export function AppBuilder({
   }
 
   const handleAddElement = (type: "text" | "image" | "headline") => {
+    if (
+      type === "image" &&
+      elements.filter((el) => el.type === "image").length >= 10
+    ) {
+      setShowModal(false)
+      setModalPosition(null)
+      setMessageModal({
+        isOpen: true,
+        type: "error",
+        title: "Image limit reached",
+        message: "You can only add up to 10 image elements per page.",
+      })
+      return
+    }
+
     const newElement = {
       type,
       content: "",
