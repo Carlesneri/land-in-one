@@ -5,13 +5,14 @@ import Link from "next/link"
 import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
 import { savePreviewPage, publishPage } from "@/app/actions/pages"
-import { uploadImageFile } from "@/app/actions/cloud-storage"
+import { createPresignedUrl } from "@/app/actions/cloud-storage"
 import type {
   AppBuilderElements,
   LandingPage,
   LandingPageElement,
 } from "@/types"
-import { MAX_IMAGE_SIZE_MB } from "@/CONSTANTS"
+import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
+import axios, { type AxiosProgressEvent } from "axios"
 
 export function AppBuilder({
   elements: initialElements,
@@ -265,25 +266,33 @@ export function AppBuilder({
             try {
               const file = element.content as File
 
-              // Create FormData with File
-              const formData = new FormData()
-              formData.append("file", file)
+              // Get presigned URL from server
+              const { url: presignedUrl, imageKey } = await createPresignedUrl({
+                ContentType: file.type,
+              })
 
-              // Upload via cloud-storage action
-              const uploadResult = await uploadImageFile(formData)
+              await axios.put(presignedUrl, file, {
+                headers: {
+                  "Content-Type": file.type,
+                },
+                onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+                  console.log({ progressEvent })
 
-              if (uploadResult.success && uploadResult.url) {
-                return {
-                  ...element,
-                  content: uploadResult.url,
-                }
-              } else {
-                // If upload fails, return element with empty content
-                console.error("Image upload failed:", uploadResult.error)
-                return { ...element, content: "" }
+                  const progress = Math.round(
+                    (progressEvent.loaded * 100) / (progressEvent.total || 1),
+                  )
+                  console.log(`Upload progress: ${progress}%`)
+                },
+              })
+
+              // Construct the image URL from the key
+              const imageUrl = `${S3_BASE_URL}/${imageKey}`
+
+              return {
+                ...element,
+                content: imageUrl,
               }
-            } catch (uploadError) {
-              console.error("Error uploading image to cloud:", uploadError)
+            } catch {
               // If upload fails, return element with empty content
               return { ...element, content: "" }
             }
@@ -456,15 +465,15 @@ export function AppBuilder({
                           <button
                             type="button"
                             onClick={() => setEditingImageId(String(index))}
-                            className="w-full rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Edit image"
                           >
                             <Image
                               src={getContentAsString(element.content)}
                               alt="Element content"
-                              width={400}
+                              width={800}
                               height={160}
-                              className="w-full h-40 object-cover rounded"
+                              className="size-full object-cover rounded"
                             />
                           </button>
                         ) : (

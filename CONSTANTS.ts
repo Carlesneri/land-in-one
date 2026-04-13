@@ -1,4 +1,4 @@
-export const MAX_IMAGE_SIZE_MB = 1
+export const MAX_IMAGE_SIZE_MB = 4.5
 
 // S3 Configuration
 export const S3_BUCKET_NAME = "land-in-one"

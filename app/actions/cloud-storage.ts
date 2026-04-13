@@ -14,6 +14,8 @@ import {
   S3Client,
   type PutObjectCommandInput,
 } from "@aws-sdk/client-s3"
+import sharp from "sharp"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 const s3Client = new S3Client({
   region: S3_REGION,
@@ -35,10 +37,12 @@ export async function uploadToCloud(
   // Convert File to Buffer for S3 upload
   const buffer = await image.arrayBuffer()
 
+  const optimized = await sharp(buffer).resize({ width: 800 }).avif().toBuffer()
+
   const s3params: PutObjectCommandInput = {
     Bucket: S3_BUCKET_NAME,
-    Body: new Uint8Array(buffer),
-    Key: `${destinationPath}/${imageKey}`,
+    Body: new Uint8Array(optimized),
+    Key: `${destinationPath}/${imageKey}.avif`,
     ACL: "public-read",
     ...(params.ContentType ? { ContentType: params.ContentType } : {}),
   }
@@ -126,5 +130,34 @@ export async function uploadImageFile(formData: FormData) {
       success: false,
       error: "Failed to upload image",
     }
+  }
+}
+
+export async function createPresignedUrl({
+  // key,
+  ContentType,
+  // ContentEncoding,
+}: {
+  // key: string
+  ContentType: string
+  // ContentEncoding: string
+}) {
+  const imageKey = `${S3_IMAGES_FOLDER}/${crypto.randomUUID()}`
+
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET_NAME,
+    Key: imageKey,
+    ACL: "public-read",
+    ContentType,
+    // ContentEncoding,
+  })
+
+  const preSignedUrl = await getSignedUrl(s3Client, command, {
+    expiresIn: 3600,
+  })
+
+  return {
+    url: preSignedUrl,
+    imageKey,
   }
 }
