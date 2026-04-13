@@ -5,7 +5,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
 import { publishPage, savePreviewPage } from "@/app/actions/pages"
-import { createPresignedUrl } from "@/app/actions/cloud-storage"
+import {
+  createPresignedUrl,
+  deleteImageInCloud,
+} from "@/app/actions/cloud-storage"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
@@ -179,6 +182,15 @@ export function AppBuilder({
   const confirmDelete = () => {
     if (deleteElementId !== null) {
       const index = parseInt(deleteElementId, 10)
+      const element = elements[index]
+
+      // Delete image from cloud if element is an image with content
+      if (element?.type === "image" && element?.content) {
+        deleteImageInCloud(element.content).catch(() => {
+          // Silent failure for cleanup
+        })
+      }
+
       const newElements = elements.filter((_, idx) => idx !== index)
       // Update positions
       newElements.forEach((el, idx) => {
@@ -208,9 +220,18 @@ export function AppBuilder({
       return
     }
 
+    // Get the current image URL to delete it from cloud
+    const currentImageUrl = elements[index]?.content
+
     // Upload image to cloud immediately
     uploadImageToCloud(file)
       .then((imageUrl) => {
+        // Delete previous image from cloud if it exists
+        if (currentImageUrl) {
+          deleteImageInCloud(currentImageUrl).catch(() => {
+            // Silent failure for cleanup
+          })
+        }
         // Update element with cloud URL
         handleUpdateContent(index, imageUrl)
       })
@@ -249,6 +270,15 @@ export function AppBuilder({
   const handleRemoveImage = () => {
     if (editingImageId !== null) {
       const index = parseInt(editingImageId, 10)
+      const imageUrl = elements[index]?.content
+
+      // Delete image from cloud if it exists
+      if (imageUrl) {
+        deleteImageInCloud(imageUrl).catch(() => {
+          // Silent failure for cleanup
+        })
+      }
+
       handleUpdateContent(index, "")
       closeImageEditModal()
     }

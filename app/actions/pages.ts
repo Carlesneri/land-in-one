@@ -2,6 +2,7 @@
 
 import { PreviewPage, PublishPage } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
+import { deleteImageInCloud } from "@/app/actions/cloud-storage"
 import type { Status } from "@/types"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
@@ -288,6 +289,17 @@ export async function deleteLandingPage(id: string) {
       return {
         success: false,
         error: "You are not authorized to delete this page",
+      }
+    }
+
+    // Delete all cloud images from the page elements
+    if (page?.elements && Array.isArray(page.elements)) {
+      for (const element of page.elements) {
+        if (element.type === "image" && element.content) {
+          await deleteImageInCloud(element.content).catch(() => {
+            // Silent failure for image cleanup
+          })
+        }
       }
     }
 

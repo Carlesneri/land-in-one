@@ -57,13 +57,7 @@ export async function uploadToCloud(
 }
 
 export async function deleteImageInCloud(image: string) {
-  let key = image.split(`${S3_BASE_URL}/`)[1]
-
-  const isTempImage = image.includes(S3_BASE_URL_TEMP)
-
-  if (isTempImage) {
-    key = image.split(`${S3_BASE_URL_TEMP}/`)[1]
-  }
+  const key = image.split(`${S3_BASE_URL}/`)[1]
 
   const s3params = {
     Bucket: S3_BUCKET_NAME,
