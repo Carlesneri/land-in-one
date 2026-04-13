@@ -2,9 +2,11 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
 import { AddElementButton } from "@/app/components/AddElementButton"
+import { HeadlineElement } from "@/app/components/builder/HeadlineElement"
+import { TextElement } from "@/app/components/builder/TextElement"
+import { ImageElement } from "@/app/components/builder/ImageElement"
 import { publishPage, savePreviewPage } from "@/app/actions/pages"
 import {
   createPresignedUrl,
@@ -448,79 +450,29 @@ export function AppBuilder({
                 >
                   <div className="flex-1">
                     {element.type === "headline" && (
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(element, index)}
-                        className="w-full text-left text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
-                        style={{
-                          color: element.content ? "#1f2937" : "#d1d5db",
-                        }}
-                      >
-                        {(element.content as string) ||
-                          "Click to edit headline"}
-                      </button>
+                      <HeadlineElement
+                        element={element}
+                        index={index}
+                        onEdit={openEditModal}
+                      />
                     )}
                     {element.type === "text" && (
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(element, index)}
-                        className="w-full text-left leading-relaxed cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
-                        style={{
-                          color: element.content ? "#1f2937" : "#9ca3af",
-                        }}
-                      >
-                        {(element.content as string) || "Click to edit text"}
-                      </button>
+                      <TextElement
+                        element={element}
+                        index={index}
+                        onEdit={openEditModal}
+                      />
                     )}
                     {element.type === "image" && (
-                      <>
-                        {element.content ? (
-                          <button
-                            type="button"
-                            onClick={() => setEditingImageId(String(index))}
-                            className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            aria-label="Edit image"
-                          >
-                            <Image
-                              src={element.content}
-                              alt="Element content"
-                              width={800}
-                              height={160}
-                              className="size-full object-cover rounded"
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              imageInputRefs.current[index]?.click()
-                            }}
-                            className="w-full h-24 sm:h-32 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            aria-label="Select image"
-                          >
-                            <div className="text-center">
-                              <span className="text-4xl mb-2 block">🖼️</span>
-                              <p className="text-gray-600 text-sm sm:text-base">
-                                Click to select image
-                              </p>
-                            </div>
-                          </button>
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          ref={(el) => {
-                            if (el) imageInputRefs.current[index] = el
-                          }}
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              handleImageSelect(index, file)
-                            }
-                          }}
-                        />
-                      </>
+                      <ImageElement
+                        element={element}
+                        index={index}
+                        imageInputRef={(el) => {
+                          if (el) imageInputRefs.current[index] = el
+                        }}
+                        onOpenEditModal={(i) => setEditingImageId(String(i))}
+                        onFileChange={handleImageSelect}
+                      />
                     )}
                   </div>
 
