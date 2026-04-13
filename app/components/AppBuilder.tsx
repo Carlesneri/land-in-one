@@ -49,7 +49,15 @@ export function AppBuilder({
     title: "",
     message: "",
   })
+  const [progressModal, setProgressModal] = useState<{
+    isOpen: boolean
+    progress: number
+  }>({
+    isOpen: false,
+    progress: 0,
+  })
   const objectUrlsRef = useRef<Set<string>>(new Set())
+  const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedElement(String(index))
@@ -276,23 +284,29 @@ export function AppBuilder({
                   "Content-Type": file.type,
                 },
                 onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-                  console.log({ progressEvent })
-
                   const progress = Math.round(
                     (progressEvent.loaded * 100) / (progressEvent.total || 1),
                   )
-                  console.log(`Upload progress: ${progress}%`)
+                  setProgressModal({
+                    isOpen: true,
+                    progress,
+                  })
                 },
               })
 
               // Construct the image URL from the key
               const imageUrl = `${S3_BASE_URL}/${imageKey}`
 
+              // Close progress modal after successful upload
+              setProgressModal({ isOpen: false, progress: 0 })
+
               return {
                 ...element,
                 content: imageUrl,
               }
             } catch {
+              // Close progress modal on error
+              setProgressModal({ isOpen: false, progress: 0 })
               // If upload fails, return element with empty content
               return { ...element, content: "" }
             }
@@ -479,7 +493,9 @@ export function AppBuilder({
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setEditingImageId(String(index))}
+                            onClick={() => {
+                              imageInputRefs.current[index]?.click()
+                            }}
                             className="w-full h-24 sm:h-32 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                             aria-label="Select image"
                           >
@@ -495,7 +511,9 @@ export function AppBuilder({
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          id={`image-input-${index}`}
+                          ref={(el) => {
+                            if (el) imageInputRefs.current[index] = el
+                          }}
                           onChange={(e) => {
                             const file = e.target.files?.[0]
                             if (file) {
@@ -825,6 +843,25 @@ export function AppBuilder({
           >
             Close
           </button>
+        </div>
+      </Modal>
+
+      {/* Upload Progress Modal */}
+      <Modal
+        isOpen={progressModal.isOpen}
+        onClose={() => {}}
+        title="Uploading Image"
+      >
+        <div className="space-y-4">
+          <div className="w-full bg-gray-200 rounded-lg h-2 overflow-hidden">
+            <div
+              className="bg-blue-500 h-full transition-all duration-300"
+              style={{ width: `${progressModal.progress}%` }}
+            />
+          </div>
+          <p className="text-center text-gray-600 font-medium">
+            {progressModal.progress}%
+          </p>
         </div>
       </Modal>
     </div>
