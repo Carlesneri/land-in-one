@@ -13,9 +13,3 @@ export interface LandingPage {
 }
 
 export type Status = "publish" | "preview"
-
-export type AppBuilderElements = {
-  type: "text" | "image" | "headline"
-  content?: string | File
-  position: number
-}[]

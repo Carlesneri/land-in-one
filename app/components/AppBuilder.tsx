@@ -1,16 +1,12 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
-import { savePreviewPage, publishPage } from "@/app/actions/pages"
+import { publishPage, savePreviewPage } from "@/app/actions/pages"
 import { createPresignedUrl } from "@/app/actions/cloud-storage"
-import type {
-  AppBuilderElements,
-  LandingPage,
-  LandingPageElement,
-} from "@/types"
+import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
 
@@ -23,7 +19,8 @@ export function AppBuilder({
   slug: LandingPage["slug"]
   id: string
 }) {
-  const [elements, setElements] = useState<AppBuilderElements>(initialElements)
+  const [elements, setElements] =
+    useState<LandingPageElement[]>(initialElements)
   const [pageId] = useState<string>(id)
   const [draggedElement, setDraggedElement] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
@@ -34,7 +31,6 @@ export function AppBuilder({
   const [editingContent, setEditingContent] = useState<string>("")
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
-  const [isSavingPreview, setIsSavingPreview] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [pageSlug, setPageSlug] = useState<string>(slug)
   const [showSlugModal, setShowSlugModal] = useState(false)
@@ -56,8 +52,23 @@ export function AppBuilder({
     isOpen: false,
     progress: 0,
   })
-  const objectUrlsRef = useRef<Set<string>>(new Set())
   const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+
+  // Auto-save elements to Preview Page model when they change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (pageSlug && pageId) {
+        savePreviewPage(pageId, {
+          slug: pageSlug,
+          elements,
+        }).catch(() => {
+          // Silent failure for auto-save
+        })
+      }
+    }, 300) // time debounce
+
+    return () => clearTimeout(timer)
+  }, [elements, pageSlug, pageId])
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedElement(String(index))
@@ -179,30 +190,10 @@ export function AppBuilder({
     }
   }
 
-  const handleUpdateContent = (index: number, content: string | File) => {
+  const handleUpdateContent = (index: number, content: string) => {
     setElements(
       elements.map((el, idx) => (idx === index ? { ...el, content } : el)),
     )
-  }
-
-  const getContentAsString = (content?: string | File): string => {
-    if (!content) return ""
-    if (typeof content === "string") return content
-    // For File objects, create a data URL for preview
-    const url = URL.createObjectURL(content)
-    objectUrlsRef.current.add(url)
-    return url
-  }
-
-  const cleanupObjectUrls = () => {
-    objectUrlsRef.current.forEach((url) => {
-      URL.revokeObjectURL(url)
-    })
-    objectUrlsRef.current.clear()
-  }
-
-  const isFileObject = (content?: string | File): content is File => {
-    return content instanceof File
   }
 
   const handleImageSelect = (index: number, file: File) => {
@@ -217,14 +208,24 @@ export function AppBuilder({
       return
     }
 
-    // Store the File object directly
-    handleUpdateContent(index, file)
+    // Upload image to cloud immediately
+    uploadImageToCloud(file)
+      .then((imageUrl) => {
+        // Update element with cloud URL
+        handleUpdateContent(index, imageUrl)
+      })
+      .catch(() => {
+        // Error is already handled in uploadImageToCloud
+      })
   }
 
-  const openEditModal = (element: AppBuilderElements[0], index: number) => {
+  const openEditModal = (element: LandingPageElement, index: number) => {
     if (element.type !== "image") {
       setEditingElementId(String(index))
-      setEditingContent(getContentAsString(element.content))
+
+      if (element.content) {
+        setEditingContent(element.content)
+      }
     }
   }
 
@@ -253,92 +254,63 @@ export function AppBuilder({
     }
   }
 
-  const handleSavePage = async (status: "preview" | "publish") => {
+  const uploadImageToCloud = async (file: File): Promise<string> => {
+    try {
+      // Get presigned URL from server
+      const { url: presignedUrl, imageKey } = await createPresignedUrl({
+        ContentType: file.type,
+      })
+
+      await axios.put(presignedUrl, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+        onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+          const progress = Math.round(
+            (progressEvent.loaded * 100) / (progressEvent.total || 1),
+          )
+          setProgressModal({
+            isOpen: true,
+            progress,
+          })
+        },
+      })
+
+      // Construct the image URL from the key
+      const imageUrl = `${S3_BASE_URL}/${imageKey}`
+
+      // Close progress modal after successful upload
+      setProgressModal({ isOpen: false, progress: 0 })
+
+      return imageUrl
+    } catch {
+      // Close progress modal on error
+      setProgressModal({ isOpen: false, progress: 0 })
+      throw new Error("Failed to upload image")
+    }
+  }
+
+  const handlePublishPage = async () => {
     if (!pageSlug.trim()) {
       setShowSlugModal(true)
       return
     }
 
-    if (status === "preview") {
-      setIsSavingPreview(true)
-    } else {
-      setIsPublishing(true)
-    }
+    setIsPublishing(true)
 
     try {
-      // Upload File objects to cloud and replace with URLs
-      const elementsWithCloudUrls = await Promise.all(
-        elements.map(async (element) => {
-          // If element is an image with a File object, upload it to cloud
-          if (element.type === "image" && isFileObject(element.content)) {
-            try {
-              const file = element.content as File
-
-              // Get presigned URL from server
-              const { url: presignedUrl, imageKey } = await createPresignedUrl({
-                ContentType: file.type,
-              })
-
-              await axios.put(presignedUrl, file, {
-                headers: {
-                  "Content-Type": file.type,
-                },
-                onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-                  const progress = Math.round(
-                    (progressEvent.loaded * 100) / (progressEvent.total || 1),
-                  )
-                  setProgressModal({
-                    isOpen: true,
-                    progress,
-                  })
-                },
-              })
-
-              // Construct the image URL from the key
-              const imageUrl = `${S3_BASE_URL}/${imageKey}`
-
-              // Close progress modal after successful upload
-              setProgressModal({ isOpen: false, progress: 0 })
-
-              return {
-                ...element,
-                content: imageUrl,
-              }
-            } catch {
-              // Close progress modal on error
-              setProgressModal({ isOpen: false, progress: 0 })
-              // If upload fails, return element with empty content
-              return { ...element, content: "" }
-            }
-          }
-
-          // For non-image elements or string content, return as-is
-          return {
-            ...element,
-            content: element.content as string | undefined,
-          }
-        }),
-      )
-
-      // Save page with appropriate action based on status
-      const result = await (status === "publish"
-        ? publishPage(pageId, {
-            slug: pageSlug,
-            elements: elementsWithCloudUrls,
-          })
-        : savePreviewPage(pageId, {
-            slug: pageSlug,
-            elements: elementsWithCloudUrls,
-          }))
+      // Elements already have cloud URLs, just publish them
+      const result = await publishPage(pageId, {
+        slug: pageSlug,
+        elements,
+      })
 
       if (result?.success) {
-        // Cleanup object URLs after successful save
-        cleanupObjectUrls()
         setMessageModal({
           isOpen: true,
           type: "success",
           title: "Success",
-          message: result.message || "Page saved successfully",
+          message: result.message || "Page published successfully",
         })
       } else if (result) {
         setMessageModal({
@@ -354,14 +326,10 @@ export function AppBuilder({
         isOpen: true,
         type: "error",
         title: "Error",
-        message: "Failed to save page",
+        message: "Failed to publish page",
       })
     } finally {
-      if (status === "preview") {
-        setIsSavingPreview(false)
-      } else {
-        setIsPublishing(false)
-      }
+      setIsPublishing(false)
     }
   }
 
@@ -378,15 +346,7 @@ export function AppBuilder({
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={() => handleSavePage("preview")}
-                  disabled={isSavingPreview}
-                  className="px-4 sm:px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
-                >
-                  {isSavingPreview ? "Saving..." : "Save Page"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSavePage("publish")}
+                  onClick={() => handlePublishPage()}
                   disabled={isPublishing}
                   className="px-4 sm:px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
                 >
@@ -483,7 +443,7 @@ export function AppBuilder({
                             aria-label="Edit image"
                           >
                             <Image
-                              src={getContentAsString(element.content)}
+                              src={element.content}
                               alt="Element content"
                               width={800}
                               height={160}
