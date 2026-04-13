@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Modal } from "@/app/ui/Modal"
+import { AddElementButton } from "@/app/components/AddElementButton"
 import { publishPage, savePreviewPage } from "@/app/actions/pages"
 import {
   createPresignedUrl,
@@ -422,24 +423,17 @@ export function AppBuilder({
           {/* Preview Area */}
           <div className="mt-8 space-y-6">
             {/* Add button at start */}
-            <button
-              type="button"
-              onClick={() => {
-                setModalPosition(0)
+            <AddElementButton
+              position={0}
+              dragOverPosition={dragOverPosition}
+              onDragOver={handleDragOverPosition}
+              onDragLeave={() => setDragOverPosition(null)}
+              onDrop={handleDropOnPosition}
+              onClick={(pos) => {
+                setModalPosition(pos)
                 setShowModal(true)
               }}
-              onDragOver={(e) => handleDragOverPosition(e, 0)}
-              onDragLeave={() => setDragOverPosition(null)}
-              onDrop={(e) => handleDropOnPosition(e, 0)}
-              className={`w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors ${
-                dragOverPosition === 0
-                  ? "border-blue-500 bg-blue-50 text-blue-600"
-                  : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
-              }`}
-            >
-              <span className="text-lg">+</span>
-              Add element
-            </button>
+            />
 
             {elements.map((element, index) => (
               <div key={`${element.type}-${element.position}`}>
@@ -544,36 +538,21 @@ export function AppBuilder({
                 </div>
 
                 {/* Add button after element */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setModalPosition(index + 1)
+                <AddElementButton
+                  position={index + 1}
+                  dragOverPosition={dragOverPosition}
+                  onDragOver={handleDragOverPosition}
+                  onDragLeave={() => setDragOverPosition(null)}
+                  onDrop={handleDropOnPosition}
+                  onClick={(pos) => {
+                    setModalPosition(pos)
                     setShowModal(true)
                   }}
-                  onDragOver={(e) => handleDragOverPosition(e, index + 1)}
-                  onDragLeave={() => setDragOverPosition(null)}
-                  onDrop={(e) => handleDropOnPosition(e, index + 1)}
-                  className={`w-full py-2 mt-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors ${
-                    dragOverPosition === index + 1
-                      ? "border-blue-500 bg-blue-50 text-blue-600"
-                      : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
-                  }`}
-                >
-                  <span className="text-lg">+</span>
-                  Add element
-                </button>
+                  className="mt-2"
+                />
               </div>
             ))}
           </div>
-
-          {elements.length === 0 && (
-            <div className="mt-8 p-8 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <p className="text-gray-500">
-                No elements added yet. Drag elements from the sidebar to preview
-                them.
-              </p>
-            </div>
-          )}
         </div>
       </section>
 
