@@ -1,4 +1,4 @@
-'use client"'
+"use client"
 
 import { deleteLandingPage, isSlugPublished } from "@/app/actions/pages"
 import { Card, CardHeader, CardTitle } from "@/app/ui/Card"
@@ -7,6 +7,12 @@ import { CardContent } from "@/app/ui/Card"
 import { Button } from "@/app/ui/Button"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import {
+  IconExternalLink,
+  IconPencil,
+  IconTrash,
+  IconWorldWww,
+} from "@tabler/icons-react"
 
 export function DashboardLanding({
   landing,
@@ -50,9 +56,13 @@ export function DashboardLanding({
                   href={`/preview/${landing.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm"
                 >
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1.5"
+                  >
+                    <IconExternalLink size={14} aria-hidden="true" />
                     Preview
                   </Button>
                 </Link>
@@ -61,9 +71,13 @@ export function DashboardLanding({
                     href={`/${landing.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm"
                   >
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1.5"
+                    >
+                      <IconWorldWww size={14} aria-hidden="true" />
                       Published
                     </Button>
                   </Link>
@@ -80,7 +94,13 @@ export function DashboardLanding({
         <CardContent>
           <div className="flex gap-2 flex-wrap">
             <Link href={`/builder/${landing.id}`} className="flex-1">
-              <Button variant="primary" size="md" fullWidth>
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                className="flex items-center justify-center gap-2"
+              >
+                <IconPencil size={16} aria-hidden="true" />
                 Edit
               </Button>
             </Link>
@@ -89,8 +109,9 @@ export function DashboardLanding({
               size="md"
               disabled={isDeleting}
               onClick={() => setShowConfirmModal(true)}
-              className="flex-1"
+              className="flex-1 flex items-center justify-center gap-2"
             >
+              <IconTrash size={16} aria-hidden="true" />
               {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </div>

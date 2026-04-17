@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { IconPlus } from "@tabler/icons-react"
 
 interface AddElementButtonProps {
   position: number
@@ -29,14 +30,14 @@ export function AddElementButton({
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, position)}
       className={cn(
-        "w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors",
+        "w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6]",
         dragOverPosition === position
-          ? "border-blue-500 bg-blue-50 text-blue-600"
-          : "border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400",
+          ? "border-[#6442D6] bg-[#EDE9FB] text-[#6442D6]"
+          : "border-[#C8B3FD] text-[#6442D6] hover:bg-[#F5F2FF] hover:border-[#6442D6]",
         className,
       )}
     >
-      <span className="text-lg">+</span>
+      <IconPlus size={16} aria-hidden="true" />
       Add element
     </button>
   )

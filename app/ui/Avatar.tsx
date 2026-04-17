@@ -7,7 +7,7 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   alt?: string
   size?: "sm" | "md" | "lg" | "xl"
   initials?: string
-  fallbackColor?: "indigo" | "blue" | "purple" | "slate"
+  fallbackColor?: "primary" | "secondary" | "slate"
 }
 
 const sizeClasses = {
@@ -18,10 +18,9 @@ const sizeClasses = {
 }
 
 const fallbackColors = {
-  indigo: "bg-gradient-to-br from-indigo-400 to-indigo-600",
-  blue: "bg-gradient-to-br from-blue-400 to-blue-600",
-  purple: "bg-gradient-to-br from-purple-400 to-purple-600",
-  slate: "bg-gradient-to-br from-slate-400 to-slate-600",
+  primary: "bg-[#6442D6] text-white",
+  secondary: "bg-[#C8B3FD] text-[#6442D6]",
+  slate: "bg-slate-200 text-slate-700",
 }
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
@@ -32,7 +31,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       alt,
       size = "md",
       initials,
-      fallbackColor = "indigo",
+      fallbackColor = "primary",
       ...props
     },
     ref,

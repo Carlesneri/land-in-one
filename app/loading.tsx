@@ -8,8 +8,8 @@ export default function Loading() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Skeleton className="h-8 w-32" />
           <div className="flex items-center gap-3">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-9 w-28 rounded-lg" />
+            <Skeleton className="h-10 w-10 rounded-full" />
           </div>
         </div>
       </header>

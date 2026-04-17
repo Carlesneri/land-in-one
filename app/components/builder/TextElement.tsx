@@ -89,9 +89,9 @@ export function TextElement({
   }
 
   return (
-    <div className="w-full rounded border border-transparent focus-within:border-blue-400 focus-within:bg-white transition-colors">
+    <div className="w-full rounded border border-transparent focus-within:border-[#C8B3FD] focus-within:bg-white transition-colors">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-gray-200 bg-gray-100 rounded-t opacity-0 focus-within:opacity-100 group-focus-within:opacity-100 [.group:focus-within_&]:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-slate-200 bg-slate-100 rounded-t opacity-0 focus-within:opacity-100 group-focus-within:opacity-100 [.group:focus-within_&]:opacity-100 transition-opacity">
         {TOOLBAR_BUTTONS.map((btn) => (
           <button
             key={btn.action}
@@ -101,7 +101,7 @@ export function TextElement({
               e.preventDefault()
               runAction(btn.action)
             }}
-            className={`px-2 py-0.5 text-xs rounded hover:bg-gray-200 text-gray-700 ${btn.className} ${
+            className={`px-2 py-0.5 text-xs rounded hover:bg-slate-200 text-slate-700 ${btn.className} ${
               (btn.action === "toggleBold" && editor.isActive("bold")) ||
               (btn.action === "toggleItalic" && editor.isActive("italic")) ||
               (btn.action === "toggleStrike" && editor.isActive("strike")) ||
@@ -111,7 +111,7 @@ export function TextElement({
                 btn.action === "toggleOrderedList" &&
                   editor.isActive("orderedList")
               )
-                ? "bg-blue-100 text-blue-700"
+                ? "bg-[#EDE9FB] text-[#6442D6]"
                 : ""
             }`}
           >
@@ -131,7 +131,7 @@ export function TextElement({
             onSave()
             editor.commands.blur()
           }}
-          className="px-2 py-0.5 text-xs rounded hover:bg-green-100 text-green-600 ml-1"
+          className="px-2 py-0.5 text-xs rounded hover:bg-[#DCFCE7] text-[#16A34A] ml-1"
         >
           ✓ Save
         </button>
@@ -144,7 +144,7 @@ export function TextElement({
             e.preventDefault()
             onDelete(index)
           }}
-          className="px-2 py-0.5 text-xs rounded hover:bg-red-100 text-red-500 ml-1"
+          className="px-2 py-0.5 text-xs rounded hover:bg-[#FEE2E2] text-[#DC2626] ml-1"
         >
           ✕ Remove
         </button>

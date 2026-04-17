@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Empty } from "@/app/ui/Empty"
 import { NewLandingButton } from "@/app/components/NewLandingButton"
 import { DashboardLanding } from "@/app/components/DashboardLanding"
+import { IconFileDescription } from "@tabler/icons-react"
 
 export function Dashboard({
   pages,
@@ -18,7 +19,7 @@ export function Dashboard({
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#111827]">
             Dashboard
           </h1>
           <p className="text-slate-600 mt-2">
@@ -31,20 +32,11 @@ export function Dashboard({
       {visiblePages.length === 0 ? (
         <Empty
           icon={
-            <svg
-              className="w-12 h-12"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <IconFileDescription
+              size={48}
+              className="text-[#C8B3FD]"
               aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
+            />
           }
           title="No landing pages yet"
           description="Create your first landing page to get started"

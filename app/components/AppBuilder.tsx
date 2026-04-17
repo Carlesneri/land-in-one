@@ -12,6 +12,7 @@ import {
   createPresignedUrl,
   deleteImageInCloud,
 } from "@/app/actions/cloud-storage"
+import { IconGripVertical } from "@tabler/icons-react"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
@@ -389,12 +390,12 @@ export function AppBuilder({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="min-h-screen bg-slate-50">
       {/* Main Content Area */}
-      <section className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+      <section className="w-full p-4 sm:p-6 md:p-8">
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-6 md:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#111827]">
               {pageSlug}
             </h1>
             <div className="flex flex-col gap-3 w-full sm:w-auto">
@@ -403,7 +404,7 @@ export function AppBuilder({
                   type="button"
                   onClick={() => handlePublishPage()}
                   disabled={isPublishing}
-                  className="px-4 sm:px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
+                  className="px-4 sm:px-6 py-2 bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A34A]"
                 >
                   {isPublishing ? "Publishing..." : "Publish Page"}
                 </button>
@@ -413,7 +414,7 @@ export function AppBuilder({
                   href={`/preview/${pageSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium rounded-lg transition-colors text-center"
+                  className="px-3 py-1.5 bg-[#EDE9FB] hover:bg-[#C8B3FD] text-[#6442D6] font-medium rounded-lg transition-colors text-center"
                 >
                   View Preview
                 </Link>
@@ -421,7 +422,7 @@ export function AppBuilder({
                   href={`/${pageSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 font-medium rounded-lg transition-colors text-center"
+                  className="px-3 py-1.5 bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#16A34A] font-medium rounded-lg transition-colors text-center"
                 >
                   View Published
                 </Link>
@@ -448,14 +449,20 @@ export function AppBuilder({
               <div key={`${element.type}-${element.position}`}>
                 {/** biome-ignore lint/a11y/noStaticElementInteractions: to fix forward */}
                 <div
-                  className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors group relative cursor-move flex items-center justify-between"
+                  className="relative p-4 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 hover:border-[#C8B3FD] transition-colors group cursor-move"
                   draggable
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDropOnElement(e, index)}
                   onDragEnd={handleDragEnd}
                 >
-                  <div className="flex-1">
+                  {/* Drag Handle — always top-right */}
+                  <div className="absolute top-2 right-2 flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors z-10">
+                    <IconGripVertical size={20} aria-hidden="true" />
+                  </div>
+
+                  {/* Content — padded right so it never overlaps the handle */}
+                  <div className="w-full pr-8">
                     {element.type === "headline" && (
                       <HeadlineElement
                         element={element}
@@ -484,18 +491,6 @@ export function AppBuilder({
                         onFileChange={handleImageSelect}
                       />
                     )}
-                  </div>
-
-                  {/* Drag Handle */}
-                  <div className="ml-4 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors shrink-0">
-                    <svg
-                      className="w-8 h-8"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <title>Drag to reorder element</title>
-                      <path d="M9 3h2v2H9V3zm0 4h2v2H9V7zm0 4h2v2H9v-2zm0 4h2v2H9v-2zm0 4h2v2H9v-2zm4-16h2v2h-2V3zm0 4h2v2h-2V7zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z" />
-                    </svg>
                   </div>
                 </div>
 
@@ -531,10 +526,10 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("headline")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-[#6442D6] hover:bg-[#F5F2FF] transition-all flex items-center gap-3"
           >
             <span className="text-xl sm:text-2xl">📰</span>
-            <span className="font-semibold text-gray-900 text-sm sm:text-base">
+            <span className="font-semibold text-[#111827] text-sm sm:text-base">
               Headline
             </span>
           </button>
@@ -542,10 +537,10 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("text")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-[#6442D6] hover:bg-[#F5F2FF] transition-all flex items-center gap-3"
           >
             <span className="text-xl sm:text-2xl">📝</span>
-            <span className="font-semibold text-gray-900 text-sm sm:text-base">
+            <span className="font-semibold text-[#111827] text-sm sm:text-base">
               Text
             </span>
           </button>
@@ -553,10 +548,10 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("image")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-[#6442D6] hover:bg-[#F5F2FF] transition-all flex items-center gap-3"
           >
             <span className="text-xl sm:text-2xl">🖼️</span>
-            <span className="font-semibold text-gray-900 text-sm sm:text-base">
+            <span className="font-semibold text-[#111827] text-sm sm:text-base">
               Image
             </span>
           </button>
@@ -620,21 +615,21 @@ export function AppBuilder({
             value={editingContent}
             onChange={(e) => setEditingContent(e.target.value)}
             placeholder="Enter your content here..."
-            className="w-full h-32 p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+            className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none resize-none"
           />
 
           <div className="flex gap-3">
             <button
               type="button"
               onClick={closeEditModal}
-              className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={saveEditingContent}
-              className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] text-white font-medium rounded-lg transition-colors"
             >
               Save
             </button>
@@ -665,7 +660,7 @@ export function AppBuilder({
         <div className="space-y-3">
           <label
             htmlFor={`image-input-modal-${editingImageId}`}
-            className="block w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg cursor-pointer transition-colors text-center"
+            className="block w-full py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] text-white font-medium rounded-lg cursor-pointer transition-colors text-center"
           >
             Change Image
           </label>
@@ -689,7 +684,7 @@ export function AppBuilder({
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-colors"
+                className="w-full py-2 px-4 bg-[#FEF3C7] hover:bg-[#FCD34D] text-[#D97706] font-medium rounded-lg transition-colors"
               >
                 Remove Image
               </button>
@@ -738,14 +733,14 @@ export function AppBuilder({
               )
             }
             placeholder="my-page-name"
-            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+            className="w-full px-4 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
           />
 
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setShowSlugModal(false)}
-              className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -756,7 +751,7 @@ export function AppBuilder({
                   setShowSlugModal(false)
                 }
               }}
-              className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] text-white font-medium rounded-lg transition-colors"
             >
               Confirm
             </button>
@@ -783,8 +778,8 @@ export function AppBuilder({
             onClick={() => setMessageModal({ ...messageModal, isOpen: false })}
             className={`w-full py-2 px-4 font-medium rounded-lg transition-colors text-white ${
               messageModal.type === "success"
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-red-500 hover:bg-red-600"
+                ? "bg-[#16A34A] hover:bg-[#15803D]"
+                : "bg-[#DC2626] hover:bg-[#B91C1C]"
             }`}
           >
             Close
@@ -799,9 +794,9 @@ export function AppBuilder({
         title="Uploading Image"
       >
         <div className="space-y-4">
-          <div className="w-full bg-gray-200 rounded-lg h-2 overflow-hidden">
+          <div className="w-full bg-slate-100 rounded-lg h-2 overflow-hidden">
             <div
-              className="bg-blue-500 h-full transition-all duration-300"
+              className="bg-[#6442D6] h-full transition-all duration-300"
               style={{ width: `${progressModal.progress}%` }}
             />
           </div>

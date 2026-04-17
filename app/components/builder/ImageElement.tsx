@@ -24,7 +24,7 @@ export function ImageElement({
         <button
           type="button"
           onClick={() => onOpenEditModal(index)}
-          className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6]"
           aria-label="Edit image"
         >
           <Image
@@ -44,7 +44,7 @@ export function ImageElement({
             ) as HTMLInputElement | null
             input?.click()
           }}
-          className="w-full h-24 sm:h-32 bg-gray-200 rounded flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full h-24 sm:h-32 bg-[#F5F2FF] rounded flex items-center justify-center cursor-pointer hover:bg-[#EDE9FB] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6]"
           aria-label="Select image"
         >
           <div className="text-center">

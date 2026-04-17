@@ -22,7 +22,7 @@ export function Footer() {
                 <li>
                   <Link
                     href="/dashboard"
-                    className="text-slate-600 hover:text-indigo-600 transition-colors"
+                    className="text-slate-600 hover:text-[#6442D6] transition-colors"
                   >
                     Dashboard
                   </Link>
@@ -30,7 +30,7 @@ export function Footer() {
                 <li>
                   <Link
                     href="/"
-                    className="text-slate-600 hover:text-indigo-600 transition-colors"
+                    className="text-slate-600 hover:text-[#6442D6] transition-colors"
                   >
                     Home
                   </Link>
@@ -41,7 +41,7 @@ export function Footer() {
               <h4 className="font-semibold text-slate-900 mb-4">Support</h4>
               <Link
                 href="mailto:contact@landinone.online"
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                className="text-sm text-[#6442D6] hover:text-[#5234C0] font-medium transition-colors"
               >
                 contact@landinone.online
               </Link>

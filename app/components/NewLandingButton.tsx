@@ -4,6 +4,7 @@ import { createNewPage } from "@/app/actions/pages"
 import { Button } from "@/app/ui/Button"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { IconPlus } from "@tabler/icons-react"
 
 export function NewLandingButton() {
   const router = useRouter()
@@ -34,7 +35,9 @@ export function NewLandingButton() {
       onClick={onCreateNewProject}
       variant="primary"
       size="lg"
+      className="flex items-center gap-2"
     >
+      <IconPlus size={20} aria-hidden="true" />
       New Project
     </Button>
   )
