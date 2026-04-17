@@ -13,6 +13,7 @@ import {
   deleteImageInCloud,
 } from "@/app/actions/cloud-storage"
 import { IconGripVertical } from "@tabler/icons-react"
+import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
@@ -41,17 +42,6 @@ export function AppBuilder({
   const [isPublishing, setIsPublishing] = useState(false)
   const [pageSlug, setPageSlug] = useState<string>(slug)
   const [showSlugModal, setShowSlugModal] = useState(false)
-  const [messageModal, setMessageModal] = useState<{
-    isOpen: boolean
-    type: "success" | "error"
-    title: string
-    message: string
-  }>({
-    isOpen: false,
-    type: "success",
-    title: "",
-    message: "",
-  })
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
     progress: number
@@ -69,7 +59,7 @@ export function AppBuilder({
           slug: pageSlug,
           elements,
         }).catch(() => {
-          // Silent failure for auto-save
+          toast.error("Page could not be saved.")
         })
       }
     }, 300) // time debounce
@@ -161,12 +151,7 @@ export function AppBuilder({
     ) {
       setShowModal(false)
       setModalPosition(null)
-      setMessageModal({
-        isOpen: true,
-        type: "error",
-        title: "Image limit reached",
-        message: "You can only add up to 10 image elements per page.",
-      })
+      toast.error("You can only add up to 10 image elements per page")
       return
     }
 
@@ -218,6 +203,7 @@ export function AppBuilder({
       setElements(newElements)
       setShowDeleteModal(false)
       setDeleteElementId(null)
+      toast.success("Element deleted")
     }
   }
 
@@ -230,12 +216,7 @@ export function AppBuilder({
   const handleImageSelect = (index: number, file: File) => {
     // Validate file size
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-      setMessageModal({
-        isOpen: true,
-        type: "error",
-        title: "Error",
-        message: `Image size exceeds ${MAX_IMAGE_SIZE_MB}MB limit`,
-      })
+      toast.error(`Image size exceeds ${MAX_IMAGE_SIZE_MB}MB limit`)
       return
     }
 
@@ -253,9 +234,10 @@ export function AppBuilder({
         }
         // Update element with cloud URL
         handleUpdateContent(index, imageUrl)
+        toast.success("Image uploaded")
       })
       .catch(() => {
-        // Error is already handled in uploadImageToCloud
+        toast.error("Failed to upload image")
       })
   }
 
@@ -300,6 +282,7 @@ export function AppBuilder({
 
       handleUpdateContent(index, "")
       closeImageEditModal()
+      toast.success("Image removed")
     }
   }
 
@@ -341,9 +324,12 @@ export function AppBuilder({
 
   const handleSavePreview = async () => {
     if (pageSlug && pageId) {
-      await savePreviewPage(pageId, { slug: pageSlug, elements }).catch(() => {
-        // Silent failure
-      })
+      try {
+        await savePreviewPage(pageId, { slug: pageSlug, elements })
+        toast.success("Preview saved")
+      } catch {
+        toast.error("Failed to save preview")
+      }
     }
   }
 
@@ -363,27 +349,12 @@ export function AppBuilder({
       })
 
       if (result?.success) {
-        setMessageModal({
-          isOpen: true,
-          type: "success",
-          title: "Success",
-          message: result.message || "Page published successfully",
-        })
+        toast.success("Page published successfully")
       } else if (result) {
-        setMessageModal({
-          isOpen: true,
-          type: "error",
-          title: "Error",
-          message: result.error || "An error occurred",
-        })
+        toast.error("An error occurred")
       }
     } catch {
-      setMessageModal({
-        isOpen: true,
-        type: "error",
-        title: "Error",
-        message: "Failed to publish page",
-      })
+      toast.error("Failed to publish page")
     } finally {
       setIsPublishing(false)
     }
@@ -756,34 +727,6 @@ export function AppBuilder({
               Confirm
             </button>
           </div>
-        </div>
-      </Modal>
-
-      {/* Message Modal */}
-      <Modal
-        isOpen={messageModal.isOpen}
-        onClose={() => setMessageModal({ ...messageModal, isOpen: false })}
-        title={messageModal.title}
-      >
-        <div className="space-y-4">
-          <p
-            className={
-              messageModal.type === "success" ? "text-gray-700" : "text-red-600"
-            }
-          >
-            {messageModal.message}
-          </p>
-          <button
-            type="button"
-            onClick={() => setMessageModal({ ...messageModal, isOpen: false })}
-            className={`w-full py-2 px-4 font-medium rounded-lg transition-colors text-white ${
-              messageModal.type === "success"
-                ? "bg-[#16A34A] hover:bg-[#15803D]"
-                : "bg-[#DC2626] hover:bg-[#B91C1C]"
-            }`}
-          >
-            Close
-          </button>
         </div>
       </Modal>
 

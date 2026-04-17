@@ -13,6 +13,7 @@ import {
   IconTrash,
   IconWorldWww,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 
 export function DashboardLanding({
   landing,
@@ -37,8 +38,9 @@ export function DashboardLanding({
       await deleteLandingPage(id)
       onDeleted(id)
       setShowConfirmModal(false)
-    } catch (error) {
-      console.error("Error deleting landing page:", error)
+      toast.success("Landing page deleted")
+    } catch {
+      toast.error("Failed to delete landing page")
     } finally {
       setIsDeleting(false)
     }

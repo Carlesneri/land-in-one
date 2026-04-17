@@ -5,6 +5,7 @@ import { Button } from "@/app/ui/Button"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { IconPlus } from "@tabler/icons-react"
+import { toast } from "sonner"
 
 export function NewLandingButton() {
   const router = useRouter()
@@ -22,10 +23,10 @@ export function NewLandingButton() {
       if (result.success && result.pageId) {
         router.push(`/builder/${result.pageId}`)
       } else {
-        console.error("Failed to create new page")
+        toast.error("Failed to create new page")
       }
     } catch {
-      console.error("Error creating new project")
+      toast.error("Something went wrong creating the project")
     }
   }
 
