@@ -94,3 +94,49 @@ h6 {
   list-style-type: decimal;
   padding-left: 1.5rem;
 }
+
+/* ─── Squircle border-radius ─────────────────────────────────────────
+   Browsers that support corner-shape get true squircles.
+   All others fall through to the standard border-radius fallback.
+   Usage: add class `squircle-sm`, `squircle`, `squircle-lg`, or
+   `squircle-xl` alongside (or instead of) rounded-* classes.
+──────────────────────────────────────────────────────────────────── */
+.squircle-sm {
+  border-radius: 8px;
+}
+.squircle {
+  border-radius: 12px;
+}
+.squircle-lg {
+  border-radius: 16px;
+}
+.squircle-xl {
+  border-radius: 20px;
+}
+.squircle-2xl {
+  border-radius: 24px;
+}
+
+/* biome-ignore lint: corner-shape is a valid emerging CSS property for squircle support */
+@supports (corner-shape: squircle) {
+  .squircle-sm {
+    border-radius: 8px;
+    corner-shape: squircle;
+  }
+  .squircle {
+    border-radius: 12px;
+    corner-shape: squircle;
+  }
+  .squircle-lg {
+    border-radius: 16px;
+    corner-shape: squircle;
+  }
+  .squircle-xl {
+    border-radius: 20px;
+    corner-shape: squircle;
+  }
+  .squircle-2xl {
+    border-radius: 24px;
+    corner-shape: squircle;
+  }
+}

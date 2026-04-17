@@ -40,7 +40,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       ref={ref}
       className={cn(
         sizeClasses[size],
-        "rounded-full flex items-center justify-center overflow-hidden shrink-0",
+        "squircle-lg flex items-center justify-center overflow-hidden shrink-0",
         src ? "bg-slate-100" : fallbackColors[fallbackColor],
         className,
       )}

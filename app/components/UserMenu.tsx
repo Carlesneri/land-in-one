@@ -33,7 +33,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6] focus-visible:ring-offset-2"
+        className="flex items-center gap-1.5 squircle-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6] focus-visible:ring-offset-2"
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
@@ -67,7 +67,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
           />
 
           {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg z-60 border border-slate-200 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-52 bg-white squircle-xl shadow-lg z-60 border border-slate-200 overflow-hidden">
             {/* User info */}
             <div className="px-4 py-3 border-b border-slate-100">
               <p className="text-sm font-semibold text-slate-800 truncate">

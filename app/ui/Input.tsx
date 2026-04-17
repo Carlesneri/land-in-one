@@ -13,7 +13,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         className={cn(
-          "w-full px-4 py-2.5 text-base rounded-lg border-2 transition-all duration-200",
+          "w-full px-4 py-2.5 text-base squircle border-2 transition-all duration-200",
           "bg-white text-[#111827] placeholder:text-slate-400",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-0",
           error
