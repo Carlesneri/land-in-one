@@ -46,7 +46,7 @@ export function DashboardLanding({
 
   return (
     <>
-      <Card hover>
+      <Card>
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -119,36 +119,45 @@ export function DashboardLanding({
       </Card>
 
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-sm mx-4">
-            <CardHeader>
-              <CardTitle>Delete Landing Page?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-600 mb-6">
-                Are you sure you want to delete "<strong>{landing.slug}</strong>
-                "? This action cannot be undone.
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowConfirmModal(false)}
-                  className="flex-1"
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleClickDeleteLanding(landing.id)}
-                  className="flex-1"
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="fixed inset-0 z-50">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowConfirmModal(false)}
+            aria-label="Close modal"
+          />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
+            <Card className="pointer-events-auto w-full max-w-sm">
+              <CardHeader>
+                <CardTitle>Delete Landing Page?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-600 mb-6">
+                  Are you sure you want to delete "
+                  <strong>{landing.slug}</strong>
+                  "? This action cannot be undone.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowConfirmModal(false)}
+                    className="flex-1"
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleClickDeleteLanding(landing.id)}
+                    className="flex-1"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
     </>
