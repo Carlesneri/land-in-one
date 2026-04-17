@@ -64,12 +64,14 @@ export async function getPageBySlug({
       return {
         success: false,
         error: "Page not found",
+        id: null,
       }
     }
 
     return {
       success: true,
       page: page.toObject(),
+      id: page._id.toString(),
     }
   } catch (error) {
     console.error("Error fetching published page by slug:", error)
@@ -77,6 +79,7 @@ export async function getPageBySlug({
     return {
       success: false,
       error: "Failed to fetch published page",
+      id: null,
     }
   }
 }
@@ -286,7 +289,7 @@ export async function deleteLandingPage(id: string) {
 
     const page = await PreviewPage.findById(id)
 
-    if (page.userEmail !== session.user.email) {
+    if (page?.userEmail !== session.user.email) {
       return {
         success: false,
         error: "You are not authorized to delete this page",
