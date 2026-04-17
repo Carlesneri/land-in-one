@@ -275,6 +275,41 @@ export async function getUserLandings(userEmail: string) {
   }
 }
 
+export async function unpublishPage(slug: string) {
+  try {
+    await connectToDatabase()
+    const session = await getServerSession()
+
+    if (!session?.user?.email) {
+      redirect("/login")
+    }
+
+    const result = await PublishPage.deleteOne({
+      slug,
+      userEmail: session.user.email,
+    })
+
+    if (result.deletedCount === 0) {
+      return {
+        success: false,
+        error: "Published page not found",
+      }
+    }
+
+    return {
+      success: true,
+      message: "Page unpublished successfully",
+    }
+  } catch (error) {
+    console.error("Error unpublishing page:", error)
+
+    return {
+      success: false,
+      error: "Failed to unpublish page",
+    }
+  }
+}
+
 export async function deleteLandingPage(id: string) {
   try {
     await connectToDatabase()

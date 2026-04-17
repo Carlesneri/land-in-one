@@ -7,7 +7,12 @@ import { AddElementButton } from "@/app/components/AddElementButton"
 import { HeadlineElement } from "@/app/components/builder/HeadlineElement"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
-import { publishPage, savePreviewPage } from "@/app/actions/pages"
+import {
+  publishPage,
+  savePreviewPage,
+  unpublishPage,
+  isSlugPublished,
+} from "@/app/actions/pages"
 import {
   createPresignedUrl,
   deleteImageInCloud,
@@ -42,6 +47,8 @@ export function AppBuilder({
   const [isPublishing, setIsPublishing] = useState(false)
   const [pageSlug, setPageSlug] = useState<string>(slug)
   const [showSlugModal, setShowSlugModal] = useState(false)
+  const [isPublished, setIsPublished] = useState(false)
+  const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
     progress: number
@@ -66,6 +73,13 @@ export function AppBuilder({
 
     return () => clearTimeout(timer)
   }, [elements, pageSlug, pageId])
+
+  // Check if page is published
+  useEffect(() => {
+    if (pageSlug) {
+      isSlugPublished(pageSlug).then(setIsPublished)
+    }
+  }, [pageSlug])
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedElement(String(index))
@@ -368,6 +382,7 @@ export function AppBuilder({
 
       if (result?.success) {
         toast.success("Page published successfully")
+        setIsPublished(true)
       } else if (result) {
         toast.error("An error occurred")
       }
@@ -375,6 +390,23 @@ export function AppBuilder({
       toast.error("Failed to publish page")
     } finally {
       setIsPublishing(false)
+    }
+  }
+
+  const handleUnpublishPage = async () => {
+    setIsUnpublishing(true)
+    try {
+      const result = await unpublishPage(pageSlug)
+      if (result?.success) {
+        toast.success("Page unpublished successfully")
+        setIsPublished(false)
+      } else {
+        toast.error(result?.error || "Failed to unpublish page")
+      }
+    } catch {
+      toast.error("Failed to unpublish page")
+    } finally {
+      setIsUnpublishing(false)
     }
   }
 
@@ -397,6 +429,16 @@ export function AppBuilder({
                 >
                   {isPublishing ? "Publishing..." : "Publish Page"}
                 </button>
+                {isPublished && (
+                  <button
+                    type="button"
+                    onClick={() => handleUnpublishPage()}
+                    disabled={isUnpublishing}
+                    className="px-4 sm:px-6 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+                  </button>
+                )}
               </div>
               <div className="flex flex-col sm:flex-row gap-3 text-xs sm:text-sm">
                 <Link

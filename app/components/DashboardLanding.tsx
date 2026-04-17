@@ -1,6 +1,10 @@
 "use client"
 
-import { deleteLandingPage, isSlugPublished } from "@/app/actions/pages"
+import {
+  deleteLandingPage,
+  isSlugPublished,
+  unpublishPage,
+} from "@/app/actions/pages"
 import { Card, CardHeader, CardTitle } from "@/app/ui/Card"
 import { Badge } from "@/app/ui/Badge"
 import { CardContent } from "@/app/ui/Card"
@@ -23,6 +27,7 @@ export function DashboardLanding({
   onDeleted: (id: string) => void
 }) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [isPublished, setIsPublished] = useState<boolean | null>(null)
 
@@ -43,6 +48,23 @@ export function DashboardLanding({
       toast.error("Failed to delete landing page")
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  async function handleUnpublish() {
+    try {
+      setIsUnpublishing(true)
+      const result = await unpublishPage(landing.slug)
+      if (result?.success) {
+        setIsPublished(false)
+        toast.success("Page unpublished")
+      } else {
+        toast.error(result?.error || "Failed to unpublish")
+      }
+    } catch {
+      toast.error("Failed to unpublish page")
+    } finally {
+      setIsUnpublishing(false)
     }
   }
 
@@ -117,6 +139,21 @@ export function DashboardLanding({
               {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </div>
+          {isPublished && (
+            <div className="mt-2">
+              <Button
+                variant="outline"
+                size="md"
+                fullWidth
+                disabled={isUnpublishing}
+                onClick={handleUnpublish}
+                className="flex items-center justify-center gap-2 text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <IconWorldWww size={16} aria-hidden="true" />
+                {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
