@@ -13,15 +13,26 @@ export function HeadlineElement({
   index,
   onEdit,
 }: HeadlineElementProps) {
+  const level = element.headlineLevel ?? 1
+  const sizeClasses: Record<number, string> = {
+    1: "text-4xl",
+    2: "text-3xl",
+    3: "text-2xl",
+    4: "text-xl",
+    5: "text-lg",
+    6: "text-base",
+  }
+
   return (
     <button
       type="button"
       onClick={() => onEdit(element, index)}
-      className="w-full text-left text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6] rounded px-2 py-1"
+      className={`w-full text-left ${sizeClasses[level]} font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6] rounded px-2 py-1`}
       style={{
         color: element.content ? "#1f2937" : "#d1d5db",
       }}
     >
+      <span className="text-xs font-normal text-slate-400 mr-2">H{level}</span>
       {(element.content as string) || "Click to edit headline"}
     </button>
   )

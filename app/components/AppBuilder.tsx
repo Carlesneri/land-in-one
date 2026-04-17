@@ -159,6 +159,13 @@ export function AppBuilder({
       type,
       content: "",
       position: modalPosition ?? elements.length,
+      ...(type === "headline" && {
+        headlineLevel: elements.some(
+          (el) => el.type === "headline" && (el.headlineLevel ?? 1) === 1,
+        )
+          ? 2
+          : 1,
+      }),
     } as LandingPage["elements"][0]
 
     const newElements = [...elements]
@@ -210,6 +217,17 @@ export function AppBuilder({
   const handleUpdateContent = (index: number, content: string) => {
     setElements(
       elements.map((el, idx) => (idx === index ? { ...el, content } : el)),
+    )
+  }
+
+  const handleUpdateHeadlineLevel = (
+    index: number,
+    level: 1 | 2 | 3 | 4 | 5 | 6,
+  ) => {
+    setElements(
+      elements.map((el, idx) =>
+        idx === index ? { ...el, headlineLevel: level } : el,
+      ),
     )
   }
 
@@ -582,6 +600,38 @@ export function AppBuilder({
         title="Edit Content"
       >
         <div className="space-y-4">
+          {editingElementId !== null &&
+            elements[parseInt(editingElementId, 10)]?.type === "headline" && (
+              <div>
+                <label
+                  htmlFor="headline-level-select"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Headline Level
+                </label>
+                <select
+                  id="headline-level-select"
+                  value={
+                    elements[parseInt(editingElementId, 10)]?.headlineLevel ?? 1
+                  }
+                  onChange={(e) => {
+                    const index = parseInt(editingElementId, 10)
+                    handleUpdateHeadlineLevel(
+                      index,
+                      Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6,
+                    )
+                  }}
+                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
+                >
+                  {([1, 2, 3, 4, 5, 6] as const).map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      H{lvl}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
           <textarea
             value={editingContent}
             onChange={(e) => setEditingContent(e.target.value)}

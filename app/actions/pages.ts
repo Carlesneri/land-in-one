@@ -14,6 +14,7 @@ interface SavePagePayload {
     type: "text" | "image" | "headline"
     content?: string
     position: number
+    headlineLevel?: 1 | 2 | 3 | 4 | 5 | 6
   }>
 }
 

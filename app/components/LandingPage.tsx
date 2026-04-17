@@ -40,11 +40,30 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
                     key={`${element.type}-${element.position}`}
                     className="w-full"
                   >
-                    {element.type === "headline" && (
-                      <h1 className="text-4xl md:text-5xl font-bold text-slate-900">
-                        {element.content}
-                      </h1>
-                    )}
+                    {element.type === "headline" &&
+                      (() => {
+                        const level = element.headlineLevel ?? 1
+                        const sizeClasses: Record<number, string> = {
+                          1: "text-4xl md:text-5xl",
+                          2: "text-3xl md:text-4xl",
+                          3: "text-2xl md:text-3xl",
+                          4: "text-xl md:text-2xl",
+                          5: "text-lg md:text-xl",
+                          6: "text-base md:text-lg",
+                        }
+                        const cls = `${sizeClasses[level]} font-bold text-slate-900`
+                        if (level === 1)
+                          return <h1 className={cls}>{element.content}</h1>
+                        if (level === 2)
+                          return <h2 className={cls}>{element.content}</h2>
+                        if (level === 3)
+                          return <h3 className={cls}>{element.content}</h3>
+                        if (level === 4)
+                          return <h4 className={cls}>{element.content}</h4>
+                        if (level === 5)
+                          return <h5 className={cls}>{element.content}</h5>
+                        return <h6 className={cls}>{element.content}</h6>
+                      })()}
 
                     {element.type === "text" && (
                       <div

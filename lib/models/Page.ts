@@ -16,6 +16,10 @@ const elementSchema = new Schema<LandingPageElement>(
       type: Number,
       required: true,
     },
+    headlineLevel: {
+      type: Number,
+      enum: [1, 2, 3, 4, 5, 6],
+    },
   },
   { _id: false },
 )
@@ -45,11 +49,20 @@ const pageSchema = new Schema<LandingPage>(
 )
 
 export { pageSchema }
-export const Page =
-  mongoose.models.Page || mongoose.model<LandingPage>("Page", pageSchema)
-export const PreviewPage =
-  mongoose.models.PreviewPage ||
-  mongoose.model<LandingPage>("PreviewPage", pageSchema, "PreviewPage")
-export const PublishPage =
-  mongoose.models.PublishPage ||
-  mongoose.model<LandingPage>("PublishPage", pageSchema, "PublishPage")
+
+// Delete cached models to ensure schema changes are picked up during hot reload
+if (mongoose.models.Page) mongoose.deleteModel("Page")
+if (mongoose.models.PreviewPage) mongoose.deleteModel("PreviewPage")
+if (mongoose.models.PublishPage) mongoose.deleteModel("PublishPage")
+
+export const Page = mongoose.model<LandingPage>("Page", pageSchema)
+export const PreviewPage = mongoose.model<LandingPage>(
+  "PreviewPage",
+  pageSchema,
+  "PreviewPage",
+)
+export const PublishPage = mongoose.model<LandingPage>(
+  "PublishPage",
+  pageSchema,
+  "PublishPage",
+)
