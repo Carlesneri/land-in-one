@@ -64,14 +64,12 @@ export async function getPageBySlug({
       return {
         success: false,
         error: "Page not found",
-        id: null,
       }
     }
 
     return {
       success: true,
       page: page.toObject(),
-      id: page._id.toString(),
     }
   } catch (error) {
     console.error("Error fetching published page by slug:", error)
@@ -79,7 +77,6 @@ export async function getPageBySlug({
     return {
       success: false,
       error: "Failed to fetch published page",
-      id: null,
     }
   }
 }

@@ -23,7 +23,7 @@ export default async function PublishedPage({
       elements={publishedPage.page?.elements || []}
       slug={slug}
       status="publish"
-      id={publishedPage.id || ""}
+      id={publishedPage.page?._id.toString() || ""}
     />
   )
 }
