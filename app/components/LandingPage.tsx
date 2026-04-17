@@ -76,11 +76,11 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
                     )}
 
                     {element.type === "image" && element.content && (
-                      <div className="w-full max-h-100 aspect-video bg-slate-100 rounded-lg overflow-hidden relative">
+                      <div className="w-full relative">
                         <Image
                           src={element.content}
                           alt={`Page image element at position ${element.position}`}
-                          className="object-cover size-full"
+                          className="w-full h-auto rounded-lg"
                           width={800}
                           height={600}
                         />
