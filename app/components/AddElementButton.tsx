@@ -30,7 +30,7 @@ export function AddElementButton({
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, position)}
       className={cn(
-        "w-full py-2 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
+        "w-full py-3 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
         dragOverPosition === position
           ? "border-slate-400 bg-slate-100 text-slate-600"
           : "border-slate-300 text-slate-400 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-600",

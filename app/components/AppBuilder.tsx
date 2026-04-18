@@ -33,7 +33,6 @@ import {
   IconArrowLeft,
 } from "@tabler/icons-react"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
-import { useIsStandalone } from "@/app/hooks/useIsStandalone"
 import { validateSlug } from "@/lib/validation/slug"
 
 export function AppBuilder({
@@ -78,7 +77,6 @@ export function AppBuilder({
     progress: 0,
   })
   const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
-  const isStandalone = useIsStandalone()
   const router = useRouter()
   const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
@@ -508,7 +506,7 @@ export function AppBuilder({
 
         {/* Landing Settings */}
         <div className="bg-linear-to-b from-primary/80 to-primary-hover/70 rounded-xl shadow-md p-4 sm:p-5 mb-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex flex-col items-start sm:items-center justify-between gap-3 w-fit justify-self-center">
             {/* Slug + pencil */}
             <div className="flex items-center gap-1.5 w-full justify-between">
               <h1 className="text-base font-semibold text-white truncate drop-shadow">
@@ -551,7 +549,7 @@ export function AppBuilder({
               <div className="w-px h-5 bg-white/30 hidden sm:block" />
               <Link
                 href={`/preview/${pageSlug}`}
-                target={isStandalone ? "_self" : "_blank"}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white font-medium rounded-lg transition-colors text-sm border border-white/20"
               >
@@ -561,7 +559,7 @@ export function AppBuilder({
               {isPublished && (
                 <Link
                   href={`/${pageSlug}`}
-                  target={isStandalone ? "_self" : "_blank"}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors text-sm"
                 >

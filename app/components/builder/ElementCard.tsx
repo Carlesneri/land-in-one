@@ -32,15 +32,18 @@ export function ElementCard({
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: to fix forward
     <div
-      className="bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 hover:border-secondary transition-colors group cursor-move overflow-hidden"
-      draggable
-      onDragStart={(e) => onDragStart(e, index)}
+      className="bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 hover:border-secondary transition-colors group overflow-hidden"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, index)}
       onDragEnd={onDragEnd}
     >
       {/* Top info bar */}
-      <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 border-b border-slate-200 text-xs text-slate-400 font-medium select-none pointer-events-none">
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: drag handle */}
+      <div
+        className="flex items-center gap-2 px-3 py-1 bg-slate-100 border-b border-slate-200 text-xs text-slate-400 font-medium select-none cursor-move"
+        draggable
+        onDragStart={(e) => onDragStart(e, index)}
+      >
         {element.type === "headline" && (
           <>
             <span className="uppercase tracking-wide">Headline</span>
@@ -88,8 +91,11 @@ export function ElementCard({
         {/* Options sidebar */}
         <div className="flex flex-col items-center justify-between shrink-0 py-1">
           <div className="flex flex-col items-center gap-1.5">
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: drag handle */}
             <div
-              className="flex items-center justify-center text-slate-400 hover:text-primary transition-colors"
+              className="flex items-center justify-center text-slate-400 hover:text-primary transition-colors cursor-move"
+              draggable
+              onDragStart={(e) => onDragStart(e, index)}
               onTouchStart={() => toast.info("Long press to drag and reorder")}
             >
               <IconGripVertical size={22} aria-hidden="true" />

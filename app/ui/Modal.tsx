@@ -17,14 +17,20 @@ export function Modal({
   closeButton = true,
   size = "default",
 }: ModalProps) {
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-50 w-screen">
+    <div
+      className={cn(
+        "fixed inset-0 z-50 w-screen transition-opacity duration-200",
+        isOpen
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none",
+      )}
+      aria-hidden={!isOpen}
+    >
       {/* Backdrop */}
       <button
         type="button"
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200"
+        className="absolute inset-0 bg-black/40"
         onClick={onClose}
         aria-label="Close modal"
       />
@@ -38,7 +44,10 @@ export function Modal({
       >
         <div
           className={cn(
-            "pointer-events-auto bg-white rounded-xl shadow-xl p-6 w-full border border-slate-200 animate-in fade-in zoom-in-95 duration-200",
+            "bg-white rounded-xl shadow-xl p-6 w-full border border-slate-200 transition-all duration-200",
+            isOpen
+              ? "opacity-100 scale-100 pointer-events-auto"
+              : "opacity-0 scale-95 pointer-events-none",
           )}
         >
           <div className="flex items-center justify-between mb-4">
