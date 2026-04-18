@@ -17,96 +17,10 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
     sortedElements.length === 0 || sortedElements.every((el) => !el.content)
 
   return (
-    <>
-      {noContent ? (
-        <div className="min-h-screen bg-white">
-          <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <p className="text-slate-500 text-lg">No content yet</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="min-h-screen bg-white">
-          <div className="max-w-4xl mx-auto px-4 pt-8 pb-24">
-            {sortedElements.length === 0 ? (
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <p className="text-slate-500 text-lg">No content yet</p>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {sortedElements.map((element) => (
-                  <div
-                    key={`${element.type}-${element.position}`}
-                    className="w-full"
-                  >
-                    {element.type === "headline" &&
-                      (() => {
-                        const level = element.headlineLevel ?? 1
-                        const sizeClasses: Record<number, string> = {
-                          1: "text-4xl md:text-5xl",
-                          2: "text-3xl md:text-4xl",
-                          3: "text-2xl md:text-3xl",
-                          4: "text-xl md:text-2xl",
-                          5: "text-lg md:text-xl",
-                          6: "text-base md:text-lg",
-                        }
-                        const cls = `${sizeClasses[level]} font-bold text-slate-900`
-                        if (level === 1)
-                          return <h1 className={cls}>{element.content}</h1>
-                        if (level === 2)
-                          return <h2 className={cls}>{element.content}</h2>
-                        if (level === 3)
-                          return <h3 className={cls}>{element.content}</h3>
-                        if (level === 4)
-                          return <h4 className={cls}>{element.content}</h4>
-                        if (level === 5)
-                          return <h5 className={cls}>{element.content}</h5>
-                        return <h6 className={cls}>{element.content}</h6>
-                      })()}
-
-                    {element.type === "text" && (
-                      <div
-                        className="text-lg text-slate-700 leading-relaxed prose prose-slate max-w-none"
-                        // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
-                        dangerouslySetInnerHTML={{
-                          __html: element.content ?? "",
-                        }}
-                      />
-                    )}
-
-                    {element.type === "image" && element.content && (
-                      <div
-                        className="w-full relative overflow-hidden rounded-lg"
-                        style={
-                          element.aspectRatio
-                            ? { aspectRatio: element.aspectRatio }
-                            : undefined
-                        }
-                      >
-                        <Image
-                          src={element.content}
-                          alt={`Page image element at position ${element.position}`}
-                          className={
-                            element.aspectRatio
-                              ? "w-full h-full object-cover"
-                              : "w-full h-auto"
-                          }
-                          width={800}
-                          height={600}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col">
       {/* Preview Banner */}
       {status === "preview" && (
-        <div className="w-full bg-yellow-50 border-t-2 border-yellow-300 px-4 py-4">
+        <div className="w-full bg-yellow-50 border-b-2 border-yellow-300 px-4 py-4">
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
             <span className="text-sm font-medium text-yellow-900">
               This is a preview page
@@ -128,6 +42,84 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
           </div>
         </div>
       )}
-    </>
+
+      {/* Page content */}
+      <div className="flex-1 bg-white">
+        {noContent ? (
+          <div className="max-w-4xl mx-auto px-4 py-8 flex items-center justify-center min-h-full">
+            <p className="text-slate-500 text-lg">No content yet</p>
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto px-4 pt-8 pb-24">
+            <div className="space-y-8">
+              {sortedElements.map((element) => (
+                <div
+                  key={`${element.type}-${element.position}`}
+                  className="w-full"
+                >
+                  {element.type === "headline" &&
+                    (() => {
+                      const level = element.headlineLevel ?? 1
+                      const sizeClasses: Record<number, string> = {
+                        1: "text-4xl md:text-5xl",
+                        2: "text-3xl md:text-4xl",
+                        3: "text-2xl md:text-3xl",
+                        4: "text-xl md:text-2xl",
+                        5: "text-lg md:text-xl",
+                        6: "text-base md:text-lg",
+                      }
+                      const cls = `${sizeClasses[level]} font-bold text-slate-900`
+                      if (level === 1)
+                        return <h1 className={cls}>{element.content}</h1>
+                      if (level === 2)
+                        return <h2 className={cls}>{element.content}</h2>
+                      if (level === 3)
+                        return <h3 className={cls}>{element.content}</h3>
+                      if (level === 4)
+                        return <h4 className={cls}>{element.content}</h4>
+                      if (level === 5)
+                        return <h5 className={cls}>{element.content}</h5>
+                      return <h6 className={cls}>{element.content}</h6>
+                    })()}
+
+                  {element.type === "text" && (
+                    <div
+                      className="text-lg text-slate-700 leading-relaxed prose prose-slate max-w-none"
+                      // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                      dangerouslySetInnerHTML={{
+                        __html: element.content ?? "",
+                      }}
+                    />
+                  )}
+
+                  {element.type === "image" && element.content && (
+                    <div
+                      className="w-full relative overflow-hidden rounded-lg"
+                      style={
+                        element.aspectRatio
+                          ? { aspectRatio: element.aspectRatio }
+                          : undefined
+                      }
+                    >
+                      <Image
+                        src={element.content}
+                        alt={`Page image element at position ${element.position}`}
+                        className={
+                          element.aspectRatio
+                            ? "w-full h-full object-cover"
+                            : "w-full h-auto"
+                        }
+                        width={800}
+                        height={600}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

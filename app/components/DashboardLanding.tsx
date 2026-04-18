@@ -70,8 +70,8 @@ export function DashboardLanding({
 
   return (
     <>
-      <Card>
-        <CardHeader>
+      <Card className="flex flex-col">
+        <CardHeader className="flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <CardTitle className="truncate text-lg">{landing.slug}</CardTitle>
@@ -115,7 +115,7 @@ export function DashboardLanding({
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mt-auto">
           <div className="flex gap-2 flex-wrap">
             <Link href={`/builder/${landing.id}`} className="flex-1">
               <Button
