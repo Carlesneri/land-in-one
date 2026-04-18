@@ -17,7 +17,7 @@ import {
   createPresignedUrl,
   deleteImageInCloud,
 } from "@/app/actions/cloud-storage"
-import { IconGripVertical } from "@tabler/icons-react"
+import { IconGripVertical, IconSettings, IconTrash } from "@tabler/icons-react"
 import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
@@ -50,6 +50,7 @@ export function AppBuilder({
   const [showSlugModal, setShowSlugModal] = useState(false)
   const [isPublished, setIsPublished] = useState(false)
   const [isUnpublishing, setIsUnpublishing] = useState(false)
+  const [optionsElementId, setOptionsElementId] = useState<string | null>(null)
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
     progress: number
@@ -477,9 +478,37 @@ export function AppBuilder({
                   onDrop={(e) => handleDropOnElement(e, index)}
                   onDragEnd={handleDragEnd}
                 >
-                  {/* Drag Handle — always top-right */}
-                  <div className="absolute top-2 right-2 flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors z-10">
-                    <IconGripVertical size={20} aria-hidden="true" />
+                  {/* Drag Handle + Options — full height right sidebar */}
+                  <div className="absolute top-2 bottom-2 right-2 flex flex-col items-center justify-between z-10">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors">
+                        <IconGripVertical size={20} aria-hidden="true" />
+                      </div>
+                      {element.type === "headline" && (
+                        <button
+                          type="button"
+                          title="Element options"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOptionsElementId(String(index))
+                          }}
+                          className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors"
+                        >
+                          <IconSettings size={16} aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      title="Delete element"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteElement(index)
+                      }}
+                      className="flex items-center justify-center text-red-300 hover:text-red-500 transition-colors"
+                    >
+                      <IconTrash size={16} aria-hidden="true" />
+                    </button>
                   </div>
 
                   {/* Content — padded right so it never overlaps the handle */}
@@ -631,38 +660,6 @@ export function AppBuilder({
       >
         <div className="space-y-4">
           {editingElementId !== null &&
-            elements[parseInt(editingElementId, 10)]?.type === "headline" && (
-              <div>
-                <label
-                  htmlFor="headline-level-select"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Headline Level
-                </label>
-                <select
-                  id="headline-level-select"
-                  value={
-                    elements[parseInt(editingElementId, 10)]?.headlineLevel ?? 1
-                  }
-                  onChange={(e) => {
-                    const index = parseInt(editingElementId, 10)
-                    handleUpdateHeadlineLevel(
-                      index,
-                      Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6,
-                    )
-                  }}
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
-                >
-                  {([1, 2, 3, 4, 5, 6] as const).map((lvl) => (
-                    <option key={lvl} value={lvl}>
-                      H{lvl}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-          {editingElementId !== null &&
           elements[parseInt(editingElementId, 10)]?.type === "text" ? (
             <RichTextEditor
               content={editingContent}
@@ -693,20 +690,6 @@ export function AppBuilder({
               Save
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (editingElementId !== null) {
-                const index = parseInt(editingElementId, 10)
-                handleDeleteElement(index)
-                closeEditModal()
-              }
-            }}
-            className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
-          >
-            Remove Element
-          </button>
         </div>
       </Modal>
 
@@ -748,20 +731,6 @@ export function AppBuilder({
                 Remove Image
               </button>
             )}
-
-          <button
-            type="button"
-            onClick={() => {
-              if (editingImageId !== null) {
-                const index = parseInt(editingImageId, 10)
-                handleDeleteElement(index)
-                closeImageEditModal()
-              }
-            }}
-            className="w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
-          >
-            Remove Element
-          </button>
 
           <button
             type="button"
@@ -834,6 +803,55 @@ export function AppBuilder({
           <p className="text-center text-gray-600 font-medium">
             {progressModal.progress}%
           </p>
+        </div>
+      </Modal>
+
+      {/* Element Options Modal */}
+      <Modal
+        isOpen={!!optionsElementId}
+        onClose={() => setOptionsElementId(null)}
+        title="Element Options"
+      >
+        <div className="space-y-4">
+          {optionsElementId !== null &&
+            elements[parseInt(optionsElementId, 10)]?.type === "headline" && (
+              <div>
+                <label
+                  htmlFor="options-headline-level-select"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Headline Level
+                </label>
+                <select
+                  id="options-headline-level-select"
+                  value={
+                    elements[parseInt(optionsElementId, 10)]?.headlineLevel ?? 1
+                  }
+                  onChange={(e) => {
+                    const index = parseInt(optionsElementId, 10)
+                    handleUpdateHeadlineLevel(
+                      index,
+                      Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6,
+                    )
+                  }}
+                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
+                >
+                  {([1, 2, 3, 4, 5, 6] as const).map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      H{lvl}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+          <button
+            type="button"
+            onClick={() => setOptionsElementId(null)}
+            className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
+          >
+            Close
+          </button>
         </div>
       </Modal>
     </div>
