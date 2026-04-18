@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { generateSlug } from "random-word-slugs"
 import { MAX_LANDING_PAGES } from "@/CONSTANTS"
+import { validateSlug } from "@/lib/validation/slug"
 
 interface SavePagePayload {
   slug: string
@@ -92,6 +93,25 @@ export async function isSlugPublished(slug: string) {
   } catch (error) {
     console.error("Error checking if slug is published:", error)
     return false
+  }
+}
+
+export async function checkSlugAvailable(slug: string, currentPageId: string) {
+  const validation = validateSlug(slug)
+  if (!validation.valid) {
+    return { available: false, error: validation.error }
+  }
+
+  try {
+    await connectToDatabase()
+
+    const existing = await PreviewPage.findOne({ slug })
+
+    return {
+      available: !existing || existing._id.toString() === currentPageId,
+    }
+  } catch {
+    return { available: false }
   }
 }
 

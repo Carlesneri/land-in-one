@@ -13,6 +13,7 @@ import {
   savePreviewPage,
   unpublishPage,
   isSlugPublished,
+  checkSlugAvailable,
 } from "@/app/actions/pages"
 import {
   createPresignedUrl,
@@ -22,9 +23,10 @@ import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
-import { IconExternalLink } from "@tabler/icons-react"
+import { IconExternalLink, IconPencil } from "@tabler/icons-react"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 import { useIsStandalone } from "@/app/hooks/useIsStandalone"
+import { validateSlug } from "@/lib/validation/slug"
 
 export function AppBuilder({
   elements: initialElements,
@@ -49,10 +51,17 @@ export function AppBuilder({
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
   const [pageSlug, setPageSlug] = useState<string>(slug)
-  const [showSlugModal, setShowSlugModal] = useState(false)
+
   const [isPublished, setIsPublished] = useState(false)
   const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [optionsElementId, setOptionsElementId] = useState<string | null>(null)
+  const [showChangeSlugModal, setShowChangeSlugModal] = useState(false)
+  const [newSlugInput, setNewSlugInput] = useState("")
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null)
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false)
+  const [slugValidationError, setSlugValidationError] = useState<string | null>(
+    null,
+  )
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
     progress: number
@@ -85,6 +94,37 @@ export function AppBuilder({
       isSlugPublished(pageSlug).then(setIsPublished)
     }
   }, [pageSlug])
+
+  // Debounced slug availability check
+  useEffect(() => {
+    if (!showChangeSlugModal) return
+    const trimmed = newSlugInput.trim()
+
+    if (!trimmed || trimmed === pageSlug) {
+      setSlugAvailable(null)
+      setSlugValidationError(null)
+      return
+    }
+
+    // Client-side validation first (instant)
+    const validation = validateSlug(trimmed)
+    if (!validation.valid) {
+      setSlugValidationError(validation.error)
+      setSlugAvailable(null)
+      setIsCheckingSlug(false)
+      return
+    }
+
+    setSlugValidationError(null)
+    setIsCheckingSlug(true)
+    const timer = setTimeout(() => {
+      checkSlugAvailable(trimmed, pageId).then(({ available }) => {
+        setSlugAvailable(available)
+        setIsCheckingSlug(false)
+      })
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [newSlugInput, showChangeSlugModal, pageSlug, pageId])
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedElement(String(index))
@@ -372,7 +412,10 @@ export function AppBuilder({
 
   const handlePublishPage = async () => {
     if (!pageSlug.trim()) {
-      setShowSlugModal(true)
+      setNewSlugInput("")
+      setSlugAvailable(null)
+      setSlugValidationError(null)
+      setShowChangeSlugModal(true)
       return
     }
 
@@ -398,6 +441,16 @@ export function AppBuilder({
     }
   }
 
+  const handleSaveSlug = () => {
+    const trimmed = newSlugInput.trim()
+    if (!trimmed || slugAvailable === false || slugValidationError) return
+    setPageSlug(trimmed)
+    setShowChangeSlugModal(false)
+    setNewSlugInput("")
+    setSlugAvailable(null)
+    setSlugValidationError(null)
+  }
+
   const handleUnpublishPage = async () => {
     setIsUnpublishing(true)
     try {
@@ -421,9 +474,23 @@ export function AppBuilder({
       <section className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-6 md:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] truncate max-w-xs">
-              {pageSlug}
-            </h1>
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] truncate max-w-xs">
+                {pageSlug}
+              </h1>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewSlugInput(pageSlug)
+                  setSlugAvailable(null)
+                  setShowChangeSlugModal(true)
+                }}
+                className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-[#6442D6] hover:bg-[#F5F2FF] transition-colors"
+                title="Change slug"
+              >
+                <IconPencil size={18} aria-hidden="true" />
+              </button>
+            </div>
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
@@ -720,46 +787,95 @@ export function AppBuilder({
         </div>
       </Modal>
 
-      {/* Page Slug Modal */}
       <Modal
-        isOpen={showSlugModal}
-        onClose={() => setShowSlugModal(false)}
-        title="Enter Page Slug"
+        isOpen={showChangeSlugModal}
+        onClose={() => {
+          setShowChangeSlugModal(false)
+          setNewSlugInput("")
+          setSlugAvailable(null)
+          setSlugValidationError(null)
+        }}
+        title="Change Slug"
       >
         <div className="space-y-4">
           <p className="text-gray-600 text-sm">
-            Enter a unique slug for your page (lowercase, hyphens allowed)
+            Enter a new slug for your page (lowercase letters, numbers and
+            hyphens only).
           </p>
-          <input
-            type="text"
-            value={pageSlug}
-            onChange={(e) =>
-              setPageSlug(
-                e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
-              )
-            }
-            placeholder="my-page-name"
-            className="w-full px-4 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
-          />
+          <div className="space-y-1">
+            <input
+              type="text"
+              value={newSlugInput}
+              onChange={(e) =>
+                setNewSlugInput(
+                  e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                )
+              }
+              placeholder="my-page-slug"
+              className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition-colors ${
+                slugValidationError || slugAvailable === false
+                  ? "border-red-400 focus:border-red-500"
+                  : slugAvailable === true
+                    ? "border-green-400 focus:border-green-500"
+                    : "border-slate-200 focus:border-[#6442D6]"
+              }`}
+            />
+            <p className="text-xs h-4">
+              {isCheckingSlug && (
+                <span className="text-slate-400">Checking availability…</span>
+              )}
+              {!isCheckingSlug && slugValidationError && (
+                <span className="text-red-500">{slugValidationError}</span>
+              )}
+              {!isCheckingSlug &&
+                !slugValidationError &&
+                slugAvailable === false && (
+                  <span className="text-red-500">
+                    This slug is already taken.
+                  </span>
+                )}
+              {!isCheckingSlug &&
+                !slugValidationError &&
+                slugAvailable === true && (
+                  <span className="text-green-600">Slug is available!</span>
+                )}
+              {!isCheckingSlug &&
+                !slugValidationError &&
+                newSlugInput.trim() === pageSlug &&
+                newSlugInput.trim() !== "" && (
+                  <span className="text-slate-400">
+                    This is the current slug.
+                  </span>
+                )}
+            </p>
+          </div>
 
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => setShowSlugModal(false)}
+              onClick={() => {
+                setShowChangeSlugModal(false)
+                setNewSlugInput("")
+                setSlugAvailable(null)
+                setSlugValidationError(null)
+              }}
               className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (pageSlug.trim()) {
-                  setShowSlugModal(false)
-                }
-              }}
-              className="flex-1 py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] text-white font-medium rounded-lg transition-colors"
+              onClick={handleSaveSlug}
+              disabled={
+                !newSlugInput.trim() ||
+                newSlugInput.trim() === pageSlug ||
+                !!slugValidationError ||
+                slugAvailable === false ||
+                isCheckingSlug
+              }
+              className="flex-1 py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
             >
-              Confirm
+              Save
             </button>
           </div>
         </div>
