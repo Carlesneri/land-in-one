@@ -20,6 +20,10 @@ const elementSchema = new Schema<LandingPageElement>(
       type: Number,
       enum: [1, 2, 3, 4, 5, 6],
     },
+    aspectRatio: {
+      type: String,
+      enum: ["9/16", "3/4", "4/3", "1/1", "16/9"],
+    },
   },
   { _id: false },
 )

@@ -238,11 +238,22 @@ export function AppBuilder({
 
   const handleUpdateHeadlineLevel = (
     index: number,
-    level: 1 | 2 | 3 | 4 | 5 | 6,
+    level: NonNullable<LandingPageElement["headlineLevel"]>,
   ) => {
     setElements(
       elements.map((el, idx) =>
         idx === index ? { ...el, headlineLevel: level } : el,
+      ),
+    )
+  }
+
+  const handleUpdateAspectRatio = (
+    index: number,
+    ratio: LandingPageElement["aspectRatio"],
+  ) => {
+    setElements(
+      elements.map((el, idx) =>
+        idx === index ? { ...el, aspectRatio: ratio } : el,
       ),
     )
   }
@@ -796,7 +807,9 @@ export function AppBuilder({
                     const index = parseInt(optionsElementId, 10)
                     handleUpdateHeadlineLevel(
                       index,
-                      Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6,
+                      Number(e.target.value) as NonNullable<
+                        LandingPageElement["headlineLevel"]
+                      >,
                     )
                   }}
                   className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
@@ -806,6 +819,41 @@ export function AppBuilder({
                       H{lvl}
                     </option>
                   ))}
+                </select>
+              </div>
+            )}
+
+          {optionsElementId !== null &&
+            elements[parseInt(optionsElementId, 10)]?.type === "image" && (
+              <div>
+                <label
+                  htmlFor="options-aspect-ratio-select"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Aspect Ratio
+                </label>
+                <select
+                  id="options-aspect-ratio-select"
+                  value={
+                    elements[parseInt(optionsElementId, 10)]?.aspectRatio ?? ""
+                  }
+                  onChange={(e) => {
+                    const index = parseInt(optionsElementId, 10)
+                    handleUpdateAspectRatio(
+                      index,
+                      (e.target.value as NonNullable<
+                        LandingPageElement["aspectRatio"]
+                      >) || undefined,
+                    )
+                  }}
+                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
+                >
+                  <option value="">Original (no crop)</option>
+                  <option value="16/9">16:9 (Landscape)</option>
+                  <option value="4/3">4:3</option>
+                  <option value="1/1">1:1 (Square)</option>
+                  <option value="3/4">3:4 (Portrait)</option>
+                  <option value="9/16">9:16 (Portrait)</option>
                 </select>
               </div>
             )}

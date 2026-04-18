@@ -3,19 +3,19 @@
 import { PreviewPage, PublishPage } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
 import { deleteImageInCloud } from "@/app/actions/cloud-storage"
-import type { Status } from "@/types"
+import type { LandingPageElement, Status } from "@/types"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { generateSlug } from "random-word-slugs"
 
 interface SavePagePayload {
   slug: string
-  elements: Array<{
-    type: "text" | "image" | "headline"
-    content?: string
-    position: number
-    headlineLevel?: 1 | 2 | 3 | 4 | 5 | 6
-  }>
+  elements: Array<
+    Pick<
+      LandingPageElement,
+      "type" | "content" | "position" | "headlineLevel" | "aspectRatio"
+    >
+  >
 }
 
 export async function getLandingPageById(id: string) {

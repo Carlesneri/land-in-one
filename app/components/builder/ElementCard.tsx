@@ -26,7 +26,7 @@ export function ElementCard({
   onOpenOptions,
   children,
 }: ElementCardProps) {
-  const hasOptions = element.type === "headline"
+  const hasOptions = element.type === "headline" || element.type === "image"
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: to fix forward
@@ -43,7 +43,7 @@ export function ElementCard({
         {element.type === "headline" && (
           <>
             <span className="uppercase tracking-wide">Headline</span>
-            <span className="text-[#6442D6] font-semibold">
+            <span className="text-[#16A34A] font-semibold">
               H{element.headlineLevel ?? 1}
             </span>
           </>
@@ -52,7 +52,30 @@ export function ElementCard({
           <span className="uppercase tracking-wide">Text</span>
         )}
         {element.type === "image" && (
-          <span className="uppercase tracking-wide">Image</span>
+          <>
+            <span className="uppercase tracking-wide">Image</span>
+            {element.aspectRatio && (
+              <div className="flex items-center gap-1">
+                {(() => {
+                  const [w, h] = element.aspectRatio.split("/").map(Number)
+                  const maxH = 14
+                  const maxW = 20
+                  const scale = Math.min(maxW / w, maxH / h)
+                  const rectW = Math.round(w * scale)
+                  const rectH = Math.round(h * scale)
+                  return (
+                    <span
+                      className="inline-block bg-[#16A34A] rounded-xs shrink-0"
+                      style={{ width: rectW, height: rectH }}
+                    />
+                  )
+                })()}
+                <span className="text-[#16A34A] font-semibold">
+                  {element.aspectRatio.replace("/", ":")}
+                </span>
+              </div>
+            )}
+          </>
         )}
       </div>
 

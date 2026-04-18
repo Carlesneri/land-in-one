@@ -76,11 +76,22 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
                     )}
 
                     {element.type === "image" && element.content && (
-                      <div className="w-full relative">
+                      <div
+                        className="w-full relative overflow-hidden rounded-lg"
+                        style={
+                          element.aspectRatio
+                            ? { aspectRatio: element.aspectRatio }
+                            : undefined
+                        }
+                      >
                         <Image
                           src={element.content}
                           alt={`Page image element at position ${element.position}`}
-                          className="w-full h-auto rounded-lg"
+                          className={
+                            element.aspectRatio
+                              ? "w-full h-full object-cover"
+                              : "w-full h-auto"
+                          }
                           width={800}
                           height={600}
                         />
