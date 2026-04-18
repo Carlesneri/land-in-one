@@ -26,7 +26,7 @@ export function Dashboard({
             Manage and edit your landing pages
           </p>
         </div>
-        <NewLandingButton />
+        <NewLandingButton showIcon={false} />
       </div>
 
       {visiblePages.length === 0 ? (
