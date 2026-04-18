@@ -7,6 +7,7 @@ import { AddElementButton } from "@/app/components/AddElementButton"
 import { HeadlineElement } from "@/app/components/builder/HeadlineElement"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
+import { ElementCard } from "@/app/components/builder/ElementCard"
 import {
   publishPage,
   savePreviewPage,
@@ -17,7 +18,6 @@ import {
   createPresignedUrl,
   deleteImageInCloud,
 } from "@/app/actions/cloud-storage"
-import { IconGripVertical, IconSettings, IconTrash } from "@tabler/icons-react"
 import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
@@ -469,97 +469,42 @@ export function AppBuilder({
 
             {elements.map((element, index) => (
               <div key={`${element.type}-${element.position}`}>
-                {/** biome-ignore lint/a11y/noStaticElementInteractions: to fix forward */}
-                <div
-                  className="relative p-4 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 hover:border-[#C8B3FD] transition-colors group cursor-move"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
+                <ElementCard
+                  element={element}
+                  index={index}
+                  onDragStart={handleDragStart}
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDropOnElement(e, index)}
+                  onDrop={handleDropOnElement}
                   onDragEnd={handleDragEnd}
+                  onDelete={handleDeleteElement}
+                  onOpenOptions={(i) => setOptionsElementId(String(i))}
                 >
-                  {/* Top info bar */}
-                  <div className="absolute top-0 left-0 right-0 flex items-center gap-2 px-3 py-1 bg-slate-100 border-b border-slate-200 rounded-t-lg text-xs text-slate-400 font-medium select-none pointer-events-none">
-                    {element.type === "headline" && (
-                      <>
-                        <span className="uppercase tracking-wide">
-                          Headline
-                        </span>
-                        <span className="text-[#6442D6] font-semibold">
-                          H{element.headlineLevel ?? 1}
-                        </span>
-                      </>
-                    )}
-                    {element.type === "text" && (
-                      <span className="uppercase tracking-wide">Text</span>
-                    )}
-                    {element.type === "image" && (
-                      <span className="uppercase tracking-wide">Image</span>
-                    )}
-                  </div>
-
-                  {/* Drag Handle + Options — full height right sidebar */}
-                  <div className="absolute top-8 bottom-2 right-2 flex flex-col items-center justify-between z-10">
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors">
-                        <IconGripVertical size={20} aria-hidden="true" />
-                      </div>
-                      {element.type === "headline" && (
-                        <button
-                          type="button"
-                          title="Element options"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setOptionsElementId(String(index))
-                          }}
-                          className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors"
-                        >
-                          <IconSettings size={16} aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      title="Delete element"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteElement(index)
+                  {element.type === "headline" && (
+                    <HeadlineElement
+                      element={element}
+                      index={index}
+                      onEdit={openEditModal}
+                    />
+                  )}
+                  {element.type === "text" && (
+                    <TextElement
+                      element={element}
+                      index={index}
+                      onEdit={openEditModal}
+                    />
+                  )}
+                  {element.type === "image" && (
+                    <ImageElement
+                      element={element}
+                      index={index}
+                      imageInputRef={(el) => {
+                        if (el) imageInputRefs.current[index] = el
                       }}
-                      className="flex items-center justify-center text-red-300 hover:text-red-500 transition-colors"
-                    >
-                      <IconTrash size={16} aria-hidden="true" />
-                    </button>
-                  </div>
-
-                  {/* Content — padded right so it never overlaps the handle */}
-                  <div className="w-full pr-8 pt-6">
-                    {element.type === "headline" && (
-                      <HeadlineElement
-                        element={element}
-                        index={index}
-                        onEdit={openEditModal}
-                      />
-                    )}
-                    {element.type === "text" && (
-                      <TextElement
-                        element={element}
-                        index={index}
-                        onEdit={openEditModal}
-                      />
-                    )}
-                    {element.type === "image" && (
-                      <ImageElement
-                        element={element}
-                        index={index}
-                        imageInputRef={(el) => {
-                          if (el) imageInputRefs.current[index] = el
-                        }}
-                        onOpenEditModal={(i) => setEditingImageId(String(i))}
-                        onFileChange={handleImageSelect}
-                      />
-                    )}
-                  </div>
-                </div>
+                      onOpenEditModal={(i) => setEditingImageId(String(i))}
+                      onFileChange={handleImageSelect}
+                    />
+                  )}
+                </ElementCard>
 
                 {/* Add button after element */}
                 <AddElementButton
