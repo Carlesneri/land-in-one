@@ -106,7 +106,7 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
       )}
       {/* Preview Banner */}
       {status === "preview" && (
-        <div className="fixed bottom-0 left-0 right-0 bg-yellow-50 border-t-2 border-yellow-300 px-4 py-4">
+        <div className="w-full bg-yellow-50 border-t-2 border-yellow-300 px-4 py-4">
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
             <span className="text-sm font-medium text-yellow-900">
               This is a preview page
