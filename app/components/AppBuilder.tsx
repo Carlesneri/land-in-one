@@ -22,6 +22,7 @@ import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
+import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 
 export function AppBuilder({
   elements: initialElements,
@@ -274,7 +275,7 @@ export function AppBuilder({
   }
 
   const openEditModal = (element: LandingPageElement, index: number) => {
-    if (element.type !== "image" && element.type !== "text") {
+    if (element.type !== "image") {
       setEditingElementId(String(index))
 
       if (element.content) {
@@ -351,17 +352,6 @@ export function AppBuilder({
       // Close progress modal on error
       setProgressModal({ isOpen: false, progress: 0 })
       throw new Error("Failed to upload image")
-    }
-  }
-
-  const handleSavePreview = async () => {
-    if (pageSlug && pageId) {
-      try {
-        await savePreviewPage(pageId, { slug: pageSlug, elements })
-        toast.success("Preview saved")
-      } catch {
-        toast.error("Failed to save preview")
-      }
     }
   }
 
@@ -506,9 +496,6 @@ export function AppBuilder({
                         element={element}
                         index={index}
                         onEdit={openEditModal}
-                        onContentChange={handleUpdateContent}
-                        onDelete={handleDeleteElement}
-                        onSave={handleSavePreview}
                       />
                     )}
                     {element.type === "image" && (
@@ -640,6 +627,7 @@ export function AppBuilder({
         isOpen={!!editingElementId}
         onClose={closeEditModal}
         title="Edit Content"
+        size="large"
       >
         <div className="space-y-4">
           {editingElementId !== null &&
@@ -674,12 +662,20 @@ export function AppBuilder({
               </div>
             )}
 
-          <textarea
-            value={editingContent}
-            onChange={(e) => setEditingContent(e.target.value)}
-            placeholder="Enter your content here..."
-            className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none resize-none"
-          />
+          {editingElementId !== null &&
+          elements[parseInt(editingElementId, 10)]?.type === "text" ? (
+            <RichTextEditor
+              content={editingContent}
+              onChange={setEditingContent}
+            />
+          ) : (
+            <textarea
+              value={editingContent}
+              onChange={(e) => setEditingContent(e.target.value)}
+              placeholder="Enter your content here..."
+              className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none resize-none"
+            />
+          )}
 
           <div className="flex gap-3">
             <button
