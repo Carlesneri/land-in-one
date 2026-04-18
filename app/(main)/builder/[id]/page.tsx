@@ -1,5 +1,5 @@
-import { getLandingPageById } from "../../actions/pages"
-import { AppBuilder } from "../../components/AppBuilder"
+import { getLandingPageById } from "@/app/actions/pages"
+import { AppBuilder } from "@/app/components/AppBuilder"
 
 export default async function BuilderIdPage({
   params,
