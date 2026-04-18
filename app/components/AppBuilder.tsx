@@ -24,6 +24,7 @@ import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
 import { IconExternalLink } from "@tabler/icons-react"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
+import { useIsStandalone } from "@/app/hooks/useIsStandalone"
 
 export function AppBuilder({
   elements: initialElements,
@@ -60,6 +61,7 @@ export function AppBuilder({
     progress: 0,
   })
   const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const isStandalone = useIsStandalone()
 
   // Auto-save elements to Preview Page model when they change
   useEffect(() => {
@@ -444,7 +446,7 @@ export function AppBuilder({
               <div className="w-px h-6 bg-slate-200 hidden sm:block" />
               <Link
                 href={`/preview/${pageSlug}`}
-                target="_blank"
+                target={isStandalone ? "_self" : "_blank"}
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-2 bg-[#EDE9FB] hover:bg-[#C8B3FD] text-[#6442D6] font-medium rounded-lg transition-colors text-sm"
               >
@@ -453,7 +455,7 @@ export function AppBuilder({
               </Link>
               <Link
                 href={`/${pageSlug}`}
-                target="_blank"
+                target={isStandalone ? "_self" : "_blank"}
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-2 bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#16A34A] font-medium rounded-lg transition-colors text-sm"
               >
