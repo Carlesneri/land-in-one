@@ -32,7 +32,6 @@ export function HeadlineElement({
         color: element.content ? "#1f2937" : "#d1d5db",
       }}
     >
-      <span className="text-xs font-normal text-slate-400 mr-2">H{level}</span>
       {(element.content as string) || "Click to edit headline"}
     </button>
   )

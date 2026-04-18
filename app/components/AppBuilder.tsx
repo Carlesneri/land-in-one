@@ -478,8 +478,28 @@ export function AppBuilder({
                   onDrop={(e) => handleDropOnElement(e, index)}
                   onDragEnd={handleDragEnd}
                 >
+                  {/* Top info bar */}
+                  <div className="absolute top-0 left-0 right-0 flex items-center gap-2 px-3 py-1 bg-slate-100 border-b border-slate-200 rounded-t-lg text-xs text-slate-400 font-medium select-none pointer-events-none">
+                    {element.type === "headline" && (
+                      <>
+                        <span className="uppercase tracking-wide">
+                          Headline
+                        </span>
+                        <span className="text-[#6442D6] font-semibold">
+                          H{element.headlineLevel ?? 1}
+                        </span>
+                      </>
+                    )}
+                    {element.type === "text" && (
+                      <span className="uppercase tracking-wide">Text</span>
+                    )}
+                    {element.type === "image" && (
+                      <span className="uppercase tracking-wide">Image</span>
+                    )}
+                  </div>
+
                   {/* Drag Handle + Options — full height right sidebar */}
-                  <div className="absolute top-2 bottom-2 right-2 flex flex-col items-center justify-between z-10">
+                  <div className="absolute top-8 bottom-2 right-2 flex flex-col items-center justify-between z-10">
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors">
                         <IconGripVertical size={20} aria-hidden="true" />
@@ -512,7 +532,7 @@ export function AppBuilder({
                   </div>
 
                   {/* Content — padded right so it never overlaps the handle */}
-                  <div className="w-full pr-8">
+                  <div className="w-full pr-8 pt-6">
                     {element.type === "headline" && (
                       <HeadlineElement
                         element={element}
