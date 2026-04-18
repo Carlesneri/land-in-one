@@ -1,4 +1,4 @@
-import { getLandingPageById } from "@/app/actions/pages"
+import { getLandingPageById, isSlugPublished } from "@/app/actions/pages"
 import { AppBuilder } from "@/app/components/AppBuilder"
 
 export default async function BuilderIdPage({
@@ -15,11 +15,14 @@ export default async function BuilderIdPage({
     return <h1>No Landing Page Found</h1>
   }
 
+  const published = await isSlugPublished(landingDoc.page.slug)
+
   return (
     <AppBuilder
       elements={landingDoc.page.elements}
       slug={landingDoc.page.slug}
       id={id}
+      published={published}
     />
   )
 }

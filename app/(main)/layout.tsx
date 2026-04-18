@@ -3,6 +3,7 @@ import { Poppins, Inter } from "next/font/google"
 import "@/app/globals.css"
 import { AuthProvider } from "@/app/providers/AuthProvider"
 import { Toaster } from "sonner"
+import { HeaderFooterLayout } from "@/app/components/HeaderFooterLayout"
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -41,8 +42,10 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-white text-slate-900">
         <AuthProvider>
-          <Toaster position="top-right" richColors closeButton />
-          {children}
+          <HeaderFooterLayout>
+            <Toaster position="top-right" richColors closeButton />
+            {children}
+          </HeaderFooterLayout>
         </AuthProvider>
       </body>
     </html>

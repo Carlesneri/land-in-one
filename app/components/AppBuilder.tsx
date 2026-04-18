@@ -13,7 +13,6 @@ import {
   publishPage,
   savePreviewPage,
   unpublishPage,
-  isSlugPublished,
   checkSlugAvailable,
   deleteLandingPage,
 } from "@/app/actions/pages"
@@ -34,15 +33,18 @@ import {
 } from "@tabler/icons-react"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 import { validateSlug } from "@/lib/validation/slug"
+import { Container } from "@/app/ui/Container"
 
 export function AppBuilder({
   elements: initialElements,
   slug,
   id,
+  published,
 }: {
   elements: LandingPageElement[]
   slug: LandingPage["slug"]
   id: string
+  published: boolean
 }) {
   const [elements, setElements] =
     useState<LandingPageElement[]>(initialElements)
@@ -59,7 +61,7 @@ export function AppBuilder({
   const [isPublishing, setIsPublishing] = useState(false)
   const [pageSlug, setPageSlug] = useState<string>(slug)
 
-  const [isPublished, setIsPublished] = useState(false)
+  const [isPublished, setIsPublished] = useState(published)
   const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [optionsElementId, setOptionsElementId] = useState<string | null>(null)
   const [showChangeSlugModal, setShowChangeSlugModal] = useState(false)
@@ -77,12 +79,17 @@ export function AppBuilder({
     progress: 0,
   })
   const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const hasMounted = useRef(false)
   const router = useRouter()
   const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
 
   // Auto-save elements to Preview Page model when they change
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true
+      return
+    }
     const timer = setTimeout(() => {
       if (pageSlug && pageId) {
         savePreviewPage(pageId, {
@@ -96,13 +103,6 @@ export function AppBuilder({
 
     return () => clearTimeout(timer)
   }, [elements, pageSlug, pageId])
-
-  // Check if page is published
-  useEffect(() => {
-    if (pageSlug) {
-      isSlugPublished(pageSlug).then(setIsPublished)
-    }
-  }, [pageSlug])
 
   // Debounced slug availability check
   useEffect(() => {
@@ -490,9 +490,9 @@ export function AppBuilder({
   }
 
   return (
-    <>
+    <Container>
       {/* Main Content Area */}
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <section className="">
         {/* Back to Dashboard */}
         <div className="mb-2">
           <Link
@@ -1067,6 +1067,6 @@ export function AppBuilder({
           </button>
         </div>
       </Modal>
-    </>
+    </Container>
   )
 }
