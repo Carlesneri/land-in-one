@@ -22,6 +22,7 @@ import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
+import { IconExternalLink } from "@tabler/icons-react"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 
 export function AppBuilder({
@@ -418,48 +419,47 @@ export function AppBuilder({
       <section className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-6 md:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#111827]">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] truncate max-w-xs">
               {pageSlug}
             </h1>
-            <div className="flex flex-col gap-3 w-full sm:w-auto">
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => handlePublishPage()}
+                disabled={isPublishing}
+                className="px-4 py-2 bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A34A]"
+              >
+                {isPublishing ? "Publishing..." : "Publish"}
+              </button>
+              {isPublished && (
                 <button
                   type="button"
-                  onClick={() => handlePublishPage()}
-                  disabled={isPublishing}
-                  className="px-4 sm:px-6 py-2 bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A34A]"
+                  onClick={() => handleUnpublishPage()}
+                  disabled={isUnpublishing}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
-                  {isPublishing ? "Publishing..." : "Publish Page"}
+                  {isUnpublishing ? "Unpublishing..." : "Unpublish"}
                 </button>
-                {isPublished && (
-                  <button
-                    type="button"
-                    onClick={() => handleUnpublishPage()}
-                    disabled={isUnpublishing}
-                    className="px-4 sm:px-6 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    {isUnpublishing ? "Unpublishing..." : "Unpublish"}
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 text-xs sm:text-sm">
-                <Link
-                  href={`/preview/${pageSlug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-[#EDE9FB] hover:bg-[#C8B3FD] text-[#6442D6] font-medium rounded-lg transition-colors text-center"
-                >
-                  View Preview
-                </Link>
-                <Link
-                  href={`/${pageSlug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#16A34A] font-medium rounded-lg transition-colors text-center"
-                >
-                  View Published
-                </Link>
-              </div>
+              )}
+              <div className="w-px h-6 bg-slate-200 hidden sm:block" />
+              <Link
+                href={`/preview/${pageSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-2 bg-[#EDE9FB] hover:bg-[#C8B3FD] text-[#6442D6] font-medium rounded-lg transition-colors text-sm"
+              >
+                Preview
+                <IconExternalLink size={14} aria-hidden="true" />
+              </Link>
+              <Link
+                href={`/${pageSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-2 bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#16A34A] font-medium rounded-lg transition-colors text-sm"
+              >
+                Published
+                <IconExternalLink size={14} aria-hidden="true" />
+              </Link>
             </div>
           </div>
 

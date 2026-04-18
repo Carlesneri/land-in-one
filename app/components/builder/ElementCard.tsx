@@ -2,6 +2,7 @@
 
 import { IconGripVertical, IconSettings, IconTrash } from "@tabler/icons-react"
 import type { LandingPageElement } from "@/types"
+import { toast } from "sonner"
 
 interface ElementCardProps {
   element: LandingPageElement
@@ -82,7 +83,10 @@ export function ElementCard({
       {/* Right sidebar — drag handle, options, delete */}
       <div className="absolute top-8 bottom-2 right-2 flex flex-col items-center justify-between z-10">
         <div className="flex flex-col items-center gap-1">
-          <div className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors">
+          <div
+            className="flex items-center justify-center text-slate-300 hover:text-[#6442D6] transition-colors"
+            onTouchStart={() => toast.info("Long press to drag and reorder")}
+          >
             <IconGripVertical size={20} aria-hidden="true" />
           </div>
           {hasOptions && onOpenOptions && (
