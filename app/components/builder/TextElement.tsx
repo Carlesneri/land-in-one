@@ -13,7 +13,7 @@ export function TextElement({ element, index, onEdit }: TextElementProps) {
     <button
       type="button"
       onClick={() => onEdit(element, index)}
-      className="w-full text-left cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6] rounded px-2 py-1"
+      className="w-full text-left cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-2 py-1"
     >
       {element.content ? (
         <div

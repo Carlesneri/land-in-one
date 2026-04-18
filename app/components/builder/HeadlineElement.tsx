@@ -27,7 +27,7 @@ export function HeadlineElement({
     <button
       type="button"
       onClick={() => onEdit(element, index)}
-      className={`w-full text-left ${sizeClasses[level]} font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6] rounded px-2 py-1`}
+      className={`w-full text-left ${sizeClasses[level]} font-bold cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-2 py-1`}
       style={{
         color: element.content ? "#1f2937" : "#d1d5db",
       }}

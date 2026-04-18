@@ -52,6 +52,7 @@ export function RichTextEditor({
     immediatelyRender: false,
     extensions: [StarterKit, Placeholder.configure({ placeholder })],
     content,
+    autofocus: "end",
     editorProps: {
       attributes: {
         class: `prose prose-sm max-w-none focus:outline-none px-3 py-2 text-gray-800 leading-relaxed`,

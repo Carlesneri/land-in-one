@@ -768,6 +768,8 @@ export function AppBuilder({
               value={editingContent}
               onChange={(e) => setEditingContent(e.target.value)}
               placeholder="Enter your content here..."
+              // biome-ignore lint/a11y/noAutofocus: intentional focus when edit modal opens
+              autoFocus
               className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none resize-none"
             />
           )}
