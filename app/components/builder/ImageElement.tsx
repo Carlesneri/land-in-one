@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { IconPhoto } from "@tabler/icons-react"
 import type { LandingPageElement } from "@/types"
 
 interface ImageElementProps {
@@ -24,7 +25,7 @@ export function ImageElement({
         <button
           type="button"
           onClick={() => onOpenEditModal(index)}
-          className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6]"
+          className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Edit image"
         >
           <Image
@@ -44,11 +45,15 @@ export function ImageElement({
             ) as HTMLInputElement | null
             input?.click()
           }}
-          className="w-full h-24 sm:h-32 bg-[#F5F2FF] rounded flex items-center justify-center cursor-pointer hover:bg-[#EDE9FB] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6442D6]"
+          className="w-full h-24 sm:h-32 rounded flex items-center justify-center cursor-pointer hover:bg-primary-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Select image"
         >
           <div className="text-center">
-            <span className="text-4xl mb-2 block">🖼️</span>
+            <IconPhoto
+              size={40}
+              className="text-secondary mx-auto mb-2"
+              aria-hidden="true"
+            />
             <p className="text-gray-600 text-sm sm:text-base">
               Click to select image
             </p>

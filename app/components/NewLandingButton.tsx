@@ -7,7 +7,13 @@ import { useRouter } from "next/navigation"
 import { IconPlus } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-export function NewLandingButton({ showIcon = true }: { showIcon?: boolean }) {
+export function NewLandingButton({
+  showIcon = true,
+  variant = "primary",
+}: {
+  showIcon?: boolean
+  variant?: "primary" | "link"
+}) {
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -36,7 +42,7 @@ export function NewLandingButton({ showIcon = true }: { showIcon?: boolean }) {
     <Button
       type="button"
       onClick={onCreateNewProject}
-      variant="primary"
+      variant={variant}
       size="lg"
       className="flex items-center gap-2"
     >

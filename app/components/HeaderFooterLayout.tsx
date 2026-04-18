@@ -9,7 +9,7 @@ export function HeaderFooterLayout({
   return (
     <>
       <Header />
-      <main className="flex-1 w-full py-8 sm:py-12">{children}</main>
+      <main className="flex-1 w-full pt-6 pb-8">{children}</main>
       <Footer />
     </>
   )

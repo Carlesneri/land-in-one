@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Modal } from "@/app/ui/Modal"
 import { AddElementButton } from "@/app/components/AddElementButton"
@@ -14,6 +15,7 @@ import {
   unpublishPage,
   isSlugPublished,
   checkSlugAvailable,
+  deleteLandingPage,
 } from "@/app/actions/pages"
 import {
   createPresignedUrl,
@@ -23,7 +25,13 @@ import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
-import { IconExternalLink, IconPencil } from "@tabler/icons-react"
+import { Button } from "@/app/ui/Button"
+import {
+  IconExternalLink,
+  IconPencil,
+  IconTrash,
+  IconArrowLeft,
+} from "@tabler/icons-react"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 import { useIsStandalone } from "@/app/hooks/useIsStandalone"
 import { validateSlug } from "@/lib/validation/slug"
@@ -71,6 +79,9 @@ export function AppBuilder({
   })
   const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
   const isStandalone = useIsStandalone()
+  const router = useRouter()
+  const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false)
+  const [isDeletingProject, setIsDeletingProject] = useState(false)
 
   // Auto-save elements to Preview Page model when they change
   useEffect(() => {
@@ -468,14 +479,39 @@ export function AppBuilder({
     }
   }
 
+  const handleDeleteProject = async () => {
+    setIsDeletingProject(true)
+    try {
+      await deleteLandingPage(pageId)
+      toast.success("Project deleted")
+      router.push("/dashboard")
+    } catch {
+      toast.error("Failed to delete project")
+      setIsDeletingProject(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen">
+    <>
       {/* Main Content Area */}
-      <section className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-6 md:p-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] truncate max-w-xs">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        {/* Back to Dashboard */}
+        <div className="mb-2">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1 text-base font-bold text-slate-500 hover:text-slate-800 transition-colors underline"
+          >
+            <IconArrowLeft size={16} aria-hidden="true" />
+            All you landings
+          </Link>
+        </div>
+
+        {/* Landing Settings */}
+        <div className="bg-linear-to-b from-primary/80 to-primary-hover/70 rounded-xl shadow-md p-4 sm:p-5 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            {/* Slug + pencil */}
+            <div className="flex items-center gap-1.5 w-full justify-between">
+              <h1 className="text-base font-semibold text-white truncate drop-shadow">
                 {pageSlug}
               </h1>
               <button
@@ -485,55 +521,72 @@ export function AppBuilder({
                   setSlugAvailable(null)
                   setShowChangeSlugModal(true)
                 }}
-                className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-[#6442D6] hover:bg-[#F5F2FF] transition-colors"
+                className="shrink-0 p-1.5 rounded-md text-white bg-white/20 hover:bg-white/35 border border-white/30 transition-colors"
                 title="Change slug"
               >
-                <IconPencil size={18} aria-hidden="true" />
+                <IconPencil size={14} aria-hidden="true" />
               </button>
             </div>
+
+            {/* Actions */}
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => handlePublishPage()}
                 disabled={isPublishing}
-                className="px-4 py-2 bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A34A]"
+                className="flex items-center px-4 py-1.5 bg-white hover:bg-white/90 disabled:opacity-60 text-primary font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                {isPublishing ? "Publishing..." : "Publish"}
+                {isPublishing ? "Publishing…" : "Publish"}
               </button>
               {isPublished && (
                 <button
                   type="button"
                   onClick={() => handleUnpublishPage()}
                   disabled={isUnpublishing}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  className="flex items-center px-4 py-1.5 bg-white/20 hover:bg-white/30 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm border border-white/30"
                 >
-                  {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+                  {isUnpublishing ? "Unpublishing…" : "Unpublish"}
                 </button>
               )}
-              <div className="w-px h-6 bg-slate-200 hidden sm:block" />
+              <div className="w-px h-5 bg-white/30 hidden sm:block" />
               <Link
                 href={`/preview/${pageSlug}`}
                 target={isStandalone ? "_self" : "_blank"}
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 px-3 py-2 bg-[#EDE9FB] hover:bg-[#C8B3FD] text-[#6442D6] font-medium rounded-lg transition-colors text-sm"
+                className="flex items-center gap-1 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white font-medium rounded-lg transition-colors text-sm border border-white/20"
               >
                 Preview
-                <IconExternalLink size={14} aria-hidden="true" />
+                <IconExternalLink size={13} aria-hidden="true" />
               </Link>
-              <Link
-                href={`/${pageSlug}`}
-                target={isStandalone ? "_self" : "_blank"}
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-3 py-2 bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#16A34A] font-medium rounded-lg transition-colors text-sm"
+              {isPublished && (
+                <Link
+                  href={`/${pageSlug}`}
+                  target={isStandalone ? "_self" : "_blank"}
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  Published
+                  <IconExternalLink size={13} aria-hidden="true" />
+                </Link>
+              )}
+              <div className="w-px h-5 bg-white/30 hidden sm:block" />
+              <Button
+                variant="danger"
+                size="sm"
+                disabled={isDeletingProject}
+                onClick={() => setShowDeleteProjectModal(true)}
+                className="flex items-center gap-1.5"
               >
-                Published
-                <IconExternalLink size={14} aria-hidden="true" />
-              </Link>
+                <IconTrash size={14} aria-hidden="true" />
+                Delete
+              </Button>
             </div>
           </div>
+        </div>
 
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 md:p-8">
           {/* Preview Area */}
-          <div className="mt-8 space-y-6">
+          <div className="space-y-6">
             {/* Add button at start */}
             <AddElementButton
               position={0}
@@ -618,10 +671,10 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("headline")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-[#6442D6] hover:bg-[#F5F2FF] transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
           >
             <span className="text-xl sm:text-2xl">📰</span>
-            <span className="font-semibold text-[#111827] text-sm sm:text-base">
+            <span className="font-semibold text-text text-sm sm:text-base">
               Headline
             </span>
           </button>
@@ -629,10 +682,10 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("text")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-[#6442D6] hover:bg-[#F5F2FF] transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
           >
             <span className="text-xl sm:text-2xl">📝</span>
-            <span className="font-semibold text-[#111827] text-sm sm:text-base">
+            <span className="font-semibold text-text text-sm sm:text-base">
               Text
             </span>
           </button>
@@ -640,10 +693,10 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => handleAddElement("image")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-[#6442D6] hover:bg-[#F5F2FF] transition-all flex items-center gap-3"
+            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
           >
             <span className="text-xl sm:text-2xl">🖼️</span>
-            <span className="font-semibold text-[#111827] text-sm sm:text-base">
+            <span className="font-semibold text-text text-sm sm:text-base">
               Image
             </span>
           </button>
@@ -715,7 +768,7 @@ export function AppBuilder({
               value={editingContent}
               onChange={(e) => setEditingContent(e.target.value)}
               placeholder="Enter your content here..."
-              className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none resize-none"
+              className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none resize-none"
             />
           )}
 
@@ -723,14 +776,14 @@ export function AppBuilder({
             <button
               type="button"
               onClick={closeEditModal}
-              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={saveEditingContent}
-              className="flex-1 py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] text-white font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg transition-colors"
             >
               Save
             </button>
@@ -747,7 +800,7 @@ export function AppBuilder({
         <div className="space-y-3">
           <label
             htmlFor={`image-input-modal-${editingImageId}`}
-            className="block w-full py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] text-white font-medium rounded-lg cursor-pointer transition-colors text-center"
+            className="block w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg cursor-pointer transition-colors text-center"
           >
             Change Image
           </label>
@@ -771,7 +824,7 @@ export function AppBuilder({
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                className="w-full py-2 px-4 bg-[#FEF3C7] hover:bg-[#FCD34D] text-[#D97706] font-medium rounded-lg transition-colors"
+                className="w-full py-2 px-4 bg-warning-light hover:bg-warning-light-hover text-warning font-medium rounded-lg transition-colors"
               >
                 Remove Image
               </button>
@@ -817,7 +870,7 @@ export function AppBuilder({
                   ? "border-red-400 focus:border-red-500"
                   : slugAvailable === true
                     ? "border-green-400 focus:border-green-500"
-                    : "border-slate-200 focus:border-[#6442D6]"
+                    : "border-slate-200 focus:border-primary"
               }`}
             />
             <p className="text-xs h-4">
@@ -859,7 +912,7 @@ export function AppBuilder({
                 setSlugAvailable(null)
                 setSlugValidationError(null)
               }}
-              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -873,7 +926,7 @@ export function AppBuilder({
                 slugAvailable === false ||
                 isCheckingSlug
               }
-              className="flex-1 py-2 px-4 bg-[#6442D6] hover:bg-[#5234C0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
             >
               Save
             </button>
@@ -890,7 +943,7 @@ export function AppBuilder({
         <div className="space-y-4">
           <div className="w-full bg-slate-100 rounded-lg h-2 overflow-hidden">
             <div
-              className="bg-[#6442D6] h-full transition-all duration-300"
+              className="bg-primary h-full transition-all duration-300"
               style={{ width: `${progressModal.progress}%` }}
             />
           </div>
@@ -930,7 +983,7 @@ export function AppBuilder({
                       >,
                     )
                   }}
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
+                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
                 >
                   {([1, 2, 3, 4, 5, 6] as const).map((lvl) => (
                     <option key={lvl} value={lvl}>
@@ -964,7 +1017,7 @@ export function AppBuilder({
                       >) || undefined,
                     )
                   }}
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-[#6442D6] focus:outline-none"
+                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
                 >
                   <option value="">Original (no crop)</option>
                   <option value="16/9">16:9 (Landscape)</option>
@@ -979,12 +1032,41 @@ export function AppBuilder({
           <button
             type="button"
             onClick={() => setOptionsElementId(null)}
-            className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-[#111827] font-medium rounded-lg transition-colors"
+            className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
           >
             Close
           </button>
         </div>
       </Modal>
-    </div>
+      {/* Delete Project Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteProjectModal}
+        onClose={() => setShowDeleteProjectModal(false)}
+        title="Delete Project"
+      >
+        <p className="text-gray-600 mb-2">
+          Are you sure you want to delete{" "}
+          <span className="font-semibold text-text">{pageSlug}</span>? This
+          action cannot be undone.
+        </p>
+        <div className="flex gap-3 mt-6">
+          <button
+            type="button"
+            onClick={() => setShowDeleteProjectModal(false)}
+            className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDeleteProject}
+            disabled={isDeletingProject}
+            className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-medium rounded-lg transition-colors"
+          >
+            {isDeletingProject ? "Deleting…" : "Delete Project"}
+          </button>
+        </div>
+      </Modal>
+    </>
   )
 }

@@ -24,6 +24,24 @@
 @theme {
   --font-inter: "Inter", sans-serif;
   --font-poppins: "Poppins", sans-serif;
+
+  --color-primary: #6442d6;
+  --color-primary-hover: #5234c0;
+  --color-primary-light: #ede9fb;
+  --color-secondary: #c8b3fd;
+  --color-secondary-light: #f5f2ff;
+  --color-success: #16a34a;
+  --color-success-hover: #15803d;
+  --color-success-light: #dcfce7;
+  --color-success-light-hover: #bbf7d0;
+  --color-warning: #d97706;
+  --color-warning-light: #fef3c7;
+  --color-warning-light-hover: #fcd34d;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-light: #fee2e2;
+  --color-surface: #ffffff;
+  --color-text: #111827;
 }
 
 body {

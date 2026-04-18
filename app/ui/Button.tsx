@@ -8,15 +8,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-[#6442D6] text-white hover:bg-[#5234C0] shadow-sm hover:shadow-md focus-visible:ring-[#6442D6]",
+          "bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md focus-visible:ring-primary",
         secondary:
-          "bg-[#F5F2FF] text-[#6442D6] hover:bg-[#EDE9FB] border border-[#C8B3FD] focus-visible:ring-[#6442D6]",
+          "bg-secondary-light text-primary hover:bg-primary-light border border-secondary focus-visible:ring-primary",
         outline:
-          "border-2 border-[#6442D6] text-[#6442D6] hover:bg-[#EDE9FB] focus-visible:ring-[#6442D6]",
+          "border-2 border-primary text-primary hover:bg-primary-light focus-visible:ring-primary",
         ghost:
-          "text-[#111827] hover:bg-[#F5F2FF] hover:text-[#6442D6] focus-visible:ring-[#6442D6]",
+          "text-text hover:bg-secondary-light hover:text-primary focus-visible:ring-primary",
+        link: "text-text font-bold underline-offset-4 hover:underline focus-visible:ring-primary p-0",
         danger:
-          "bg-[#DC2626] text-white hover:bg-[#B91C1C] shadow-sm hover:shadow-md focus-visible:ring-[#DC2626]",
+          "bg-danger text-white hover:bg-danger-hover shadow-sm hover:shadow-md focus-visible:ring-danger",
       },
       size: {
         sm: "px-3 py-1.5 text-sm",

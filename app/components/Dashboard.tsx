@@ -21,14 +21,14 @@ export function Dashboard({
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#111827]">
+          <h1 className="text-3xl md:text-4xl font-bold text-text">
             Dashboard
           </h1>
           <p className="text-slate-600 mt-2">
             Manage and edit your landing pages
           </p>
         </div>
-        {!atLimit && <NewLandingButton showIcon={false} />}
+        {!atLimit && <NewLandingButton showIcon={false} variant="link" />}
       </div>
 
       {atLimit && (
