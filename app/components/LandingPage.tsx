@@ -28,7 +28,7 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
         </div>
       ) : (
         <div className="min-h-screen bg-white">
-          <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto px-4 pt-8 pb-24">
             {sortedElements.length === 0 ? (
               <div className="flex items-center justify-center min-h-[60vh]">
                 <p className="text-slate-500 text-lg">No content yet</p>
