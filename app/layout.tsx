@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.svg",
   },
+  other: {
+    "mobile-web-app-capable": "no",
+    "apple-mobile-web-app-capable": "no",
+  },
 }
 
 export default function RootLayout({
