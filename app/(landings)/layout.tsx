@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Poppins, Inter } from "next/font/google"
 import "@/app/globals.css"
-import { HeaderFooterLayout } from "@/app/components/HeaderFooterLayout"
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -38,9 +37,7 @@ export default function RootLayout({
       className={`${poppins.variable} ${inter.variable} antialiased`}
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-screen flex flex-col bg-black text-slate-900">
-        {children}
-      </body>
+      <body className="min-h-screen flex flex-col">{children}</body>
     </html>
   )
 }
