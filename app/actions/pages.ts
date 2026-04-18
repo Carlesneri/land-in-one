@@ -7,6 +7,7 @@ import type { LandingPageElement, Status } from "@/types"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { generateSlug } from "random-word-slugs"
+import { MAX_LANDING_PAGES } from "@/CONSTANTS"
 
 interface SavePagePayload {
   slug: string
@@ -213,6 +214,17 @@ export async function createNewPage() {
 
     // Generate a unique slug
     const slug = generateSlug(3)
+
+    // Check landing page limit
+    const existingCount = await PreviewPage.countDocuments({
+      userEmail: session.user.email,
+    })
+    if (existingCount >= MAX_LANDING_PAGES) {
+      return {
+        success: false,
+        error: `You have reached the limit of ${MAX_LANDING_PAGES} landing pages.`,
+      }
+    }
 
     // Create new page with empty elements
     const newPage = await PreviewPage.create({

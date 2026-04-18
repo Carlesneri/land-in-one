@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Empty } from "@/app/ui/Empty"
 import { NewLandingButton } from "@/app/components/NewLandingButton"
 import { DashboardLanding } from "@/app/components/DashboardLanding"
-import { IconFileDescription } from "@tabler/icons-react"
+import { IconFileDescription, IconInfoCircle } from "@tabler/icons-react"
+import { MAX_LANDING_PAGES } from "@/CONSTANTS"
 
 export function Dashboard({
   pages,
@@ -14,6 +15,7 @@ export function Dashboard({
   const [deletedPages, setDeletedPages] = useState<string[]>([])
 
   const visiblePages = pages.filter((p) => !deletedPages.includes(p.id))
+  const atLimit = visiblePages.length >= MAX_LANDING_PAGES
 
   return (
     <div className="space-y-8">
@@ -26,8 +28,19 @@ export function Dashboard({
             Manage and edit your landing pages
           </p>
         </div>
-        <NewLandingButton showIcon={false} />
+        {!atLimit && <NewLandingButton showIcon={false} />}
       </div>
+
+      {atLimit && (
+        <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          <IconInfoCircle size={18} className="shrink-0" aria-hidden="true" />
+          <span>
+            You've reached the limit of{" "}
+            <strong>{MAX_LANDING_PAGES} landing pages</strong>. Delete an
+            existing project to create a new one.
+          </span>
+        </div>
+      )}
 
       {visiblePages.length === 0 ? (
         <Empty

@@ -22,6 +22,8 @@ export function NewLandingButton({ showIcon = true }: { showIcon?: boolean }) {
 
       if (result.success && result.pageId) {
         router.push(`/builder/${result.pageId}`)
+      } else if (result.error) {
+        toast.info(result.error)
       } else {
         toast.error("Failed to create new page")
       }
