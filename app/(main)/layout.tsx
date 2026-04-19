@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default function MainLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -40,6 +40,13 @@ export default function RootLayout({
       className={`${poppins.variable} ${inter.variable} antialiased`}
       data-scroll-behavior="smooth"
     >
+      <head>
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="+cJiK6TTtfVKEMkl7IKP5A"
+          async
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-white text-slate-900">
         <AuthProvider>
           <HeaderFooterLayout>

@@ -16,7 +16,6 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Land In One",
-  description: "Create a landing page in less than one minute.",
   icons: {
     icon: "/logo.svg",
   },
@@ -37,6 +36,13 @@ export default function RootLayout({
       className={`${poppins.variable} ${inter.variable} antialiased`}
       data-scroll-behavior="smooth"
     >
+      <head>
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="+cJiK6TTtfVKEMkl7IKP5A"
+          async
+        />
+      </head>
       <body className="min-h-screen flex flex-col">{children}</body>
     </html>
   )
