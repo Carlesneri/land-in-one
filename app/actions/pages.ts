@@ -1,9 +1,9 @@
 "use server"
 
-import { PreviewPage, PublishPage } from "@/lib/models/Page"
+import { PreviewPage, PublishPage, type PageModelType } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
 import { deleteImageInCloud } from "@/app/actions/cloud-storage"
-import type { LandingPageElement, Status } from "@/types"
+import type { LandingPage, LandingPageElement, Status } from "@/types"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { generateSlug } from "random-word-slugs"
@@ -21,7 +21,7 @@ interface SavePagePayload {
   >
 }
 
-export async function getLandingPageById(id: string) {
+export async function getPreviewLandingPageById(id: string) {
   try {
     await connectToDatabase()
 
@@ -34,10 +34,17 @@ export async function getLandingPageById(id: string) {
       }
     }
 
+    const { _id, ...restOfPage } = page.toObject()
+
+    const mappedPage = {
+      ...restOfPage,
+      id: _id.toString(),
+    }
+
     // Convert Mongoose document to plain object to avoid serialization issues
     return {
       success: true,
-      page: page.toObject(),
+      page: mappedPage,
     }
   } catch (error) {
     console.error("Error fetching landing page by ID:", error)
@@ -70,9 +77,16 @@ export async function getPageBySlug({
       }
     }
 
+    const { _id, ...restOfPage } = page.toObject()
+
+    const mappedPage = {
+      ...restOfPage,
+      id: _id.toString(),
+    }
+
     return {
       success: true,
-      page: page.toObject(),
+      page: mappedPage,
     }
   } catch (error) {
     console.error("Error fetching published page by slug:", error)
@@ -173,7 +187,7 @@ export async function publishPage(id: string, payload: SavePagePayload) {
       redirect("/login")
     }
 
-    const { slug, elements } = payload
+    const { slug, elements, mode } = payload
 
     if (!slug) {
       return {
@@ -192,11 +206,13 @@ export async function publishPage(id: string, payload: SavePagePayload) {
       }
     }
 
-    const modelData: Record<string, unknown> = {
+    const modelData: LandingPage = {
       elements,
       slug,
+      mode,
       userEmail: session.user.email,
-      date_version: previewPage.updatedAt,
+      previewPageDate: previewPage.updatedAt,
+      previewPageId: previewPage.id,
     }
 
     // Check if a published version already exists
@@ -293,6 +309,7 @@ export async function getUserLandings(userEmail: string) {
     const mappedPages = pages.map((page) => ({
       id: page._id.toString(),
       slug: page.slug,
+      updatedAt: page.updatedAt,
     }))
 
     return {

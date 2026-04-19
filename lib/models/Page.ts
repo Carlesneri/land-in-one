@@ -28,7 +28,13 @@ const elementSchema = new Schema<LandingPageElement>(
   { _id: false },
 )
 
-const pageSchema = new Schema<LandingPage>(
+export type PageModelType = LandingPage & {
+  _id: mongoose.Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
+const pageSchema = new Schema<PageModelType>(
   {
     slug: {
       type: String,
@@ -51,6 +57,12 @@ const pageSchema = new Schema<LandingPage>(
       enum: ["light", "dark"],
       default: "light",
     },
+    previewPageId: {
+      type: Schema.ObjectId,
+    },
+    previewPageDate: {
+      type: String,
+    },
   },
   {
     timestamps: true,
@@ -64,13 +76,12 @@ if (mongoose.models.Page) mongoose.deleteModel("Page")
 if (mongoose.models.PreviewPage) mongoose.deleteModel("PreviewPage")
 if (mongoose.models.PublishPage) mongoose.deleteModel("PublishPage")
 
-export const Page = mongoose.model<LandingPage>("Page", pageSchema)
-export const PreviewPage = mongoose.model<LandingPage>(
+export const PreviewPage = mongoose.model<PageModelType>(
   "PreviewPage",
   pageSchema,
   "PreviewPage",
 )
-export const PublishPage = mongoose.model<LandingPage>(
+export const PublishPage = mongoose.model<PageModelType>(
   "PublishPage",
   pageSchema,
   "PublishPage",

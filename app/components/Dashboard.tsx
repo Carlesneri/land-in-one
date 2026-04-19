@@ -10,15 +10,23 @@ import { MAX_LANDING_PAGES } from "@/CONSTANTS"
 export function Dashboard({
   pages,
 }: {
-  pages: { id: string; slug: string }[]
+  pages: { id: string; slug: string; updatedAt: Date }[]
 }) {
   const [deletedPages, setDeletedPages] = useState<string[]>([])
 
-  const visiblePages = pages.filter((p) => !deletedPages.includes(p.id))
+  function sortByUpdatedAt(a: { updatedAt?: Date }, b: { updatedAt?: Date }) {
+    const dateA = a.updatedAt ? a.updatedAt.getTime() : 0
+    const dateB = b.updatedAt ? b.updatedAt.getTime() : 0
+    return dateB - dateA
+  }
+
+  const visiblePages = pages
+    .filter((p) => !deletedPages.includes(p.id))
+    .sort(sortByUpdatedAt)
   const atLimit = visiblePages.length >= MAX_LANDING_PAGES
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-text">
@@ -28,8 +36,9 @@ export function Dashboard({
             Manage and edit your landing pages
           </p>
         </div>
-        {!atLimit && <NewLandingButton showIcon={false} variant="link" />}
       </div>
+
+      {!atLimit && visiblePages.length > 0 && <NewLandingButton />}
 
       {atLimit && (
         <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">

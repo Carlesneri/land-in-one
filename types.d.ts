@@ -11,8 +11,8 @@ export interface LandingPage {
   elements: LandingPageElement[]
   userEmail: string
   mode?: "light" | "dark"
-  createdAt: Date
-  updatedAt: Date
+  previewPageId?: string
+  previewPageDate?: Date
 }
 
 export type Status = "publish" | "preview"

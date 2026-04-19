@@ -1,4 +1,4 @@
-import { getLandingPageById, isSlugPublished } from "@/app/actions/pages"
+import { getPreviewLandingPageById } from "@/app/actions/pages"
 import { AppBuilder } from "@/app/components/AppBuilder"
 
 export default async function BuilderIdPage({
@@ -8,22 +8,12 @@ export default async function BuilderIdPage({
 }) {
   const { id } = await params
 
-  const landingDoc = await getLandingPageById(id)
+  const previewLandingPage = await getPreviewLandingPageById(id)
 
-  if (!id || !landingDoc?.page) {
+  if (!id || !previewLandingPage?.page) {
     // Add button for creating new page
     return <h1>No Landing Page Found</h1>
   }
 
-  const published = await isSlugPublished(landingDoc.page.slug)
-
-  return (
-    <AppBuilder
-      elements={landingDoc.page.elements}
-      slug={landingDoc.page.slug}
-      id={id}
-      published={published}
-      mode={landingDoc.page.mode ?? "light"}
-    />
-  )
+  return <AppBuilder previewLandingPage={previewLandingPage.page} />
 }

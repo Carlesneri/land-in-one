@@ -25,7 +25,7 @@ export default async function PublishedPage({
       elements={publishedPage.page?.elements || []}
       slug={slug}
       status="publish"
-      id={publishedPage.page?._id.toString() || ""}
+      id={publishedPage.page?.id || ""}
       mode={publishedPage.page?.mode ?? "light"}
     />
   )

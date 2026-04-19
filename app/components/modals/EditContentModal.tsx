@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef } from "react"
 import { Modal } from "@/app/ui/Modal"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
@@ -23,14 +25,8 @@ export function EditContentModal({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (isOpen && elementType !== "text") {
-      // Wait for the modal transition to finish before focusing
-      const timer = setTimeout(() => {
-        textareaRef.current?.focus()
-      }, 150)
-      return () => clearTimeout(timer)
-    }
-  }, [isOpen, elementType])
+    textareaRef.current?.focus()
+  }, [])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Content" size="large">

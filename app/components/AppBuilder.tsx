@@ -22,6 +22,7 @@ import {
   savePreviewPage,
   unpublishPage,
   deleteLandingPage,
+  getPageBySlug,
 } from "@/app/actions/pages"
 import {
   createPresignedUrl,
@@ -43,7 +44,7 @@ import {
 } from "@tabler/icons-react"
 import { Container } from "@/app/ui/Container"
 import { cn } from "@/lib/utils"
-
+import type { PageModelType } from "@/lib/models/Page"
 const statusDotVariants = cva("w-1.5 h-1.5 rounded-full shrink-0", {
   variants: {
     status: {
@@ -55,21 +56,37 @@ const statusDotVariants = cva("w-1.5 h-1.5 rounded-full shrink-0", {
 })
 
 export function AppBuilder({
-  elements: initialElements,
-  slug,
-  id,
-  published,
-  mode: initialMode = "light",
+  previewLandingPage,
 }: {
-  elements: LandingPageElement[]
-  slug: LandingPage["slug"]
-  id: string
-  published: boolean
-  mode?: "light" | "dark"
+  previewLandingPage: Omit<PageModelType, "_id"> & { id: string }
 }) {
-  const [elements, setElements] =
-    useState<LandingPageElement[]>(initialElements)
-  const [pageId] = useState<string>(id)
+  const [previewPage, setPreviewPage] = useState<
+    Omit<PageModelType, "_id"> & { id: string }
+  >(previewLandingPage)
+
+  // Convenience accessors derived from the single source of truth
+  const elements = previewPage.elements
+  const pageSlug = previewPage.slug
+  const pageId = previewPage.id
+  const pageMode = previewPage.mode ?? "light"
+
+  const setElements = (
+    updater:
+      | LandingPageElement[]
+      | ((prev: LandingPageElement[]) => LandingPageElement[]),
+  ) =>
+    setPreviewPage((prev) => ({
+      ...prev,
+      elements:
+        typeof updater === "function" ? updater(prev.elements) : updater,
+    }))
+
+  const setPageSlug = (slug: string) =>
+    setPreviewPage((prev) => ({ ...prev, slug }))
+
+  const setPageMode = (mode: "light" | "dark") =>
+    setPreviewPage((prev) => ({ ...prev, mode }))
+
   const [draggedElement, setDraggedElement] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [modalPosition, setModalPosition] = useState<number | null>(null)
@@ -80,9 +97,7 @@ export function AppBuilder({
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
-  const [pageSlug, setPageSlug] = useState<string>(slug)
-
-  const [isPublished, setIsPublished] = useState(published)
+  const [isPublished, setIsPublished] = useState<boolean | undefined>()
   const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [optionsElementId, setOptionsElementId] = useState<string | null>(null)
   const [showChangeSlugModal, setShowChangeSlugModal] = useState(false)
@@ -99,27 +114,49 @@ export function AppBuilder({
   const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
   const [showOptionsModal, setShowOptionsModal] = useState(false)
-  const [pageMode, setPageMode] = useState<"light" | "dark">(initialMode)
+  const [publishedPage, setPublishedPage] = useState<
+    (Omit<PageModelType, "_id"> & { id: string }) | null
+  >(null)
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false)
-  const [bottomMessage, setBottomMessage] = useState<{
-    status: "unpublished" | "changes" | "upToDate"
-    text: string
-  }>(() => {
-    if (!published) return { status: "unpublished", text: "Not published" }
-    return { status: "upToDate", text: "Published · up to date" }
-  })
+
+  // Fetch the published version on mount to determine initial status
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount
+  useEffect(() => {
+    getPageBySlug({ slug: pageSlug, status: "publish" }).then((result) => {
+      if (result?.success && result.page) {
+        const page = result.page
+        setPublishedPage(page)
+        setIsPublished(true)
+      } else {
+        setIsPublished(false)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Derive hasUnpublishedChanges from timestamps when publishedPage is loaded/updated
+  useEffect(() => {
+    if (!publishedPage) return
+    if (new Date(previewPage.updatedAt) > new Date(publishedPage.updatedAt)) {
+      setHasUnpublishedChanges(true)
+    }
+  }, [publishedPage, previewPage.updatedAt])
+  const [bottomMessageStatus, setBottomMessageStatus] = useState<
+    "unpublished" | "changes" | "upToDate"
+  >()
+  const [bottomMessage, setBottomMessage] = useState<string>("")
 
   // Update bottom bar message when publish state or changes flag updates
   useEffect(() => {
     if (!isPublished) {
-      setBottomMessage({ status: "unpublished", text: "Not published" })
+      setBottomMessageStatus("unpublished")
+      setBottomMessage("Not published")
     } else if (hasUnpublishedChanges) {
-      setBottomMessage({
-        status: "changes",
-        text: "You have unpublished changes",
-      })
+      setBottomMessageStatus("changes")
+      setBottomMessage("You have unpublished changes")
     } else {
-      setBottomMessage({ status: "upToDate", text: "Published · up to date" })
+      setBottomMessageStatus("upToDate")
+      setBottomMessage("Published · up to date")
     }
   }, [isPublished, hasUnpublishedChanges])
 
@@ -444,12 +481,17 @@ export function AppBuilder({
       const result = await publishPage(pageId, {
         slug: pageSlug,
         elements,
+        mode: pageMode,
       })
 
       if (result?.success) {
         toast.success("Page published successfully")
         setIsPublished(true)
         setHasUnpublishedChanges(false)
+        // Fetch and store the newly published page
+        getPageBySlug({ slug: pageSlug, status: "publish" }).then((r) => {
+          if (r?.success && r.page) setPublishedPage(r.page)
+        })
       } else if (result) {
         toast.error("An error occurred")
       }
@@ -556,7 +598,7 @@ export function AppBuilder({
                     }
                     handlePublishPage()
                   }}
-                  disabled={isPublishing}
+                  disabled={isPublishing || isPublished === undefined}
                   className={cn(
                     "flex items-center px-4 py-1.5 font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-60",
                     !hasUnpublishedChanges && isPublished
@@ -636,10 +678,14 @@ export function AppBuilder({
 
           {/* Bottom bar */}
           <div className="flex items-center gap-2 px-3 py-2 bg-black/15 border-t border-white/15">
-            <span
-              className={statusDotVariants({ status: bottomMessage.status })}
-            />
-            <span className="text-xs text-white/70">{bottomMessage.text}</span>
+            {bottomMessageStatus && (
+              <span
+                className={statusDotVariants({ status: bottomMessageStatus })}
+              />
+            )}
+            {bottomMessage && (
+              <span className="text-xs text-white/70">{bottomMessage}</span>
+            )}
           </div>
         </div>
 
