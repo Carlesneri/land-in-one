@@ -13,7 +13,7 @@ export async function Header() {
       <Container>
         <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-2" aria-label="Home">
-            <Logo height={40} width={80} />
+            <Logo height={50} width={50} />
           </Link>
           <nav className="flex items-center gap-3 sm:gap-4">
             {session?.user ? (

@@ -24,7 +24,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Land In One",
   icons: {
-    icon: "/logo.svg",
+    icon: "/logo.png",
   },
   other: {
     "mobile-web-app-capable": "no",
