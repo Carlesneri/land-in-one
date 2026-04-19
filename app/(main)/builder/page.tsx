@@ -1,10 +1,5 @@
-import { NewLandingButton } from "@/app/components/NewLandingButton"
-import { Container } from "@/app/ui/Container"
+import { redirect } from "next/navigation"
 
 export default function BuilderPage() {
-  return (
-    <Container>
-      <NewLandingButton />
-    </Container>
-  )
+  return redirect("/dashboard")
 }

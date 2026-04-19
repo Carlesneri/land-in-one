@@ -1,5 +1,6 @@
 import { getPreviewLandingPageById } from "@/app/actions/pages"
 import { AppBuilder } from "@/app/components/AppBuilder"
+import { notFound } from "next/navigation"
 
 export default async function BuilderIdPage({
   params,
@@ -10,9 +11,8 @@ export default async function BuilderIdPage({
 
   const previewLandingPage = await getPreviewLandingPageById(id)
 
-  if (!id || !previewLandingPage?.page) {
-    // Add button for creating new page
-    return <h1>No Landing Page Found</h1>
+  if (!previewLandingPage?.page) {
+    return notFound()
   }
 
   return <AppBuilder previewLandingPage={previewLandingPage.page} />

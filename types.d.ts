@@ -1,8 +1,7 @@
 export interface LandingPageElement {
-  type: "text" | "image" | "headline"
+  type: "text" | "image"
   content?: string
   position: number
-  headlineLevel?: 1 | 2 | 3 | 4 | 5 | 6
   aspectRatio?: "9/16" | "3/4" | "4/3" | "1/1" | "16/9"
 }
 

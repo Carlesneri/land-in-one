@@ -5,7 +5,7 @@ const elementSchema = new Schema<LandingPageElement>(
   {
     type: {
       type: String,
-      enum: ["text", "image", "headline"],
+      enum: ["text", "image"],
       required: true,
     },
     content: {
@@ -15,10 +15,6 @@ const elementSchema = new Schema<LandingPageElement>(
     position: {
       type: Number,
       required: true,
-    },
-    headlineLevel: {
-      type: Number,
-      enum: [1, 2, 3, 4, 5, 6],
     },
     aspectRatio: {
       type: String,

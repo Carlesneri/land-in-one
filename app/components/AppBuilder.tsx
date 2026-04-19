@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { AddElementButton } from "@/app/components/AddElementButton"
-import { HeadlineElement } from "@/app/components/builder/HeadlineElement"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
 import { ElementCard } from "@/app/components/builder/ElementCard"
@@ -261,7 +260,7 @@ export function AppBuilder({
     setDraggedElement(null)
   }
 
-  const handleAddElement = (type: "text" | "image" | "headline") => {
+  const handleAddElement = (type: "text" | "image") => {
     if (
       type === "image" &&
       elements.filter((el) => el.type === "image").length >= 10
@@ -276,13 +275,6 @@ export function AppBuilder({
       type,
       content: "",
       position: modalPosition ?? elements.length,
-      ...(type === "headline" && {
-        headlineLevel: elements.some(
-          (el) => el.type === "headline" && (el.headlineLevel ?? 1) === 1,
-        )
-          ? 2
-          : 1,
-      }),
     } as LandingPage["elements"][0]
 
     const newElements = [...elements]
@@ -334,17 +326,6 @@ export function AppBuilder({
   const handleUpdateContent = (index: number, content: string) => {
     setElements(
       elements.map((el, idx) => (idx === index ? { ...el, content } : el)),
-    )
-  }
-
-  const handleUpdateHeadlineLevel = (
-    index: number,
-    level: NonNullable<LandingPageElement["headlineLevel"]>,
-  ) => {
-    setElements(
-      elements.map((el, idx) =>
-        idx === index ? { ...el, headlineLevel: level } : el,
-      ),
     )
   }
 
@@ -598,7 +579,7 @@ export function AppBuilder({
                     "flex items-center px-4 py-1.5 font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-60",
                     !hasUnpublishedChanges && isPublished
                       ? "bg-white/40 text-primary/60 cursor-not-allowed"
-                      : "bg-white hover:bg-white/90 text-primary",
+                      : "bg-success hover:bg-success-hover text-white",
                   )}
                 >
                   {isPublishing ? "Publishing…" : "Publish"}
@@ -712,13 +693,6 @@ export function AppBuilder({
                   onDelete={handleDeleteElement}
                   onOpenOptions={(i) => setOptionsElementId(String(i))}
                 >
-                  {element.type === "headline" && (
-                    <HeadlineElement
-                      element={element}
-                      index={index}
-                      onEdit={openEditModal}
-                    />
-                  )}
                   {element.type === "text" && (
                     <TextElement
                       element={element}
@@ -837,11 +811,6 @@ export function AppBuilder({
             : undefined
         }
         onClose={() => setOptionsElementId(null)}
-        onHeadlineLevelChange={(level) => {
-          if (optionsElementId !== null) {
-            handleUpdateHeadlineLevel(parseInt(optionsElementId, 10), level)
-          }
-        }}
         onAspectRatioChange={(ratio) => {
           if (optionsElementId !== null) {
             handleUpdateAspectRatio(parseInt(optionsElementId, 10), ratio)

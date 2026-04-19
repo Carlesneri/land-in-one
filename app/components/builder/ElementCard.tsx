@@ -27,7 +27,7 @@ export function ElementCard({
   onOpenOptions,
   children,
 }: ElementCardProps) {
-  const hasOptions = element.type === "headline" || element.type === "image"
+  const hasOptions = element.type === "image"
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: to fix forward
@@ -44,14 +44,6 @@ export function ElementCard({
         draggable
         onDragStart={(e) => onDragStart(e, index)}
       >
-        {element.type === "headline" && (
-          <>
-            <span className="uppercase tracking-wide">Headline</span>
-            <span className="text-success font-semibold">
-              H{element.headlineLevel ?? 1}
-            </span>
-          </>
-        )}
         {element.type === "text" && (
           <span className="uppercase tracking-wide">Text</span>
         )}

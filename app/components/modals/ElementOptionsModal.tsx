@@ -5,9 +5,6 @@ interface ElementOptionsModalProps {
   isOpen: boolean
   element: LandingPageElement | undefined
   onClose: () => void
-  onHeadlineLevelChange: (
-    level: NonNullable<LandingPageElement["headlineLevel"]>,
-  ) => void
   onAspectRatioChange: (
     ratio: LandingPageElement["aspectRatio"] | undefined,
   ) => void
@@ -17,41 +14,11 @@ export function ElementOptionsModal({
   isOpen,
   element,
   onClose,
-  onHeadlineLevelChange,
   onAspectRatioChange,
 }: ElementOptionsModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Element Options">
       <div className="space-y-4">
-        {element?.type === "headline" && (
-          <div>
-            <label
-              htmlFor="options-headline-level-select"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Headline Level
-            </label>
-            <select
-              id="options-headline-level-select"
-              value={element.headlineLevel ?? 1}
-              onChange={(e) =>
-                onHeadlineLevelChange(
-                  Number(e.target.value) as NonNullable<
-                    LandingPageElement["headlineLevel"]
-                  >,
-                )
-              }
-              className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
-            >
-              {([1, 2, 3, 4, 5, 6] as const).map((lvl) => (
-                <option key={lvl} value={lvl}>
-                  H{lvl}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
         {element?.type === "image" && (
           <div>
             <label
