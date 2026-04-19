@@ -18,17 +18,17 @@ export default async function Home() {
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         <Container>
-          <div className="relative text-center max-w-3xl mx-auto py-24 sm:py-32">
+          <div className="relative text-center max-w-3xl mx-auto py-12 sm:py-24">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#C8B3FD] text-[#6442D6] text-sm font-medium mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-secondary text-primary text-sm font-medium mb-8">
               <IconSparkles size={14} aria-hidden="true" />
               No-code landing pages
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-[#111827] leading-[1.1] mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-text leading-[1.1] mb-6 tracking-tight">
               Create Landing Pages
               <br />
-              <span className="bg-linear-to-r from-[#6442D6] via-[#D97706] to-[#16A34A] bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary via-warning to-success bg-clip-text text-transparent">
                 in Less Than a Minute
               </span>
             </h1>
@@ -58,47 +58,47 @@ export default async function Home() {
       {/* ── Features ─────────────────────────────────────────── */}
       <section className="py-16 sm:py-20">
         <Container>
-          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-[#6442D6] mb-10">
+          <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-primary mb-10">
             Why Land In One?
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {/* Card 1 — Warning / Amber accent */}
-            <div className="relative squircle-2xl bg-[#D97706] p-7 shadow-lg overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-[#FCD34D]/30 blur-2xl pointer-events-none" />
+            <div className="relative squircle-2xl bg-warning p-7 shadow-lg overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-warning-light-hover/30 blur-2xl pointer-events-none" />
               <div className="inline-flex items-center justify-center w-12 h-12 squircle-lg bg-white/20 text-white mb-5">
                 <IconBolt size={24} aria-hidden="true" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">
                 Lightning Fast
               </h3>
-              <p className="text-sm text-[#FEF3C7] leading-relaxed">
+              <p className="text-sm text-warning-light leading-relaxed">
                 Create and launch in minutes, not days
               </p>
             </div>
 
             {/* Card 2 — Primary / Purple accent */}
-            <div className="relative squircle-2xl bg-[#6442D6] p-7 shadow-lg overflow-hidden">
-              <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-[#C8B3FD]/35 blur-2xl pointer-events-none" />
+            <div className="relative squircle-2xl bg-primary p-7 shadow-lg overflow-hidden">
+              <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-secondary/35 blur-2xl pointer-events-none" />
               <div className="inline-flex items-center justify-center w-12 h-12 squircle-lg bg-white/15 text-white mb-5">
                 <IconDeviceDesktop size={24} aria-hidden="true" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">
                 Fully Responsive
               </h3>
-              <p className="text-sm text-[#C8B3FD] leading-relaxed">
+              <p className="text-sm text-secondary leading-relaxed">
                 Perfect on all devices, automatically
               </p>
             </div>
 
             {/* Card 3 — Success / Green accent */}
-            <div className="relative squircle-2xl bg-[#16A34A] p-7 shadow-lg overflow-hidden">
-              <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-[#86EFAC]/30 blur-2xl pointer-events-none" />
+            <div className="relative squircle-2xl bg-success p-7 shadow-lg overflow-hidden">
+              <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-success-soft/30 blur-2xl pointer-events-none" />
               <div className="inline-flex items-center justify-center w-12 h-12 squircle-lg bg-white/20 text-white mb-5">
                 <IconRocket size={24} aria-hidden="true" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Easy to Use</h3>
-              <p className="text-sm text-[#DCFCE7] leading-relaxed">
+              <p className="text-sm text-success-light leading-relaxed">
                 No technical skills required
               </p>
             </div>

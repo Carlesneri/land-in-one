@@ -9,7 +9,7 @@ export async function Header() {
   const session = await getServerSession()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/60 bg-linear-to-r from-[#6442D6]/5 via-[#D97706]/5 to-[#16A34A]/5 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-b border-slate-200/60 bg-linear-to-r from-primary/5 via-warning/5 to-success/5 backdrop-blur-3xl">
       <Container>
         <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-2" aria-label="Home">

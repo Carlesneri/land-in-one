@@ -34,6 +34,7 @@
   --color-success-hover: #15803d;
   --color-success-light: #dcfce7;
   --color-success-light-hover: #bbf7d0;
+  --color-success-soft: #86efac;
   --color-warning: #d97706;
   --color-warning-light: #fef3c7;
   --color-warning-light-hover: #fcd34d;
@@ -140,22 +141,27 @@ h6 {
 @supports (corner-shape: squircle) {
   .squircle-sm {
     border-radius: 8px;
+    /* biome-ignore lint/correctness/noUnknownProperty: low support */
     corner-shape: squircle;
   }
   .squircle {
     border-radius: 12px;
+    /* biome-ignore lint/correctness/noUnknownProperty: low support */
     corner-shape: squircle;
   }
   .squircle-lg {
     border-radius: 16px;
+    /* biome-ignore lint/correctness/noUnknownProperty: low support */
     corner-shape: squircle;
   }
   .squircle-xl {
     border-radius: 20px;
+    /* biome-ignore lint/correctness/noUnknownProperty: low support */
     corner-shape: squircle;
   }
   .squircle-2xl {
     border-radius: 24px;
+    /* biome-ignore lint/correctness/noUnknownProperty: low support */
     corner-shape: squircle;
   }
 }
