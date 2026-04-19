@@ -73,9 +73,12 @@ export function DashboardLanding({
       <Card className="flex flex-col">
         <CardHeader className="flex-1">
           <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <CardTitle className="truncate text-lg">{landing.slug}</CardTitle>
-              <div className="flex gap-2 mt-3 flex-wrap">
+            <div className="flex-1">
+              <CardTitle className="text-lg flex items-center gap-2 justify-between">
+                <span className="line-clamp-1">{landing.slug}</span>
+              </CardTitle>
+
+              <div className="flex gap-2 mt-5 flex-wrap">
                 <Link
                   href={`/preview/${landing.slug}`}
                   target="_blank"
@@ -108,11 +111,6 @@ export function DashboardLanding({
                 )}
               </div>
             </div>
-            {isPublished != null && (
-              <Badge variant="default" className="shrink-0">
-                {isPublished ? "Published" : "Draft"}
-              </Badge>
-            )}
           </div>
         </CardHeader>
         <CardContent className="mt-auto">
