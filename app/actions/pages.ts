@@ -415,3 +415,15 @@ export async function deleteLandingPage(id: string) {
     }
   }
 }
+
+export async function getAllUsers() {
+  const pages = await PreviewPage.find()
+
+  const userSet = new Set()
+
+  pages.forEach((p) => {
+    userSet.add(p.userEmail)
+  })
+
+  return [...userSet]
+}

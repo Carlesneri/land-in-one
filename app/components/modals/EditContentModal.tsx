@@ -25,8 +25,10 @@ export function EditContentModal({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    textareaRef.current?.focus()
-  }, [])
+    if (isOpen) {
+      textareaRef.current?.focus()
+    }
+  }, [isOpen])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Content" size="large">
