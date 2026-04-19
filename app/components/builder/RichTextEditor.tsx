@@ -4,8 +4,6 @@ import { useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import TextAlign from "@tiptap/extension-text-align"
-import { TextStyle } from "@tiptap/extension-text-style"
-import { Color } from "@tiptap/extension-color"
 import {
   RichTextEditor as MantineRTE,
   Link as MantineLink,
@@ -59,8 +57,6 @@ export function RichTextEditor({
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       AbsoluteLink.configure({ openOnClick: false, defaultProtocol: "https" }),
-      TextStyle,
-      Color,
     ] as unknown as AnyExtension[],
     content,
     autofocus: "end",
@@ -122,23 +118,6 @@ export function RichTextEditor({
         <MantineRTE.ControlsGroup>
           <MantineRTE.Link />
           <MantineRTE.Unlink />
-        </MantineRTE.ControlsGroup>
-
-        <MantineRTE.ControlsGroup>
-          <MantineRTE.ColorPicker
-            colors={[
-              "#111827",
-              "#6b7280",
-              "#dc2626",
-              "#d97706",
-              "#ca8a04",
-              "#16a34a",
-              "#2563eb",
-              "#7c3aed",
-              "#db2777",
-            ]}
-          />
-          <MantineRTE.UnsetColor />
         </MantineRTE.ControlsGroup>
 
         <MantineRTE.ControlsGroup>
