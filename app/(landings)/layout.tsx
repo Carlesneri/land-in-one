@@ -1,7 +1,13 @@
 import type { Metadata } from "next"
 import { Poppins, Inter } from "next/font/google"
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
+} from "@mantine/core"
 import "@/app/globals.css"
 import "@/app/landings.css"
+import "@mantine/core/styles.css"
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -36,15 +42,19 @@ export default function RootLayout({
       lang="en"
       className={`${poppins.variable} ${inter.variable} antialiased`}
       data-scroll-behavior="smooth"
+      {...mantineHtmlProps}
     >
       <head>
+        <ColorSchemeScript />
         <script
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="+cJiK6TTtfVKEMkl7IKP5A"
           async
         />
       </head>
-      <body className="min-h-screen flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col">
+        <MantineProvider>{children}</MantineProvider>
+      </body>
     </html>
   )
 }

@@ -12,6 +12,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1029.0",
     "@aws-sdk/s3-request-presigner": "^3.1029.0",
+    "@mantine/core": "^9.0.2",
+    "@mantine/hooks": "^9.0.2",
+    "@mantine/tiptap": "^9.0.2",
     "@tabler/icons-react": "^3.41.1",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-color": "^3.22.4",
@@ -20,6 +23,7 @@
     "@tiptap/extension-text-align": "^3.22.4",
     "@tiptap/extension-text-style": "^3.22.4",
     "@tiptap/extension-underline": "^3.22.4",
+    "@tiptap/pm": "3.22.4",
     "@tiptap/react": "^3.22.4",
     "@tiptap/starter-kit": "^3.22.4",
     "axios": "^1.15.0",
@@ -43,6 +47,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "postcss": "^8.5.10",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
