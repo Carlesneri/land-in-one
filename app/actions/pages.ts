@@ -77,11 +77,12 @@ export async function getPageBySlug({
       }
     }
 
-    const { _id, ...restOfPage } = page.toObject()
+    const { _id, previewPageId, ...restOfPage } = page.toObject()
 
     const mappedPage = {
       ...restOfPage,
       id: _id.toString(),
+      ...(previewPageId && { previewPageId: previewPageId?.toString() }),
     }
 
     return {
