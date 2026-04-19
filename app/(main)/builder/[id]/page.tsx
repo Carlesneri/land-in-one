@@ -23,6 +23,7 @@ export default async function BuilderIdPage({
       slug={landingDoc.page.slug}
       id={id}
       published={published}
+      mode={landingDoc.page.mode ?? "light"}
     />
   )
 }

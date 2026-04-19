@@ -12,6 +12,7 @@ import { validateSlug } from "@/lib/validation/slug"
 
 interface SavePagePayload {
   slug: string
+  mode?: "light" | "dark"
   elements: Array<
     Pick<
       LandingPageElement,
@@ -124,7 +125,7 @@ export async function savePreviewPage(id: string, payload: SavePagePayload) {
       redirect("/login")
     }
 
-    const { slug, elements } = payload
+    const { slug, elements, mode } = payload
 
     if (!slug) {
       return {
@@ -140,6 +141,7 @@ export async function savePreviewPage(id: string, payload: SavePagePayload) {
       elements,
       slug,
       userEmail: session.user.email,
+      ...(mode !== undefined && { mode }),
     }
 
     existingPage

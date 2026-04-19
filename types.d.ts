@@ -10,6 +10,7 @@ export interface LandingPage {
   slug: string
   elements: LandingPageElement[]
   userEmail: string
+  mode?: "light" | "dark"
   createdAt: Date
   updatedAt: Date
 }

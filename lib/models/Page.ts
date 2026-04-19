@@ -46,6 +46,11 @@ const pageSchema = new Schema<LandingPage>(
       type: String,
       required: true,
     },
+    mode: {
+      type: String,
+      enum: ["light", "dark"],
+      default: "light",
+    },
   },
   {
     timestamps: true,

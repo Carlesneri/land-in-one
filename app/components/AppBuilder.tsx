@@ -3,17 +3,24 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Modal } from "@/app/ui/Modal"
 import { AddElementButton } from "@/app/components/AddElementButton"
 import { HeadlineElement } from "@/app/components/builder/HeadlineElement"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
 import { ElementCard } from "@/app/components/builder/ElementCard"
+import { AddElementModal } from "@/app/components/modals/AddElementModal"
+import { DeleteElementModal } from "@/app/components/modals/DeleteElementModal"
+import { EditContentModal } from "@/app/components/modals/EditContentModal"
+import { EditImageModal } from "@/app/components/modals/EditImageModal"
+import { ChangeSlugModal } from "@/app/components/modals/ChangeSlugModal"
+import { ElementOptionsModal } from "@/app/components/modals/ElementOptionsModal"
+import { UploadProgressModal } from "@/app/components/modals/UploadProgressModal"
+import { DeleteProjectModal } from "@/app/components/modals/DeleteProjectModal"
+import { LandingOptionsModal } from "@/app/components/modals/LandingOptionsModal"
 import {
   publishPage,
   savePreviewPage,
   unpublishPage,
-  checkSlugAvailable,
   deleteLandingPage,
 } from "@/app/actions/pages"
 import {
@@ -24,15 +31,15 @@ import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
-import { Button } from "@/app/ui/Button"
+import { Button, buttonVariants } from "@/app/ui/Button"
 import {
   IconExternalLink,
   IconPencil,
   IconTrash,
   IconArrowLeft,
+  IconSun,
+  IconMoon,
 } from "@tabler/icons-react"
-import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
-import { validateSlug } from "@/lib/validation/slug"
 import { Container } from "@/app/ui/Container"
 
 export function AppBuilder({
@@ -40,11 +47,13 @@ export function AppBuilder({
   slug,
   id,
   published,
+  mode: initialMode = "light",
 }: {
   elements: LandingPageElement[]
   slug: LandingPage["slug"]
   id: string
   published: boolean
+  mode?: "light" | "dark"
 }) {
   const [elements, setElements] =
     useState<LandingPageElement[]>(initialElements)
@@ -65,12 +74,6 @@ export function AppBuilder({
   const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [optionsElementId, setOptionsElementId] = useState<string | null>(null)
   const [showChangeSlugModal, setShowChangeSlugModal] = useState(false)
-  const [newSlugInput, setNewSlugInput] = useState("")
-  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null)
-  const [isCheckingSlug, setIsCheckingSlug] = useState(false)
-  const [slugValidationError, setSlugValidationError] = useState<string | null>(
-    null,
-  )
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
     progress: number
@@ -83,6 +86,8 @@ export function AppBuilder({
   const router = useRouter()
   const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
+  const [showOptionsModal, setShowOptionsModal] = useState(false)
+  const [pageMode, setPageMode] = useState<"light" | "dark">(initialMode)
 
   // Auto-save elements to Preview Page model when they change
   useEffect(() => {
@@ -95,6 +100,7 @@ export function AppBuilder({
         savePreviewPage(pageId, {
           slug: pageSlug,
           elements,
+          mode: pageMode,
         }).catch(() => {
           toast.error("Page could not be saved.")
         })
@@ -102,38 +108,7 @@ export function AppBuilder({
     }, 300) // time debounce
 
     return () => clearTimeout(timer)
-  }, [elements, pageSlug, pageId])
-
-  // Debounced slug availability check
-  useEffect(() => {
-    if (!showChangeSlugModal) return
-    const trimmed = newSlugInput.trim()
-
-    if (!trimmed || trimmed === pageSlug) {
-      setSlugAvailable(null)
-      setSlugValidationError(null)
-      return
-    }
-
-    // Client-side validation first (instant)
-    const validation = validateSlug(trimmed)
-    if (!validation.valid) {
-      setSlugValidationError(validation.error)
-      setSlugAvailable(null)
-      setIsCheckingSlug(false)
-      return
-    }
-
-    setSlugValidationError(null)
-    setIsCheckingSlug(true)
-    const timer = setTimeout(() => {
-      checkSlugAvailable(trimmed, pageId).then(({ available }) => {
-        setSlugAvailable(available)
-        setIsCheckingSlug(false)
-      })
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [newSlugInput, showChangeSlugModal, pageSlug, pageId])
+  }, [elements, pageSlug, pageId, pageMode])
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedElement(String(index))
@@ -421,9 +396,6 @@ export function AppBuilder({
 
   const handlePublishPage = async () => {
     if (!pageSlug.trim()) {
-      setNewSlugInput("")
-      setSlugAvailable(null)
-      setSlugValidationError(null)
       setShowChangeSlugModal(true)
       return
     }
@@ -448,16 +420,6 @@ export function AppBuilder({
     } finally {
       setIsPublishing(false)
     }
-  }
-
-  const handleSaveSlug = () => {
-    const trimmed = newSlugInput.trim()
-    if (!trimmed || slugAvailable === false || slugValidationError) return
-    setPageSlug(trimmed)
-    setShowChangeSlugModal(false)
-    setNewSlugInput("")
-    setSlugAvailable(null)
-    setSlugValidationError(null)
   }
 
   const handleUnpublishPage = async () => {
@@ -505,79 +467,119 @@ export function AppBuilder({
         </div>
 
         {/* Landing Settings */}
-        <div className="bg-linear-to-b from-primary/80 to-primary-hover/70 rounded-xl shadow-md p-4 sm:p-5 mb-4">
-          <div className="flex flex-col items-start sm:items-center justify-between gap-3 w-fit justify-self-center">
-            {/* Slug + pencil */}
-            <div className="flex items-center gap-1.5 w-full justify-between">
-              <h1 className="text-base font-semibold text-white truncate drop-shadow">
-                {pageSlug}
-              </h1>
+        <div className="bg-linear-to-b from-primary/80 to-primary-hover/70 rounded-xl shadow-md mb-4 overflow-hidden">
+          {/* Header bar */}
+          <div className="flex items-center justify-between gap-2 px-3 py-2 bg-black/15 border-b border-white/15">
+            <span className="text-xs font-medium text-white/60 uppercase tracking-wide">
+              Landing page
+            </span>
+            <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  setNewSlugInput(pageSlug)
-                  setSlugAvailable(null)
-                  setShowChangeSlugModal(true)
-                }}
-                className="shrink-0 p-1.5 rounded-md text-white bg-white/20 hover:bg-white/35 border border-white/30 transition-colors"
-                title="Change slug"
+                onClick={() => setShowOptionsModal(true)}
+                className="p-1.5 rounded-md text-white bg-white/20 hover:bg-white/35 border border-white/30 transition-colors"
+                title={pageMode === "dark" ? "Dark mode" : "Light mode"}
               >
-                <IconPencil size={14} aria-hidden="true" />
+                {pageMode === "dark" ? (
+                  <IconMoon size={14} aria-hidden="true" />
+                ) : (
+                  <IconSun size={14} aria-hidden="true" />
+                )}
               </button>
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => handlePublishPage()}
-                disabled={isPublishing}
-                className="flex items-center px-4 py-1.5 bg-white hover:bg-white/90 disabled:opacity-60 text-primary font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                {isPublishing ? "Publishing…" : "Publish"}
-              </button>
-              {isPublished && (
+          {/* Actions */}
+          <div className="p-4 sm:p-5">
+            <div className="flex flex-col items-start gap-3 w-fit">
+              {/* Slug + change */}
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold text-white truncate drop-shadow">
+                  {pageSlug}
+                </h1>
                 <button
                   type="button"
-                  onClick={() => handleUnpublishPage()}
-                  disabled={isUnpublishing}
-                  className="flex items-center px-4 py-1.5 bg-white/20 hover:bg-white/30 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm border border-white/30"
+                  onClick={() => setShowChangeSlugModal(true)}
+                  className="p-1.5 rounded-md text-white bg-white/20 hover:bg-white/35 border border-white/30 transition-colors"
+                  title="Change slug"
                 >
-                  {isUnpublishing ? "Unpublishing…" : "Unpublish"}
+                  <IconPencil size={14} aria-hidden="true" />
                 </button>
-              )}
-              <div className="w-px h-5 bg-white/30 hidden sm:block" />
-              <Link
-                href={`/preview/${pageSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white font-medium rounded-lg transition-colors text-sm border border-white/20"
-              >
-                Preview
-                <IconExternalLink size={13} aria-hidden="true" />
-              </Link>
-              {isPublished && (
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePublishPage()}
+                  disabled={isPublishing}
+                  className="flex items-center px-4 py-1.5 bg-white hover:bg-white/90 disabled:opacity-60 text-primary font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {isPublishing ? "Publishing…" : "Publish"}
+                </button>
+                {isPublished && (
+                  <button
+                    type="button"
+                    onClick={() => handleUnpublishPage()}
+                    disabled={isUnpublishing}
+                    className="flex items-center px-4 py-1.5 bg-white/20 hover:bg-white/30 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm border border-white/30"
+                  >
+                    {isUnpublishing ? "Unpublishing…" : "Unpublish"}
+                  </button>
+                )}
+              </div>
+
+              {/* Row 2: Preview + Published links */}
+              <div className="flex items-center gap-2">
                 <Link
-                  href={`/${pageSlug}`}
+                  href={`/preview/${pageSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                  className={buttonVariants({
+                    variant: "link",
+                    size: "sm",
+                    className: "text-white/80 hover:text-white",
+                  })}
                 >
-                  Published
-                  <IconExternalLink size={13} aria-hidden="true" />
+                  Preview
+                  <IconExternalLink
+                    size={13}
+                    className="ml-1"
+                    aria-hidden="true"
+                  />
                 </Link>
-              )}
-              <div className="w-px h-5 bg-white/30 hidden sm:block" />
-              <Button
-                variant="danger"
-                size="sm"
-                disabled={isDeletingProject}
-                onClick={() => setShowDeleteProjectModal(true)}
-                className="flex items-center gap-1.5"
-              >
-                <IconTrash size={14} aria-hidden="true" />
-                Delete
-              </Button>
+                {isPublished && (
+                  <Link
+                    href={`/${pageSlug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({
+                      variant: "link",
+                      size: "sm",
+                      className: "text-white/80 hover:text-white",
+                    })}
+                  >
+                    Published page
+                    <IconExternalLink
+                      size={13}
+                      className="ml-1"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                )}
+              </div>
+
+              {/* Row 3: Delete */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  disabled={isDeletingProject}
+                  onClick={() => setShowDeleteProjectModal(true)}
+                  className="flex items-center gap-1.5"
+                >
+                  <IconTrash size={14} aria-hidden="true" />
+                  Delete project
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -657,416 +659,115 @@ export function AppBuilder({
       </section>
 
       {/* Add Element Modal */}
-      <Modal
+      <AddElementModal
         isOpen={showModal}
         onClose={() => {
           setShowModal(false)
           setModalPosition(null)
         }}
-        title="Add Element"
-      >
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => handleAddElement("headline")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
-          >
-            <span className="text-xl sm:text-2xl">📰</span>
-            <span className="font-semibold text-text text-sm sm:text-base">
-              Headline
-            </span>
-          </button>
+        onAdd={handleAddElement}
+      />
 
-          <button
-            type="button"
-            onClick={() => handleAddElement("text")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
-          >
-            <span className="text-xl sm:text-2xl">📝</span>
-            <span className="font-semibold text-text text-sm sm:text-base">
-              Text
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleAddElement("image")}
-            className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
-          >
-            <span className="text-xl sm:text-2xl">🖼️</span>
-            <span className="font-semibold text-text text-sm sm:text-base">
-              Image
-            </span>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setShowModal(false)
-            setModalPosition(null)
-          }}
-          className="w-full mt-6 py-2 text-gray-600 hover:text-gray-900 border-t border-gray-200 pt-6 font-medium text-sm sm:text-base"
-        >
-          Cancel
-        </button>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
+      {/* Delete Element Confirmation Modal */}
+      <DeleteElementModal
         isOpen={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false)
           setDeleteElementId(null)
         }}
-        title="Remove Element"
-      >
-        <p className="text-gray-600 mb-6">
-          Are you sure you want to remove this element? This action cannot be
-          undone.
-        </p>
-
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setShowDeleteModal(false)
-              setDeleteElementId(null)
-            }}
-            className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={confirmDelete}
-            className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
-          >
-            Remove
-          </button>
-        </div>
-      </Modal>
+        onConfirm={confirmDelete}
+      />
 
       {/* Edit Content Modal */}
-      <Modal
+      <EditContentModal
         isOpen={!!editingElementId}
         onClose={closeEditModal}
-        title="Edit Content"
-        size="large"
-      >
-        <div className="space-y-4">
-          {editingElementId !== null &&
-          elements[parseInt(editingElementId, 10)]?.type === "text" ? (
-            <RichTextEditor
-              content={editingContent}
-              onChange={setEditingContent}
-            />
-          ) : (
-            <textarea
-              value={editingContent}
-              onChange={(e) => setEditingContent(e.target.value)}
-              placeholder="Enter your content here..."
-              // biome-ignore lint/a11y/noAutofocus: intentional focus when edit modal opens
-              autoFocus
-              className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none resize-none"
-            />
-          )}
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={closeEditModal}
-              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={saveEditingContent}
-              className="flex-1 py-2 px-4 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg transition-colors"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </Modal>
+        onSave={saveEditingContent}
+        elementType={
+          editingElementId !== null
+            ? elements[parseInt(editingElementId, 10)]?.type
+            : undefined
+        }
+        content={editingContent}
+        onChange={setEditingContent}
+      />
 
       {/* Edit Image Modal */}
-      <Modal
+      <EditImageModal
         isOpen={!!editingImageId}
+        editingImageId={editingImageId}
+        hasImage={
+          editingImageId !== null
+            ? !!elements[parseInt(editingImageId, 10)]?.content
+            : false
+        }
         onClose={closeImageEditModal}
-        title="Edit Image"
-      >
-        <div className="space-y-3">
-          <label
-            htmlFor={`image-input-modal-${editingImageId}`}
-            className="block w-full py-2 px-4 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg cursor-pointer transition-colors text-center"
-          >
-            Change Image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id={`image-input-modal-${editingImageId}`}
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file && editingImageId !== null) {
-                const index = parseInt(editingImageId, 10)
-                handleImageSelect(index, file)
-                closeImageEditModal()
-              }
-            }}
-          />
-
-          {editingImageId !== null &&
-            elements[parseInt(editingImageId, 10)]?.content && (
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="w-full py-2 px-4 bg-warning-light hover:bg-warning-light-hover text-warning font-medium rounded-lg transition-colors"
-              >
-                Remove Image
-              </button>
-            )}
-
-          <button
-            type="button"
-            onClick={closeImageEditModal}
-            className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </Modal>
-
-      <Modal
-        isOpen={showChangeSlugModal}
-        onClose={() => {
-          setShowChangeSlugModal(false)
-          setNewSlugInput("")
-          setSlugAvailable(null)
-          setSlugValidationError(null)
+        onFileChange={(file) => {
+          if (editingImageId !== null) {
+            handleImageSelect(parseInt(editingImageId, 10), file)
+          }
         }}
-        title="Change Slug"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600 text-sm">
-            Enter a new slug for your page (lowercase letters, numbers and
-            hyphens only).
-          </p>
-          <div className="space-y-1">
-            <input
-              type="text"
-              value={newSlugInput}
-              onChange={(e) =>
-                setNewSlugInput(
-                  e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
-                )
-              }
-              placeholder="my-page-slug"
-              className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition-colors ${
-                slugValidationError || slugAvailable === false
-                  ? "border-red-400 focus:border-red-500"
-                  : slugAvailable === true
-                    ? "border-green-400 focus:border-green-500"
-                    : "border-slate-200 focus:border-primary"
-              }`}
-            />
-            <p className="text-xs h-4">
-              {isCheckingSlug && (
-                <span className="text-slate-400">Checking availability…</span>
-              )}
-              {!isCheckingSlug && slugValidationError && (
-                <span className="text-red-500">{slugValidationError}</span>
-              )}
-              {!isCheckingSlug &&
-                !slugValidationError &&
-                slugAvailable === false && (
-                  <span className="text-red-500">
-                    This slug is already taken.
-                  </span>
-                )}
-              {!isCheckingSlug &&
-                !slugValidationError &&
-                slugAvailable === true && (
-                  <span className="text-green-600">Slug is available!</span>
-                )}
-              {!isCheckingSlug &&
-                !slugValidationError &&
-                newSlugInput.trim() === pageSlug &&
-                newSlugInput.trim() !== "" && (
-                  <span className="text-slate-400">
-                    This is the current slug.
-                  </span>
-                )}
-            </p>
-          </div>
+        onRemove={handleRemoveImage}
+      />
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setShowChangeSlugModal(false)
-                setNewSlugInput("")
-                setSlugAvailable(null)
-                setSlugValidationError(null)
-              }}
-              className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSaveSlug}
-              disabled={
-                !newSlugInput.trim() ||
-                newSlugInput.trim() === pageSlug ||
-                !!slugValidationError ||
-                slugAvailable === false ||
-                isCheckingSlug
-              }
-              className="flex-1 py-2 px-4 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      </Modal>
+      {/* Change Slug Modal */}
+      <ChangeSlugModal
+        isOpen={showChangeSlugModal}
+        pageSlug={pageSlug}
+        pageId={pageId}
+        onClose={() => setShowChangeSlugModal(false)}
+        onSave={(newSlug) => {
+          setPageSlug(newSlug)
+          setShowChangeSlugModal(false)
+        }}
+      />
 
       {/* Upload Progress Modal */}
-      <Modal
+      <UploadProgressModal
         isOpen={progressModal.isOpen}
-        onClose={() => {}}
-        title="Uploading Image"
-      >
-        <div className="space-y-4">
-          <div className="w-full bg-slate-100 rounded-lg h-2 overflow-hidden">
-            <div
-              className="bg-primary h-full transition-all duration-300"
-              style={{ width: `${progressModal.progress}%` }}
-            />
-          </div>
-          <p className="text-center text-gray-600 font-medium">
-            {progressModal.progress}%
-          </p>
-        </div>
-      </Modal>
+        progress={progressModal.progress}
+      />
 
       {/* Element Options Modal */}
-      <Modal
+      <ElementOptionsModal
         isOpen={!!optionsElementId}
+        element={
+          optionsElementId !== null
+            ? elements[parseInt(optionsElementId, 10)]
+            : undefined
+        }
         onClose={() => setOptionsElementId(null)}
-        title="Element Options"
-      >
-        <div className="space-y-4">
-          {optionsElementId !== null &&
-            elements[parseInt(optionsElementId, 10)]?.type === "headline" && (
-              <div>
-                <label
-                  htmlFor="options-headline-level-select"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Headline Level
-                </label>
-                <select
-                  id="options-headline-level-select"
-                  value={
-                    elements[parseInt(optionsElementId, 10)]?.headlineLevel ?? 1
-                  }
-                  onChange={(e) => {
-                    const index = parseInt(optionsElementId, 10)
-                    handleUpdateHeadlineLevel(
-                      index,
-                      Number(e.target.value) as NonNullable<
-                        LandingPageElement["headlineLevel"]
-                      >,
-                    )
-                  }}
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
-                >
-                  {([1, 2, 3, 4, 5, 6] as const).map((lvl) => (
-                    <option key={lvl} value={lvl}>
-                      H{lvl}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+        onHeadlineLevelChange={(level) => {
+          if (optionsElementId !== null) {
+            handleUpdateHeadlineLevel(parseInt(optionsElementId, 10), level)
+          }
+        }}
+        onAspectRatioChange={(ratio) => {
+          if (optionsElementId !== null) {
+            handleUpdateAspectRatio(parseInt(optionsElementId, 10), ratio)
+          }
+        }}
+      />
 
-          {optionsElementId !== null &&
-            elements[parseInt(optionsElementId, 10)]?.type === "image" && (
-              <div>
-                <label
-                  htmlFor="options-aspect-ratio-select"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Aspect Ratio
-                </label>
-                <select
-                  id="options-aspect-ratio-select"
-                  value={
-                    elements[parseInt(optionsElementId, 10)]?.aspectRatio ?? ""
-                  }
-                  onChange={(e) => {
-                    const index = parseInt(optionsElementId, 10)
-                    handleUpdateAspectRatio(
-                      index,
-                      (e.target.value as NonNullable<
-                        LandingPageElement["aspectRatio"]
-                      >) || undefined,
-                    )
-                  }}
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
-                >
-                  <option value="">Original (no crop)</option>
-                  <option value="16/9">16:9 (Landscape)</option>
-                  <option value="4/3">4:3</option>
-                  <option value="1/1">1:1 (Square)</option>
-                  <option value="3/4">3:4 (Portrait)</option>
-                  <option value="9/16">9:16 (Portrait)</option>
-                </select>
-              </div>
-            )}
-
-          <button
-            type="button"
-            onClick={() => setOptionsElementId(null)}
-            className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </Modal>
       {/* Delete Project Confirmation Modal */}
-      <Modal
+      <DeleteProjectModal
         isOpen={showDeleteProjectModal}
+        pageSlug={pageSlug}
+        isDeleting={isDeletingProject}
         onClose={() => setShowDeleteProjectModal(false)}
-        title="Delete Project"
-      >
-        <p className="text-gray-600 mb-2">
-          Are you sure you want to delete{" "}
-          <span className="font-semibold text-text">{pageSlug}</span>? This
-          action cannot be undone.
-        </p>
-        <div className="flex gap-3 mt-6">
-          <button
-            type="button"
-            onClick={() => setShowDeleteProjectModal(false)}
-            className="flex-1 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-text font-medium rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleDeleteProject}
-            disabled={isDeletingProject}
-            className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-medium rounded-lg transition-colors"
-          >
-            {isDeletingProject ? "Deleting…" : "Delete Project"}
-          </button>
-        </div>
-      </Modal>
+        onConfirm={handleDeleteProject}
+      />
+
+      {/* Landing Options Modal */}
+      <LandingOptionsModal
+        isOpen={showOptionsModal}
+        pageId={pageId}
+        pageSlug={pageSlug}
+        elements={elements}
+        pageMode={pageMode}
+        onModeChange={setPageMode}
+        onClose={() => setShowOptionsModal(false)}
+      />
     </Container>
   )
 }
