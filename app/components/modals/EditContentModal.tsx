@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react"
 import { Modal } from "@/app/ui/Modal"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 import type { LandingPageElement } from "@/types"
@@ -19,6 +20,18 @@ export function EditContentModal({
   content,
   onChange,
 }: EditContentModalProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (isOpen && elementType !== "text") {
+      // Wait for the modal transition to finish before focusing
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus()
+      }, 150)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, elementType])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Content" size="large">
       <div className="space-y-4">
@@ -26,11 +39,10 @@ export function EditContentModal({
           <RichTextEditor content={content} onChange={onChange} />
         ) : (
           <textarea
+            ref={textareaRef}
             value={content}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter your content here..."
-            // biome-ignore lint/a11y/noAutofocus: intentional focus when edit modal opens
-            autoFocus
             className="w-full h-32 p-3 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none resize-none"
           />
         )}

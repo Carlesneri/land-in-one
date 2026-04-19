@@ -32,6 +32,7 @@ import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
 import { Button, buttonVariants } from "@/app/ui/Button"
+import { cva } from "class-variance-authority"
 import {
   IconExternalLink,
   IconPencil,
@@ -41,6 +42,17 @@ import {
   IconMoon,
 } from "@tabler/icons-react"
 import { Container } from "@/app/ui/Container"
+import { cn } from "@/lib/utils"
+
+const statusDotVariants = cva("w-1.5 h-1.5 rounded-full shrink-0", {
+  variants: {
+    status: {
+      unpublished: "bg-slate-400",
+      changes: "bg-yellow-300",
+      upToDate: "bg-green-400",
+    },
+  },
+})
 
 export function AppBuilder({
   elements: initialElements,
@@ -88,6 +100,28 @@ export function AppBuilder({
   const [isDeletingProject, setIsDeletingProject] = useState(false)
   const [showOptionsModal, setShowOptionsModal] = useState(false)
   const [pageMode, setPageMode] = useState<"light" | "dark">(initialMode)
+  const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false)
+  const [bottomMessage, setBottomMessage] = useState<{
+    status: "unpublished" | "changes" | "upToDate"
+    text: string
+  }>(() => {
+    if (!published) return { status: "unpublished", text: "Not published" }
+    return { status: "upToDate", text: "Published · up to date" }
+  })
+
+  // Update bottom bar message when publish state or changes flag updates
+  useEffect(() => {
+    if (!isPublished) {
+      setBottomMessage({ status: "unpublished", text: "Not published" })
+    } else if (hasUnpublishedChanges) {
+      setBottomMessage({
+        status: "changes",
+        text: "You have unpublished changes",
+      })
+    } else {
+      setBottomMessage({ status: "upToDate", text: "Published · up to date" })
+    }
+  }, [isPublished, hasUnpublishedChanges])
 
   // Auto-save elements to Preview Page model when they change
   useEffect(() => {
@@ -95,6 +129,9 @@ export function AppBuilder({
       hasMounted.current = true
       return
     }
+
+    setHasUnpublishedChanges(true)
+
     const timer = setTimeout(() => {
       if (pageSlug && pageId) {
         savePreviewPage(pageId, {
@@ -412,6 +449,7 @@ export function AppBuilder({
       if (result?.success) {
         toast.success("Page published successfully")
         setIsPublished(true)
+        setHasUnpublishedChanges(false)
       } else if (result) {
         toast.error("An error occurred")
       }
@@ -509,9 +547,22 @@ export function AppBuilder({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => handlePublishPage()}
+                  onClick={() => {
+                    if (!hasUnpublishedChanges && isPublished) {
+                      toast.info(
+                        "You already have the latest changes published",
+                      )
+                      return
+                    }
+                    handlePublishPage()
+                  }}
                   disabled={isPublishing}
-                  className="flex items-center px-4 py-1.5 bg-white hover:bg-white/90 disabled:opacity-60 text-primary font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className={cn(
+                    "flex items-center px-4 py-1.5 font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-60",
+                    !hasUnpublishedChanges && isPublished
+                      ? "bg-white/40 text-primary/60 cursor-not-allowed"
+                      : "bg-white hover:bg-white/90 text-primary",
+                  )}
                 >
                   {isPublishing ? "Publishing…" : "Publish"}
                 </button>
@@ -581,6 +632,14 @@ export function AppBuilder({
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-black/15 border-t border-white/15">
+            <span
+              className={statusDotVariants({ status: bottomMessage.status })}
+            />
+            <span className="text-xs text-white/70">{bottomMessage.text}</span>
           </div>
         </div>
 
