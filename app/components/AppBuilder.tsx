@@ -16,7 +16,7 @@ import { ChangeSlugModal } from "@/app/components/modals/ChangeSlugModal"
 import { ElementOptionsModal } from "@/app/components/modals/ElementOptionsModal"
 import { UploadProgressModal } from "@/app/components/modals/UploadProgressModal"
 import { DeleteProjectModal } from "@/app/components/modals/DeleteProjectModal"
-import { LandingOptionsModal } from "@/app/components/modals/LandingOptionsModal"
+import { LandingModeModal } from "@/app/components/modals/LandingModeModal"
 import {
   publishPage,
   savePreviewPage,
@@ -759,7 +759,7 @@ export function AppBuilder({
       />
 
       {/* Landing Options Modal */}
-      <LandingOptionsModal
+      <LandingModeModal
         isOpen={showOptionsModal}
         pageId={pageId}
         pageSlug={pageSlug}

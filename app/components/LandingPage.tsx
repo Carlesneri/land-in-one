@@ -1,15 +1,35 @@
 import type { LandingPageElement, Status } from "@/types"
 import Link from "next/link"
 import Image from "next/image"
+import { cva } from "class-variance-authority"
+
+const landingVariants = cva("min-h-screen flex flex-col", {
+  variants: {
+    mode: {
+      light: "landing-light",
+      dark: "landing-dark",
+    },
+  },
+  defaultVariants: {
+    mode: "light",
+  },
+})
 
 interface PageViewProps {
   elements: LandingPageElement[]
   slug: string
   status: Status
   id: string
+  mode?: "light" | "dark"
 }
 
-export function LandingPage({ elements, slug, status, id }: PageViewProps) {
+export function LandingPage({
+  elements,
+  slug,
+  status,
+  id,
+  mode = "light",
+}: PageViewProps) {
   // Sort elements by position
   const sortedElements = [...elements].sort((a, b) => a.position - b.position)
 
@@ -17,7 +37,7 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
     sortedElements.length === 0 || sortedElements.every((el) => !el.content)
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={landingVariants({ mode })}>
       {/* Preview Banner */}
       {status === "preview" && (
         <div className="w-full bg-yellow-50 border-b-2 border-yellow-300 px-4 py-4">
@@ -44,13 +64,15 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
       )}
 
       {/* Page content */}
-      <div className="flex-1 bg-white">
+      <div className="flex-1" style={{ backgroundColor: "var(--lp-bg)" }}>
         {noContent ? (
           <div className="max-w-4xl mx-auto px-4 py-8 flex items-center justify-center min-h-full">
-            <p className="text-slate-500 text-lg">No content yet</p>
+            <p className="text-lg" style={{ color: "var(--lp-text-muted)" }}>
+              No content yet
+            </p>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto px-4 pt-8 pb-24">
+          <div className="max-w-4xl mx-auto px-4 pt-8 pb-24 landing-content">
             <div className="space-y-8">
               {sortedElements.map((element) => (
                 <div
@@ -68,7 +90,7 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
                         5: "text-lg md:text-xl",
                         6: "text-base md:text-lg",
                       }
-                      const cls = `${sizeClasses[level]} font-bold text-slate-900`
+                      const cls = `${sizeClasses[level]} font-bold`
                       if (level === 1)
                         return <h1 className={cls}>{element.content}</h1>
                       if (level === 2)
@@ -84,7 +106,7 @@ export function LandingPage({ elements, slug, status, id }: PageViewProps) {
 
                   {element.type === "text" && (
                     <div
-                      className="text-lg text-slate-700 leading-relaxed prose prose-slate max-w-none"
+                      className="text-lg leading-relaxed prose prose-slate max-w-none"
                       // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                       dangerouslySetInnerHTML={{
                         __html: element.content ?? "",

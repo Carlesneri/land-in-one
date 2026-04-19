@@ -1,9 +1,10 @@
+import { useState, useEffect } from "react"
 import { Modal } from "@/app/ui/Modal"
 import { savePreviewPage } from "@/app/actions/pages"
 import { toast } from "sonner"
 import type { LandingPageElement } from "@/types"
 
-interface LandingOptionsModalProps {
+interface LandingModeModalProps {
   isOpen: boolean
   pageId: string
   pageSlug: string
@@ -13,7 +14,7 @@ interface LandingOptionsModalProps {
   onClose: () => void
 }
 
-export function LandingOptionsModal({
+export function LandingModeModal({
   isOpen,
   pageId,
   pageSlug,
@@ -21,21 +22,23 @@ export function LandingOptionsModal({
   pageMode,
   onModeChange,
   onClose,
-}: LandingOptionsModalProps) {
+}: LandingModeModalProps) {
+  const [selectedMode, setSelectedMode] = useState<"light" | "dark">(pageMode)
+
+  useEffect(() => {
+    if (isOpen) setSelectedMode(pageMode)
+  }, [isOpen, pageMode])
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Landing Options">
+    <Modal isOpen={isOpen} onClose={onClose} title="Color mode">
       <div className="space-y-4">
         <div>
-          <label
-            htmlFor="landing-mode-select"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Color mode
-          </label>
           <select
             id="landing-mode-select"
-            value={pageMode}
-            onChange={(e) => onModeChange(e.target.value as "light" | "dark")}
+            value={selectedMode}
+            onChange={(e) =>
+              setSelectedMode(e.target.value as "light" | "dark")
+            }
             className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
           >
             <option value="light">Light</option>
@@ -53,13 +56,14 @@ export function LandingOptionsModal({
           <button
             type="button"
             onClick={() => {
+              onModeChange(selectedMode)
               onClose()
               savePreviewPage(pageId, {
                 slug: pageSlug,
                 elements,
-                mode: pageMode,
+                mode: selectedMode,
               }).catch(() => toast.error("Failed to save options"))
-              toast.success("Options saved")
+              toast.success(`Switched to ${selectedMode} mode`)
             }}
             className="flex-1 py-2 px-4 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg transition-colors"
           >

@@ -48,6 +48,7 @@ export default async function PreviewPage({
       slug={slug}
       status="preview"
       id={previewPage.page?._id.toString() || ""}
+      mode={previewPage.page?.mode ?? "light"}
     />
   )
 }

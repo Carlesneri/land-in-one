@@ -1,0 +1,80 @@
+/* =========================================
+   Landing page theme: light mode (default)
+   ========================================= */
+
+.landing-light {
+  --lp-bg: #ffffff;
+  --lp-bg-secondary: #f8fafc;
+  --lp-text: #0f172a;
+  --lp-text-muted: #475569;
+  --lp-heading: #0f172a;
+  --lp-border: #e2e8f0;
+  --lp-prose-body: #334155;
+  --lp-prose-headings: #0f172a;
+  --lp-prose-links: #6442d6;
+  --lp-prose-bold: #0f172a;
+  --lp-prose-code: #6442d6;
+
+  background-color: var(--lp-bg);
+  color: var(--lp-text);
+}
+
+/* =========================================
+   Landing page theme: dark mode
+   ========================================= */
+
+.landing-dark {
+  --lp-bg: #0f172a;
+  --lp-bg-secondary: #1e293b;
+  --lp-text: #f1f5f9;
+  --lp-text-muted: #94a3b8;
+  --lp-heading: #f8fafc;
+  --lp-border: #334155;
+  --lp-prose-body: #cbd5e1;
+  --lp-prose-headings: #f8fafc;
+  --lp-prose-links: #a78bfa;
+  --lp-prose-bold: #f1f5f9;
+  --lp-prose-code: #a78bfa;
+
+  background-color: var(--lp-bg);
+  color: var(--lp-text);
+}
+
+/* =========================================
+   Shared landing content styles
+   ========================================= */
+
+.landing-content h1,
+.landing-content h2,
+.landing-content h3,
+.landing-content h4,
+.landing-content h5,
+.landing-content h6 {
+  color: var(--lp-heading);
+}
+
+.landing-content p,
+.landing-content li {
+  color: var(--lp-text);
+}
+
+/* Prose (rich text) overrides */
+.landing-content .prose {
+  --tw-prose-body: var(--lp-prose-body);
+  --tw-prose-headings: var(--lp-prose-headings);
+  --tw-prose-links: var(--lp-prose-links);
+  --tw-prose-bold: var(--lp-prose-bold);
+  --tw-prose-counters: var(--lp-text-muted);
+  --tw-prose-bullets: var(--lp-text-muted);
+  --tw-prose-hr: var(--lp-border);
+  --tw-prose-quotes: var(--lp-text);
+  --tw-prose-quote-borders: var(--lp-border);
+  --tw-prose-captions: var(--lp-text-muted);
+  --tw-prose-code: var(--lp-prose-code);
+  --tw-prose-pre-code: var(--lp-prose-body);
+  --tw-prose-pre-bg: var(--lp-bg-secondary);
+  --tw-prose-th-borders: var(--lp-border);
+  --tw-prose-td-borders: var(--lp-border);
+
+  color: var(--lp-prose-body);
+}

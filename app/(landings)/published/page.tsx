@@ -26,6 +26,7 @@ export default async function PublishedPage({
       slug={slug}
       status="publish"
       id={publishedPage.page?._id.toString() || ""}
+      mode={publishedPage.page?.mode ?? "light"}
     />
   )
 }
