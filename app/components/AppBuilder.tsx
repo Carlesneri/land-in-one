@@ -477,12 +477,7 @@ export function AppBuilder({
     setIsPublishing(true)
 
     try {
-      // Elements already have cloud URLs, just publish them
-      const result = await publishPage(pageId, {
-        slug: pageSlug,
-        elements,
-        mode: pageMode,
-      })
+      const result = await publishPage(pageId)
 
       if (result?.success) {
         toast.success("Page published successfully")

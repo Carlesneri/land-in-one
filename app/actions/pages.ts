@@ -1,6 +1,6 @@
 "use server"
 
-import { PreviewPage, PublishPage, type PageModelType } from "@/lib/models/Page"
+import { PreviewPage, PublishPage } from "@/lib/models/Page"
 import { connectToDatabase } from "@/lib/mongodb"
 import { deleteImageInCloud } from "@/app/actions/cloud-storage"
 import type { LandingPage, LandingPageElement, Status } from "@/types"
@@ -178,7 +178,7 @@ export async function savePreviewPage(id: string, payload: SavePagePayload) {
   }
 }
 
-export async function publishPage(id: string, payload: SavePagePayload) {
+export async function publishPage(previewId: string) {
   try {
     await connectToDatabase()
     const session = await getServerSession()
@@ -187,22 +187,22 @@ export async function publishPage(id: string, payload: SavePagePayload) {
       redirect("/login")
     }
 
-    const { slug, elements, mode } = payload
-
-    if (!slug) {
-      return {
-        success: false,
-        error: "Slug is required",
-      }
-    }
-
-    // Get the preview page to capture the current updatedAt as date_version
-    const previewPage = await PreviewPage.findById(id)
+    // Fetch the full preview document as source of truth
+    const previewPage = await PreviewPage.findById(previewId)
 
     if (!previewPage) {
       return {
         success: false,
         error: "Preview page not found",
+      }
+    }
+
+    const { slug, elements, mode } = previewPage
+
+    if (!slug) {
+      return {
+        success: false,
+        error: "Slug is required",
       }
     }
 
@@ -212,7 +212,7 @@ export async function publishPage(id: string, payload: SavePagePayload) {
       mode,
       userEmail: session.user.email,
       previewPageDate: previewPage.updatedAt,
-      previewPageId: previewPage.id,
+      previewPageId: previewPage._id.toString(),
     }
 
     // Check if a published version already exists
