@@ -74,6 +74,14 @@ export function RichTextEditor({
         class: `prose prose-sm max-w-none focus:outline-none px-3 py-2 text-gray-800 leading-relaxed`,
         style: `min-height: ${minHeight}`,
       },
+      handleClick(_, __, event) {
+        const target = event.target as HTMLElement
+        if (target.closest("a")) {
+          event.preventDefault()
+          return true
+        }
+        return false
+      },
     },
     onUpdate({ editor }) {
       onChange(editor.getHTML())
@@ -115,7 +123,13 @@ export function RichTextEditor({
     if (!linkUrl) {
       editor.chain().focus().unsetLink().run()
     } else {
-      editor.chain().focus().setLink({ href: linkUrl }).run()
+      const href =
+        linkUrl.startsWith("http://") ||
+        linkUrl.startsWith("https://") ||
+        linkUrl.startsWith("mailto:")
+          ? linkUrl
+          : `https://${linkUrl}`
+      editor.chain().focus().setLink({ href }).run()
     }
     setShowLinkInput(false)
     setLinkUrl("")
@@ -181,7 +195,7 @@ export function RichTextEditor({
         <span className="w-px h-4 bg-slate-300 mx-1" />
 
         {/* Heading levels */}
-        {([1, 2, 3] as const).map((level) => (
+        {([1, 2, 3, 4, 5, 6] as const).map((level) => (
           <button
             key={level}
             type="button"
@@ -344,31 +358,33 @@ export function RichTextEditor({
 
       {/* Link input */}
       {showLinkInput && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50">
+        <div className="flex flex-col gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50">
           <input
             type="url"
             placeholder="https://..."
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSetLink()}
-            className="flex-1 text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:border-primary"
+            className="w-full text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:border-primary"
             // biome-ignore lint/a11y/noAutofocus: intentional focus on link input
             autoFocus
           />
-          <button
-            type="button"
-            onClick={handleSetLink}
-            className="text-xs px-2 py-1 bg-primary text-white rounded hover:bg-primary-hover transition-colors"
-          >
-            Apply
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowLinkInput(false)}
-            className="text-xs px-2 py-1 text-slate-600 hover:bg-slate-200 rounded transition-colors"
-          >
-            Cancel
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleSetLink}
+              className="flex-1 text-xs px-2 py-1 bg-primary text-white rounded hover:bg-primary-hover transition-colors"
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLinkInput(false)}
+              className="flex-1 text-xs px-2 py-1 text-slate-600 border border-slate-300 hover:bg-slate-200 rounded transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
