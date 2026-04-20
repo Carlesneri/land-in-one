@@ -22,7 +22,7 @@ export function ElementCard({
 }: ElementCardProps) {
   const hasOptions = element.type === "image"
   const { ref, handleRef, isDragging } = useSortable({
-    id: element.position,
+    id: element.id,
     index,
   })
 

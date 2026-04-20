@@ -1,4 +1,5 @@
 export interface LandingPageElement {
+  id: string
   type: "text" | "image"
   content?: string
   position: number

@@ -61,9 +61,18 @@ export function AppBuilder({
 }: {
   previewLandingPage: Omit<PageModelType, "_id"> & { id: string }
 }) {
+  // Ensure every element has a stable id (back-fills existing data without one)
+  const normalizedLandingPage = {
+    ...previewLandingPage,
+    elements: previewLandingPage.elements.map((el) => ({
+      ...el,
+      id: el.id ?? crypto.randomUUID(),
+    })),
+  }
+
   const [previewPage, setPreviewPage] = useState<
     Omit<PageModelType, "_id"> & { id: string }
-  >(previewLandingPage)
+  >(normalizedLandingPage)
 
   // Convenience accessors derived from the single source of truth
   const elements = previewPage.elements
@@ -204,6 +213,7 @@ export function AppBuilder({
     }
 
     const newElement = {
+      id: crypto.randomUUID(),
       type,
       content: "",
       position: elements.length,
@@ -602,7 +612,7 @@ export function AppBuilder({
             <div className="space-y-6">
               {elements.map((element, index) => (
                 <ElementCard
-                  key={`${element.type}-${element.position}`}
+                  key={element.id}
                   element={element}
                   index={index}
                   onDelete={handleDeleteElement}

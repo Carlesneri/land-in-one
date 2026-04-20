@@ -3,6 +3,10 @@ import mongoose, { Schema } from "mongoose"
 
 const elementSchema = new Schema<LandingPageElement>(
   {
+    id: {
+      type: String,
+      required: true,
+    },
     type: {
       type: String,
       enum: ["text", "image"],
