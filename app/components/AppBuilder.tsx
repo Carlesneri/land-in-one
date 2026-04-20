@@ -31,6 +31,8 @@ import { toast } from "sonner"
 import type { LandingPage, LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
+import { DragDropProvider } from "@dnd-kit/react"
+import { isSortableOperation } from "@dnd-kit/react/sortable"
 import { Button, buttonVariants } from "@/app/ui/Button"
 import { cva } from "class-variance-authority"
 import {
@@ -86,15 +88,12 @@ export function AppBuilder({
   const setPageMode = (mode: "light" | "dark") =>
     setPreviewPage((prev) => ({ ...prev, mode }))
 
-  const [draggedElement, setDraggedElement] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
-  const [modalPosition, setModalPosition] = useState<number | null>(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteElementId, setDeleteElementId] = useState<string | null>(null)
   const [editingElementId, setEditingElementId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState<string>("")
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
-  const [dragOverPosition, setDragOverPosition] = useState<number | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
   const [isPublished, setIsPublished] = useState<boolean | undefined>()
   const [isUnpublishing, setIsUnpublishing] = useState(false)
@@ -183,81 +182,15 @@ export function AppBuilder({
     return () => clearTimeout(timer)
   }, [elements, pageSlug, pageId, pageMode])
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedElement(String(index))
-    e.dataTransfer.effectAllowed = "move"
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
-  }
-
-  const handleDragOverPosition = (e: React.DragEvent, position: number) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
-    setDragOverPosition(position)
-  }
-
-  const handleDropOnElement = (e: React.DragEvent, targetIndex: number) => {
-    e.preventDefault()
-
-    if (!draggedElement) {
-      setDraggedElement(null)
-      setDragOverPosition(null)
-      return
-    }
-
-    const draggedIndex = parseInt(draggedElement, 10)
-    if (draggedIndex === -1 || draggedIndex === targetIndex) {
-      setDraggedElement(null)
-      setDragOverPosition(null)
-      return
-    }
-
+  const handleDragSort = (sourceIndex: number, targetIndex: number) => {
     const newElements = [...elements]
-    ;[newElements[draggedIndex], newElements[targetIndex]] = [
-      newElements[targetIndex],
-      newElements[draggedIndex],
-    ]
-
-    setElements(newElements)
-    setDraggedElement(null)
-    setDragOverPosition(null)
-  }
-
-  const handleDropOnPosition = (e: React.DragEvent, position: number) => {
-    e.preventDefault()
-
-    if (!draggedElement) {
-      setDraggedElement(null)
-      setDragOverPosition(null)
-      return
-    }
-
-    const draggedIndex = parseInt(draggedElement, 10)
-    if (draggedIndex === -1) {
-      setDraggedElement(null)
-      setDragOverPosition(null)
-      return
-    }
-
-    const newElements = [...elements]
-    const draggedEl = newElements[draggedIndex]
-    newElements.splice(draggedIndex, 1)
-    newElements.splice(position, 0, draggedEl)
-    // Update positions
+    const draggedEl = newElements[sourceIndex]
+    newElements.splice(sourceIndex, 1)
+    newElements.splice(targetIndex, 0, draggedEl)
     newElements.forEach((el, idx) => {
       el.position = idx
     })
-
     setElements(newElements)
-    setDraggedElement(null)
-    setDragOverPosition(null)
-  }
-
-  const handleDragEnd = () => {
-    setDraggedElement(null)
   }
 
   const handleAddElement = (type: "text" | "image") => {
@@ -266,7 +199,6 @@ export function AppBuilder({
       elements.filter((el) => el.type === "image").length >= 10
     ) {
       setShowModal(false)
-      setModalPosition(null)
       toast.error("You can only add up to 10 image elements per page")
       return
     }
@@ -274,24 +206,11 @@ export function AppBuilder({
     const newElement = {
       type,
       content: "",
-      position: modalPosition ?? elements.length,
+      position: elements.length,
     } as LandingPage["elements"][0]
 
-    const newElements = [...elements]
-    if (modalPosition !== null) {
-      newElements.splice(modalPosition, 0, newElement)
-      // Update positions after insertion
-      newElements.forEach((el, idx) => {
-        el.position = idx
-      })
-    } else {
-      newElement.position = newElements.length
-      newElements.push(newElement)
-    }
-
-    setElements(newElements)
+    setElements((prev) => [...prev, newElement])
     setShowModal(false)
-    setModalPosition(null)
   }
 
   const handleDeleteElement = (index: number) => {
@@ -667,29 +586,25 @@ export function AppBuilder({
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 md:p-8">
           {/* Preview Area */}
-          <div className="space-y-6">
-            {/* Add button at start */}
-            <AddElementButton
-              position={0}
-              dragOverPosition={dragOverPosition}
-              onDragOver={handleDragOverPosition}
-              onDragLeave={() => setDragOverPosition(null)}
-              onDrop={handleDropOnPosition}
-              onClick={(pos) => {
-                setModalPosition(pos)
-                setShowModal(true)
-              }}
-            />
-
-            {elements.map((element, index) => (
-              <div key={`${element.type}-${element.position}`}>
+          <DragDropProvider
+            onDragEnd={(event) => {
+              if (event.canceled) return
+              const { operation } = event
+              if (!isSortableOperation(operation)) return
+              const sourceIndex = operation.source?.index
+              const targetIndex = operation.target?.index
+              if (sourceIndex == null || targetIndex == null) return
+              if (sourceIndex !== targetIndex) {
+                handleDragSort(sourceIndex, targetIndex)
+              }
+            }}
+          >
+            <div className="space-y-6">
+              {elements.map((element, index) => (
                 <ElementCard
+                  key={`${element.type}-${element.position}`}
                   element={element}
                   index={index}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDropOnElement}
-                  onDragEnd={handleDragEnd}
                   onDelete={handleDeleteElement}
                   onOpenOptions={(i) => setOptionsElementId(String(i))}
                 >
@@ -712,33 +627,21 @@ export function AppBuilder({
                     />
                   )}
                 </ElementCard>
+              ))}
+            </div>
+          </DragDropProvider>
 
-                {/* Add button after element */}
-                <AddElementButton
-                  position={index + 1}
-                  dragOverPosition={dragOverPosition}
-                  onDragOver={handleDragOverPosition}
-                  onDragLeave={() => setDragOverPosition(null)}
-                  onDrop={handleDropOnPosition}
-                  onClick={(pos) => {
-                    setModalPosition(pos)
-                    setShowModal(true)
-                  }}
-                  className="mt-2"
-                />
-              </div>
-            ))}
-          </div>
+          <AddElementButton
+            className="mt-6"
+            onClick={() => setShowModal(true)}
+          />
         </div>
       </section>
 
       {/* Add Element Modal */}
       <AddElementModal
         isOpen={showModal}
-        onClose={() => {
-          setShowModal(false)
-          setModalPosition(null)
-        }}
+        onClose={() => setShowModal(false)}
         onAdd={handleAddElement}
       />
 
