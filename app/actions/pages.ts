@@ -14,7 +14,10 @@ interface SavePagePayload {
   slug: string
   mode?: "light" | "dark"
   elements: Array<
-    Pick<LandingPageElement, "type" | "content" | "position" | "aspectRatio">
+    Pick<
+      LandingPageElement,
+      "id" | "type" | "content" | "position" | "aspectRatio"
+    >
   >
 }
 
@@ -267,12 +270,16 @@ export async function createNewPage() {
       slug,
       elements: [
         {
+          id: crypto.randomUUID(),
           type: "text",
-          position: 1,
+          position: 0,
+          content: "",
         },
         {
+          id: crypto.randomUUID(),
           type: "image",
-          position: 2,
+          position: 1,
+          content: "",
         },
       ],
       userEmail: session.user.email,
