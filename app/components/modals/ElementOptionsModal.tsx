@@ -1,13 +1,11 @@
 import { Modal } from "@/app/ui/Modal"
-import type { LandingPageElement } from "@/types"
+import type { LandingPageElement, AspectRatio } from "@/types"
 
 interface ElementOptionsModalProps {
   isOpen: boolean
   element: LandingPageElement | undefined
   onClose: () => void
-  onAspectRatioChange: (
-    ratio: LandingPageElement["aspectRatio"] | undefined,
-  ) => void
+  onAspectRatioChange: (ratio: AspectRatio | undefined) => void
 }
 
 export function ElementOptionsModal({
@@ -19,7 +17,7 @@ export function ElementOptionsModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Element Options">
       <div className="space-y-4">
-        {element?.type === "image" && (
+        {(element?.type === "image" || element?.type === "image-text") && (
           <div>
             <label
               htmlFor="options-aspect-ratio-select"
@@ -29,12 +27,14 @@ export function ElementOptionsModal({
             </label>
             <select
               id="options-aspect-ratio-select"
-              value={element.aspectRatio ?? ""}
+              value={
+                element.type === "image" || element.type === "image-text"
+                  ? (element.aspectRatio ?? "")
+                  : ""
+              }
               onChange={(e) =>
                 onAspectRatioChange(
-                  (e.target.value as NonNullable<
-                    LandingPageElement["aspectRatio"]
-                  >) || undefined,
+                  (e.target.value as AspectRatio) || undefined,
                 )
               }
               className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"

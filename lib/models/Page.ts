@@ -1,29 +1,22 @@
-import type { LandingPage, LandingPageElement } from "@/types"
+import type { LandingPage } from "@/types"
 import mongoose, { Schema } from "mongoose"
 
-const elementSchema = new Schema<LandingPageElement>(
+const elementSchema = new Schema(
   {
-    id: {
-      type: String,
-      required: true,
-    },
+    id: { type: String, required: true },
     type: {
       type: String,
-      enum: ["text", "image"],
+      enum: ["text", "image", "image-text"],
       required: true,
     },
-    content: {
-      type: String,
-      default: "",
-    },
-    position: {
-      type: Number,
-      required: true,
-    },
-    aspectRatio: {
-      type: String,
-      enum: ["9/16", "3/4", "4/3", "1/1", "16/9"],
-    },
+    position: { type: Number, required: true },
+    // TextElement & ImageElement fields
+    content: { type: String, default: "" },
+    // ImageElement & ImageTextElement fields
+    aspectRatio: { type: String, enum: ["9/16", "3/4", "4/3", "1/1", "16/9"] },
+    // ImageTextElement fields
+    text: { type: String, default: "" },
+    image: { type: String, default: "" },
   },
   { _id: false },
 )

@@ -1,11 +1,25 @@
-export interface LandingPageElement {
+export type AspectRatio = "9/16" | "3/4" | "4/3" | "1/1" | "16/9"
+export type Status = "publish" | "preview"
+export interface BaseElement {
   id: string
-  type: "text" | "image"
-  content?: string
   position: number
-  aspectRatio?: "9/16" | "3/4" | "4/3" | "1/1" | "16/9"
 }
-
+export interface TextElement extends BaseElement {
+  type: "text"
+  content: string
+}
+export interface ImageElement extends BaseElement {
+  type: "image"
+  content: string
+  aspectRatio?: AspectRatio
+}
+export interface ImageTextElement extends BaseElement {
+  type: "image-text"
+  text: string
+  image: string
+  aspectRatio?: AspectRatio
+}
+export type LandingPageElement = TextElement | ImageElement | ImageTextElement
 export interface LandingPage {
   slug: string
   elements: LandingPageElement[]
@@ -14,5 +28,3 @@ export interface LandingPage {
   previewPageId?: string
   previewPageDate?: Date
 }
-
-export type Status = "publish" | "preview"

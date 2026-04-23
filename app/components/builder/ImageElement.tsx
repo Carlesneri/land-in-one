@@ -2,10 +2,10 @@
 
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
-import type { LandingPageElement } from "@/types"
+import type { ImageElement as ImageElementType } from "@/types"
 
 interface ImageElementProps {
-  element: LandingPageElement
+  element: ImageElementType
   index: number
   imageInputRef: (el: HTMLInputElement | null) => void
   onOpenEditModal: (index: number) => void

@@ -4,6 +4,8 @@ import { useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import TextAlign from "@tiptap/extension-text-align"
+import Color from "@tiptap/extension-color"
+import { TextStyle } from "@tiptap/extension-text-style"
 import {
   RichTextEditor as MantineRTE,
   Link as MantineLink,
@@ -42,6 +44,7 @@ interface RichTextEditorProps {
   onChange: (html: string) => void
   placeholder?: string
   minHeight?: string
+  colorPicker?: boolean
 }
 
 export function RichTextEditor({
@@ -49,6 +52,7 @@ export function RichTextEditor({
   onChange,
   placeholder = "Enter your text here…",
   minHeight = "8rem",
+  colorPicker = false,
 }: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
@@ -57,6 +61,8 @@ export function RichTextEditor({
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       AbsoluteLink.configure({ openOnClick: false, defaultProtocol: "https" }),
+      TextStyle,
+      Color,
     ] as unknown as AnyExtension[],
     content,
     autofocus: "end",
@@ -123,6 +129,31 @@ export function RichTextEditor({
         <MantineRTE.ControlsGroup>
           <MantineRTE.Hr />
         </MantineRTE.ControlsGroup>
+
+        {colorPicker && (
+          <MantineRTE.ControlsGroup>
+            <MantineRTE.ColorPicker
+              colors={[
+                "#ffffff",
+                "#f8fafc",
+                "#f1f5f9",
+                "#e2e8f0",
+                "#94a3b8",
+                "#000000",
+                "#1e293b",
+                "#334155",
+                "#ef4444",
+                "#f97316",
+                "#eab308",
+                "#22c55e",
+                "#3b82f6",
+                "#8b5cf6",
+                "#ec4899",
+              ]}
+            />
+            <MantineRTE.UnsetColor />
+          </MantineRTE.ControlsGroup>
+        )}
       </MantineRTE.Toolbar>
 
       <MantineRTE.Content />

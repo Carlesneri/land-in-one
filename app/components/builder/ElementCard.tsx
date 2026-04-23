@@ -20,7 +20,7 @@ export function ElementCard({
   onOpenOptions,
   children,
 }: ElementCardProps) {
-  const hasOptions = element.type === "image"
+  const hasOptions = element.type === "image" || element.type === "image-text"
   const { ref, handleRef, isDragging } = useSortable({
     id: element.id,
     index,
@@ -42,9 +42,11 @@ export function ElementCard({
         {element.type === "text" && (
           <span className="uppercase tracking-wide">Text</span>
         )}
-        {element.type === "image" && (
+        {(element.type === "image" || element.type === "image-text") && (
           <>
-            <span className="uppercase tracking-wide">Image</span>
+            <span className="uppercase tracking-wide">
+              {element.type === "image-text" ? "Image + Text" : "Image"}
+            </span>
             {element.aspectRatio && (
               <div className="flex items-center gap-1">
                 {(() => {

@@ -13,12 +13,7 @@ import { validateSlug } from "@/lib/validation/slug"
 interface SavePagePayload {
   slug: string
   mode?: "light" | "dark"
-  elements: Array<
-    Pick<
-      LandingPageElement,
-      "id" | "type" | "content" | "position" | "aspectRatio"
-    >
-  >
+  elements: LandingPageElement[]
 }
 
 export async function getPreviewLandingPageById(id: string) {

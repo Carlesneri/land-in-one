@@ -3,7 +3,7 @@ import { Modal } from "@/app/ui/Modal"
 interface AddElementModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (type: "text" | "image") => void
+  onAdd: (type: "text" | "image" | "image-text") => void
 }
 
 export function AddElementModal({
@@ -33,6 +33,17 @@ export function AddElementModal({
           <span className="text-xl sm:text-2xl">🖼️</span>
           <span className="font-semibold text-text text-sm sm:text-base">
             Image
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onAdd("image-text")}
+          className="w-full p-3 sm:p-4 text-left border-2 border-slate-200 rounded-lg hover:border-slate-400 hover:bg-slate-50 transition-all flex items-center gap-3"
+        >
+          <span className="text-xl sm:text-2xl">🖼️✍️</span>
+          <span className="font-semibold text-text text-sm sm:text-base">
+            Image with text
           </span>
         </button>
       </div>

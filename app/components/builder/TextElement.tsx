@@ -1,11 +1,11 @@
 "use client"
 
-import type { LandingPageElement } from "@/types"
+import type { TextElement as TextElementType } from "@/types"
 
 interface TextElementProps {
-  element: LandingPageElement
+  element: TextElementType
   index: number
-  onEdit: (element: LandingPageElement, index: number) => void
+  onEdit: (element: TextElementType, index: number) => void
 }
 
 export function TextElement({ element, index, onEdit }: TextElementProps) {

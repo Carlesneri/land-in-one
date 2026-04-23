@@ -34,7 +34,10 @@ export function LandingPage({
   const sortedElements = [...elements].sort((a, b) => a.position - b.position)
 
   const noContent =
-    sortedElements.length === 0 || sortedElements.every((el) => !el.content)
+    sortedElements.length === 0 ||
+    sortedElements.every((el) =>
+      el.type === "image-text" ? !el.image && !el.text : !el.content,
+    )
 
   return (
     <div className={landingVariants({ mode })}>
@@ -75,10 +78,7 @@ export function LandingPage({
           <div className="max-w-4xl mx-auto px-4 pt-8 pb-24 landing-content">
             <div className="space-y-8">
               {sortedElements.map((element) => (
-                <div
-                  key={`${element.type}-${element.position}`}
-                  className="w-full"
-                >
+                <div key={element.id} className="w-full">
                   {element.type === "text" && (
                     <div
                       className="text-lg leading-relaxed prose prose-slate max-w-none"
@@ -109,6 +109,38 @@ export function LandingPage({
                         width={800}
                         height={600}
                       />
+                    </div>
+                  )}
+
+                  {element.type === "image-text" && element.image && (
+                    <div
+                      className="w-full relative overflow-hidden rounded-lg"
+                      style={
+                        element.aspectRatio
+                          ? { aspectRatio: element.aspectRatio }
+                          : undefined
+                      }
+                    >
+                      <Image
+                        src={element.image}
+                        alt={`Page image-text element at position ${element.position}`}
+                        className={
+                          element.aspectRatio
+                            ? "w-full h-full object-cover"
+                            : "w-full h-auto"
+                        }
+                        width={800}
+                        height={600}
+                      />
+                      {element.text && (
+                        <div className="absolute inset-0 flex items-center justify-center p-6">
+                          <div
+                            className="text-white text-center drop-shadow-lg prose prose-invert max-w-none"
+                            // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                            dangerouslySetInnerHTML={{ __html: element.text }}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

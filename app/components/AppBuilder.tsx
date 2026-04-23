@@ -6,6 +6,7 @@ import Link from "next/link"
 import { AddElementButton } from "@/app/components/AddElementButton"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
+import { ImageTextElement } from "@/app/components/builder/ImageTextElement"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 import { AddElementModal } from "@/app/components/modals/AddElementModal"
 import { DeleteElementModal } from "@/app/components/modals/DeleteElementModal"
@@ -16,6 +17,7 @@ import { ElementOptionsModal } from "@/app/components/modals/ElementOptionsModal
 import { UploadProgressModal } from "@/app/components/modals/UploadProgressModal"
 import { DeleteProjectModal } from "@/app/components/modals/DeleteProjectModal"
 import { LandingModeModal } from "@/app/components/modals/LandingModeModal"
+import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
 import {
   publishPage,
   savePreviewPage,
@@ -28,7 +30,7 @@ import {
   deleteImageInCloud,
 } from "@/app/actions/cloud-storage"
 import { toast } from "sonner"
-import type { LandingPage, LandingPageElement } from "@/types"
+import type { LandingPageElement, AspectRatio } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
 import { DragDropProvider } from "@dnd-kit/react"
@@ -103,6 +105,11 @@ export function AppBuilder({
   const [editingElementId, setEditingElementId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState<string>("")
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
+  const [editImageTextId, setEditImageTextId] = useState<string | null>(null)
+  const [editImageTextDraft, setEditImageTextDraft] = useState<{
+    image: string
+    text: string
+  }>({ image: "", text: "" })
   const [isPublishing, setIsPublishing] = useState(false)
   const [isPublished, setIsPublished] = useState<boolean | undefined>()
   const [isUnpublishing, setIsUnpublishing] = useState(false)
@@ -202,22 +209,24 @@ export function AppBuilder({
     setElements(newElements)
   }
 
-  const handleAddElement = (type: "text" | "image") => {
+  const handleAddElement = (type: "text" | "image" | "image-text") => {
     if (
-      type === "image" &&
-      elements.filter((el) => el.type === "image").length >= 10
+      (type === "image" || type === "image-text") &&
+      elements.filter((el) => el.type === "image" || el.type === "image-text")
+        .length >= 10
     ) {
       setShowModal(false)
       toast.error("You can only add up to 10 image elements per page")
       return
     }
 
-    const newElement = {
-      id: crypto.randomUUID(),
-      type,
-      content: "",
-      position: elements.length,
-    } as LandingPage["elements"][0]
+    const base = { id: crypto.randomUUID(), position: elements.length }
+    const newElement: LandingPageElement =
+      type === "text"
+        ? { ...base, type: "text", content: "" }
+        : type === "image"
+          ? { ...base, type: "image", content: "" }
+          : { ...base, type: "image-text", image: "", text: "" }
 
     setElements((prev) => [...prev, newElement])
     setShowModal(false)
@@ -234,8 +243,13 @@ export function AppBuilder({
       const element = elements[index]
 
       // Delete image from cloud if element is an image with content
-      if (element?.type === "image" && element?.content) {
+      if (element?.type === "image" && element.content) {
         deleteImageInCloud(element.content).catch(() => {
+          // Silent failure for cleanup
+        })
+      }
+      if (element?.type === "image-text" && element.image) {
+        deleteImageInCloud(element.image).catch(() => {
           // Silent failure for cleanup
         })
       }
@@ -254,17 +268,24 @@ export function AppBuilder({
 
   const handleUpdateContent = (index: number, content: string) => {
     setElements(
-      elements.map((el, idx) => (idx === index ? { ...el, content } : el)),
+      elements.map((el, idx) => {
+        if (idx !== index) return el
+        if (el.type === "text") return { ...el, content }
+        if (el.type === "image") return { ...el, content }
+        return { ...el, image: content } // image-text: content holds the image URL
+      }),
     )
   }
 
   const handleUpdateAspectRatio = (
     index: number,
-    ratio: LandingPageElement["aspectRatio"],
+    ratio: AspectRatio | undefined,
   ) => {
     setElements(
       elements.map((el, idx) =>
-        idx === index ? { ...el, aspectRatio: ratio } : el,
+        idx === index && (el.type === "image" || el.type === "image-text")
+          ? { ...el, aspectRatio: ratio }
+          : el,
       ),
     )
   }
@@ -277,7 +298,13 @@ export function AppBuilder({
     }
 
     // Get the current image URL to delete it from cloud
-    const currentImageUrl = elements[index]?.content
+    const el = elements[index]
+    const currentImageUrl =
+      el?.type === "image-text"
+        ? el.image
+        : el?.type === "image"
+          ? el.content
+          : undefined
 
     // Upload image to cloud immediately
     uploadImageToCloud(file)
@@ -298,12 +325,9 @@ export function AppBuilder({
   }
 
   const openEditModal = (element: LandingPageElement, index: number) => {
-    if (element.type !== "image") {
+    if (element.type === "text") {
       setEditingElementId(String(index))
-
-      if (element.content) {
-        setEditingContent(element.content)
-      }
+      setEditingContent(element.content)
     }
   }
 
@@ -320,6 +344,35 @@ export function AppBuilder({
     }
   }
 
+  const openImageTextModal = (element: LandingPageElement, index: number) => {
+    if (element.type !== "image-text") return
+    setEditImageTextId(String(index))
+    setEditImageTextDraft({ image: element.image, text: element.text })
+  }
+
+  const closeImageTextModal = () => {
+    setEditImageTextId(null)
+    setEditImageTextDraft({ image: "", text: "" })
+  }
+
+  const saveImageTextModal = () => {
+    if (editImageTextId !== null) {
+      const index = parseInt(editImageTextId, 10)
+      setElements(
+        elements.map((el, idx) =>
+          idx === index && el.type === "image-text"
+            ? {
+                ...el,
+                image: editImageTextDraft.image,
+                text: editImageTextDraft.text,
+              }
+            : el,
+        ),
+      )
+      closeImageTextModal()
+    }
+  }
+
   const closeImageEditModal = () => {
     setEditingImageId(null)
   }
@@ -327,7 +380,13 @@ export function AppBuilder({
   const handleRemoveImage = () => {
     if (editingImageId !== null) {
       const index = parseInt(editingImageId, 10)
-      const imageUrl = elements[index]?.content
+      const el = elements[index]
+      const imageUrl =
+        el?.type === "image-text"
+          ? el.image
+          : el?.type === "image"
+            ? el.content
+            : undefined
 
       // Delete image from cloud if it exists
       if (imageUrl) {
@@ -636,6 +695,20 @@ export function AppBuilder({
                       onFileChange={handleImageSelect}
                     />
                   )}
+                  {element.type === "image-text" && (
+                    <ImageTextElement
+                      element={element}
+                      index={index}
+                      imageInputRef={(el) => {
+                        if (el) imageInputRefs.current[index] = el
+                      }}
+                      onOpenEditModal={(i) =>
+                        openImageTextModal(elements[i], i)
+                      }
+                      onOpenTextModal={(el, i) => openImageTextModal(el, i)}
+                      onFileChange={handleImageSelect}
+                    />
+                  )}
                 </ElementCard>
               ))}
             </div>
@@ -679,15 +752,60 @@ export function AppBuilder({
         onChange={setEditingContent}
       />
 
+      {/* Edit Image+Text Modal */}
+      <EditImageTextModal
+        isOpen={!!editImageTextId}
+        image={editImageTextDraft.image}
+        text={editImageTextDraft.text}
+        onClose={closeImageTextModal}
+        onImageChange={(file) => {
+          if (editImageTextId !== null) {
+            const index = parseInt(editImageTextId, 10)
+            const el = elements[index]
+            const currentImage =
+              el?.type === "image-text" ? el.image : undefined
+            uploadImageToCloud(file)
+              .then((imageUrl) => {
+                if (currentImage) {
+                  deleteImageInCloud(currentImage).catch(() => {})
+                }
+                setEditImageTextDraft((prev) => ({ ...prev, image: imageUrl }))
+                toast.success("Image uploaded")
+              })
+              .catch(() => toast.error("Failed to upload image"))
+          }
+        }}
+        onImageRemove={() => {
+          if (editImageTextId !== null) {
+            const index = parseInt(editImageTextId, 10)
+            const el = elements[index]
+            const currentImage =
+              el?.type === "image-text" ? el.image : undefined
+            if (currentImage) {
+              deleteImageInCloud(currentImage).catch(() => {})
+            }
+            setEditImageTextDraft((prev) => ({ ...prev, image: "" }))
+          }
+        }}
+        onTextChange={(text) =>
+          setEditImageTextDraft((prev) => ({ ...prev, text }))
+        }
+        onSave={saveImageTextModal}
+      />
+
       {/* Edit Image Modal */}
       <EditImageModal
         isOpen={!!editingImageId}
         editingImageId={editingImageId}
-        hasImage={
-          editingImageId !== null
-            ? !!elements[parseInt(editingImageId, 10)]?.content
-            : false
-        }
+        hasImage={(() => {
+          if (editingImageId === null) return false
+          const el = elements[parseInt(editingImageId, 10)]
+          return el?.type === "image-text"
+            ? !!el.image
+            : el?.type === "image"
+              ? !!el.content
+              : false
+        })()}
         onClose={closeImageEditModal}
         onFileChange={(file) => {
           if (editingImageId !== null) {
