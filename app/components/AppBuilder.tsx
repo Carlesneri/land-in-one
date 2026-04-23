@@ -48,6 +48,7 @@ import {
 import { Container } from "@/app/ui/Container"
 import { cn } from "@/lib/utils"
 import type { PageModelType } from "@/lib/models/Page"
+import { Separator } from "@/app/ui/Separator"
 const statusDotVariants = cva("w-1.5 h-1.5 rounded-full shrink-0", {
   variants: {
     status: {
@@ -535,57 +536,9 @@ export function AppBuilder({
 
           {/* Actions */}
           <div className="p-4 sm:p-5">
-            <div className="flex flex-col items-start gap-3 w-fit">
-              {/* Slug + change */}
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-semibold text-white truncate drop-shadow">
-                  {pageSlug}
-                </h1>
-                <button
-                  type="button"
-                  onClick={() => setShowChangeSlugModal(true)}
-                  className="p-1.5 rounded-md text-white bg-white/20 hover:bg-white/35 border border-white/30 transition-colors"
-                  title="Change slug"
-                >
-                  <IconPencil size={14} aria-hidden="true" />
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!hasUnpublishedChanges && isPublished) {
-                      toast.info(
-                        "You already have the latest changes published",
-                      )
-                      return
-                    }
-                    handlePublishPage()
-                  }}
-                  disabled={isPublishing || isPublished === undefined}
-                  className={cn(
-                    "flex items-center px-4 py-1.5 font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-60",
-                    !hasUnpublishedChanges && isPublished
-                      ? "bg-white/40 text-primary/60 cursor-not-allowed"
-                      : "bg-success hover:bg-success-hover text-white",
-                  )}
-                >
-                  {isPublishing ? "Publishing…" : "Publish"}
-                </button>
-                {isPublished && (
-                  <button
-                    type="button"
-                    onClick={() => handleUnpublishPage()}
-                    disabled={isUnpublishing}
-                    className="flex items-center px-4 py-1.5 bg-white/20 hover:bg-white/30 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm border border-white/30"
-                  >
-                    {isUnpublishing ? "Unpublishing…" : "Unpublish"}
-                  </button>
-                )}
-              </div>
-
+            <div className="flex flex-col items-start gap-3 w-full">
               {/* Row 2: Preview + Published links */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-wrap w-full">
                 <Link
                   href={`/preview/${pageSlug}`}
                   target="_blank"
@@ -621,6 +574,57 @@ export function AppBuilder({
                       aria-hidden="true"
                     />
                   </Link>
+                )}
+              </div>
+
+              {/* Slug + change */}
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold text-white truncate drop-shadow">
+                  {pageSlug}
+                </h1>
+                <button
+                  type="button"
+                  onClick={() => setShowChangeSlugModal(true)}
+                  className="p-1.5 rounded-md text-white bg-white/20 hover:bg-white/35 border border-white/30 transition-colors"
+                  title="Change slug"
+                >
+                  <IconPencil size={14} aria-hidden="true" />
+                </button>
+              </div>
+
+              <Separator className="bg-slate-400" />
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!hasUnpublishedChanges && isPublished) {
+                      toast.info(
+                        "You already have the latest changes published",
+                      )
+                      return
+                    }
+                    handlePublishPage()
+                  }}
+                  disabled={isPublishing || isPublished === undefined}
+                  className={cn(
+                    "flex items-center px-4 py-1.5 font-semibold rounded-lg transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-60",
+                    !hasUnpublishedChanges && isPublished
+                      ? "bg-white/40 text-primary/60 cursor-not-allowed"
+                      : "bg-success hover:bg-success-hover text-white",
+                  )}
+                >
+                  {isPublishing ? "Publishing…" : "Publish"}
+                </button>
+                {isPublished && (
+                  <button
+                    type="button"
+                    onClick={() => handleUnpublishPage()}
+                    disabled={isUnpublishing}
+                    className="flex items-center px-4 py-1.5 bg-white/20 hover:bg-white/30 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm border border-white/30"
+                  >
+                    {isUnpublishing ? "Unpublishing…" : "Unpublish"}
+                  </button>
                 )}
               </div>
 

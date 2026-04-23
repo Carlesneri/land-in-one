@@ -15,7 +15,7 @@ const buttonVariants = cva(
           "border-2 border-primary text-primary hover:bg-primary-light focus-visible:ring-primary",
         ghost:
           "text-text hover:bg-secondary-light hover:text-primary focus-visible:ring-primary",
-        link: "text-text font-bold underline-offset-4 hover:underline focus-visible:ring-primary p-0",
+        link: "text-text font-bold underline-offset-4 hover:underline focus-visible:ring-primary !px-0 !py-0",
         danger:
           "bg-danger text-white hover:bg-danger-hover shadow-sm hover:shadow-md focus-visible:ring-danger",
       },
