@@ -134,8 +134,17 @@ export function LandingPage({
                       />
                       {element.text && (
                         <div className="absolute inset-0 flex items-center justify-center p-6">
+                          {/* Radial gradient scrim for readability */}
+                          <span
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              background:
+                                "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+                            }}
+                            aria-hidden="true"
+                          />
                           <div
-                            className="text-white text-center drop-shadow-lg prose prose-invert max-w-none"
+                            className="relative text-white text-center drop-shadow-lg prose prose-invert max-w-none"
                             // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                             dangerouslySetInnerHTML={{ __html: element.text }}
                           />

@@ -50,11 +50,22 @@ export function ImageTextElement({
               aria-label="Edit overlay text"
             >
               {element.text ? (
-                <div
-                  className="text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
-                  dangerouslySetInnerHTML={{ __html: element.text }}
-                />
+                <>
+                  {/* Radial gradient scrim for readability */}
+                  <span
+                    className="absolute inset-0 pointer-events-none rounded"
+                    style={{
+                      background:
+                        "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+                    }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="relative text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                    dangerouslySetInnerHTML={{ __html: element.text }}
+                  />
+                </>
               ) : (
                 <span className="text-white/70 text-sm border border-white/40 rounded px-3 py-1.5 bg-black/20 backdrop-blur-sm">
                   Click to add overlay text
