@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { AddElementButton } from "@/app/components/AddElementButton"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
 import { ImageTextElement } from "@/app/components/builder/ImageTextElement"
-import { ElementCard } from "@/app/components/builder/ElementCard"
 import { AddElementModal } from "@/app/components/modals/AddElementModal"
 import { DeleteElementModal } from "@/app/components/modals/DeleteElementModal"
 import { ChangeSlugModal } from "@/app/components/modals/ChangeSlugModal"
@@ -274,6 +274,19 @@ export function AppBuilder({
       elements.map((el, idx) =>
         idx === index && (el.type === "image" || el.type === "image-text")
           ? { ...el, aspectRatio: ratio }
+          : el,
+      ),
+    )
+  }
+
+  const handleUpdateTextPosition = (
+    index: number,
+    position: "top" | "center" | "bottom",
+  ) => {
+    setElements(
+      elements.map((el, idx) =>
+        idx === index && el.type === "image-text"
+          ? { ...el, textPosition: position }
           : el,
       ),
     )
@@ -585,17 +598,14 @@ export function AppBuilder({
           >
             <div className="space-y-6">
               {elements.map((element, index) => (
-                <ElementCard
-                  key={element.id}
-                  element={element}
-                  index={index}
-                  onDelete={handleDeleteElement}
-                  onOpenOptions={(i) => setOptionsElementId(String(i))}
-                >
+                <React.Fragment key={element.id}>
                   {element.type === "text" && (
                     <TextElement
                       element={element}
+                      index={index}
                       onSave={(content) => handleUpdateContent(index, content)}
+                      onDelete={handleDeleteElement}
+                      onOpenOptions={(i) => setOptionsElementId(String(i))}
                     />
                   )}
                   {element.type === "image" && (
@@ -609,11 +619,14 @@ export function AppBuilder({
                         handleUpdateContent(index, "")
                         toast.success("Image removed")
                       }}
+                      onDelete={handleDeleteElement}
+                      onOpenOptions={(i) => setOptionsElementId(String(i))}
                     />
                   )}
                   {element.type === "image-text" && (
                     <ImageTextElement
                       element={element}
+                      index={index}
                       onFileChange={(file) => handleImageSelect(index, file)}
                       onImageRemove={() => {
                         const url = element.image
@@ -635,9 +648,11 @@ export function AppBuilder({
                           ),
                         )
                       }
+                      onDelete={handleDeleteElement}
+                      onOpenOptions={(i) => setOptionsElementId(String(i))}
                     />
                   )}
-                </ElementCard>
+                </React.Fragment>
               ))}
             </div>
           </DragDropProvider>
@@ -696,6 +711,11 @@ export function AppBuilder({
         onAspectRatioChange={(ratio) => {
           if (optionsElementId !== null) {
             handleUpdateAspectRatio(parseInt(optionsElementId, 10), ratio)
+          }
+        }}
+        onTextPositionChange={(position) => {
+          if (optionsElementId !== null) {
+            handleUpdateTextPosition(parseInt(optionsElementId, 10), position)
           }
         }}
       />

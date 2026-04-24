@@ -5,12 +5,15 @@ import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageElement as ImageElementType } from "@/types"
 import { EditImageModal } from "@/app/components/modals/EditImageModal"
+import { ElementCard } from "@/app/components/builder/ElementCard"
 
 interface ImageElementProps {
   element: ImageElementType
   index: number
   onFileChange: (file: File) => void
   onRemove: () => void
+  onDelete: (index: number) => void
+  onOpenOptions?: (index: number) => void
 }
 
 export function ImageElement({
@@ -18,11 +21,18 @@ export function ImageElement({
   index,
   onFileChange,
   onRemove,
+  onDelete,
+  onOpenOptions,
 }: ImageElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
-    <>
+    <ElementCard
+      element={element}
+      index={index}
+      onDelete={onDelete}
+      onOpenOptions={onOpenOptions}
+    >
       {element.content ? (
         <button
           type="button"
@@ -89,6 +99,6 @@ export function ImageElement({
           setModalOpen(false)
         }}
       />
-    </>
+    </ElementCard>
   )
 }

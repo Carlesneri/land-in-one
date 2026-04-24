@@ -58,8 +58,10 @@ Provides actionable patterns for responsive, accessible UIs with Tailwind CSS v4
 2. **Use Design Tokens**: Leverage Tailwind's spacing, color, and typography scales
 3. **Compose Utilities**: Combine multiple utilities for complex styles
 4. **Extract Components**: Create reusable component classes for repeated patterns
-5. **Configure Theme**: Customize design tokens in `tailwind.config.js` or using `@theme`
-6. **Verify Changes**: Test at each breakpoint using DevTools responsive mode. Check for visual regressions and accessibility issues before committing.
+5. **Use CVA for Variants**: When a component has multiple style options (size, color, state), use `class-variance-authority` instead of inline ternaries or string concatenation
+6. **Use `cn` for Class Merging**: Always use the `cn` utility (wrapper around `clsx` + `tailwind-merge`) when combining static classes, variant output, and optional overrides — it deduplicates conflicting Tailwind utilities correctly
+6. **Configure Theme**: Customize design tokens in `tailwind.config.js` or using `@theme`
+7. **Verify Changes**: Test at each breakpoint using DevTools responsive mode. Check for visual regressions and accessibility issues before committing.
 
 ## Examples
 
@@ -78,6 +80,107 @@ function ProductCard({ product }: { product: Product }) {
       </div>
     </div>
   );
+}
+```
+
+### Component Variants with class-variance-authority
+
+Use `cva` whenever a component has **more than one style option** (variant, size, state, etc.).
+Avoid inline ternaries or string concatenation for multi-option styling.
+
+```tsx
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+
+// Define variants at module level (outside the component)
+const buttonVariants = cva(
+  // Base classes applied to every variant
+  "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        primary: "bg-indigo-600 text-white hover:bg-indigo-700",
+        secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
+        danger: "bg-red-600 text-white hover:bg-red-700",
+        ghost: "hover:bg-gray-100 text-gray-700",
+      },
+      size: {
+        sm: "px-3 py-1.5 text-sm",
+        md: "px-4 py-2 text-base",
+        lg: "px-6 py-3 text-lg",
+      },
+    },
+    // Applied when two variants match simultaneously
+    compoundVariants: [
+      { variant: "primary", size: "lg", className: "shadow-lg" },
+    ],
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+    },
+  },
+)
+
+interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  className?: string
+}
+
+export function Button({ variant, size, className, ...props }: ButtonProps) {
+  return (
+    <button
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
+  )
+}
+
+// Usage
+<Button variant="danger" size="sm">Delete</Button>
+<Button variant="secondary">Cancel</Button>
+```
+
+Use a plain `Record` lookup (not `cva`) when you only need to map a prop to a **single CSS value** (e.g. a gradient string):
+
+```tsx
+const gradientByPosition: Record<"top" | "center" | "bottom", string> = {
+  top:    "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 60%)",
+  center: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+  bottom: "linear-gradient(to top,   rgba(0,0,0,0.6) 0%, transparent 60%)",
+}
+
+// Usage
+<span style={{ background: gradientByPosition[position] }} />
+```
+
+### Merging Classes with `cn`
+
+`cn` is a thin wrapper around `clsx` (conditional classes) and `tailwind-merge` (conflict resolution).
+Always use it when combining static classes, CVA output, and external `className` props.
+
+```tsx
+import { cn } from "@/lib/utils"
+
+// ✅ Correct — tailwind-merge resolves the p-4 vs p-2 conflict in favour of the last one
+<div className={cn("p-4 text-sm", isActive && "bg-blue-100", className)} />
+
+// ❌ Wrong — naive concatenation keeps both `p-4` and `p-2`, browser picks arbitrarily
+<div className={`p-4 text-sm ${isActive ? "bg-blue-100" : ""} ${className}`} />
+```
+
+The typical pattern inside a component that uses CVA:
+
+```tsx
+export function Button({ variant, size, className, ...props }: ButtonProps) {
+  return (
+    <button
+      // 1. CVA resolves variant classes
+      // 2. cn merges them with any caller overrides, resolving conflicts
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
+  )
 }
 ```
 
@@ -103,10 +206,12 @@ function ProductCard({ product }: { product: Product }) {
 1. **Consistent Spacing**: Use Tailwind's spacing scale (4, 8, 12, 16, etc.)
 2. **Color Palette**: Stick to Tailwind's color system for consistency
 3. **Component Extraction**: Extract repeated patterns into reusable components
-4. **Utility Composition**: Prefer utility classes over `@apply` for maintainability
-5. **Semantic HTML**: Use proper HTML elements with Tailwind classes
-6. **Performance**: Ensure content paths include all template files for optimal purging
-7. **Accessibility**: Include focus styles, ARIA labels, and respect user preferences (reduced-motion)
+4. **Variants with CVA**: Use `class-variance-authority` for any component with multiple style options; never use inline ternaries or string concatenation for variant logic
+5. **Merge Classes with `cn`**: Use `cn(...)` (clsx + tailwind-merge) whenever combining fixed classes, CVA output, and caller-provided `className` overrides — it resolves Tailwind conflicts (e.g. `p-2` vs `p-4`) instead of blindly concatenating strings
+5. **Utility Composition**: Prefer utility classes over `@apply` for maintainability
+6. **Semantic HTML**: Use proper HTML elements with Tailwind classes
+7. **Performance**: Ensure content paths include all template files for optimal purging
+8. **Accessibility**: Include focus styles, ARIA labels, and respect user preferences (reduced-motion)
 
 ## Troubleshooting
 

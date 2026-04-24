@@ -6,6 +6,7 @@ interface ElementOptionsModalProps {
   element: LandingPageElement | undefined
   onClose: () => void
   onAspectRatioChange: (ratio: AspectRatio | undefined) => void
+  onTextPositionChange?: (position: "top" | "center" | "bottom") => void
 }
 
 export function ElementOptionsModal({
@@ -13,6 +14,7 @@ export function ElementOptionsModal({
   element,
   onClose,
   onAspectRatioChange,
+  onTextPositionChange,
 }: ElementOptionsModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Element Options">
@@ -46,6 +48,30 @@ export function ElementOptionsModal({
               <option value="3/4">3:4 (Portrait)</option>
               <option value="9/16">9:16 (Portrait)</option>
             </select>
+          </div>
+        )}
+
+        {element?.type === "image-text" && onTextPositionChange && (
+          <div>
+            <p className="block text-sm font-medium text-gray-700 mb-2">
+              Text Position
+            </p>
+            <div className="flex gap-2">
+              {(["top", "center", "bottom"] as const).map((pos) => (
+                <button
+                  key={pos}
+                  type="button"
+                  onClick={() => onTextPositionChange(pos)}
+                  className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium capitalize transition-colors ${
+                    (element.textPosition ?? "center") === pos
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-slate-200 text-slate-600 hover:border-primary/50"
+                  }`}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

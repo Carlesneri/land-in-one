@@ -5,19 +5,26 @@ import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageTextElement as ImageTextElementType } from "@/types"
 import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
+import { ElementCard } from "@/app/components/builder/ElementCard"
 
 interface ImageTextElementProps {
   element: ImageTextElementType
+  index: number
   onFileChange: (file: File) => void
   onImageRemove: () => void
   onSave: (image: string, text: string) => void
+  onDelete: (index: number) => void
+  onOpenOptions?: (index: number) => void
 }
 
 export function ImageTextElement({
   element,
+  index,
   onFileChange,
   onImageRemove,
   onSave,
+  onDelete,
+  onOpenOptions,
 }: ImageTextElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [draft, setDraft] = useState({
@@ -38,7 +45,12 @@ export function ImageTextElement({
   }
 
   return (
-    <>
+    <ElementCard
+      element={element}
+      index={index}
+      onDelete={onDelete}
+      onOpenOptions={onOpenOptions}
+    >
       <div className="relative w-full rounded overflow-hidden">
         {element.image ? (
           <>
@@ -62,7 +74,13 @@ export function ImageTextElement({
             <button
               type="button"
               onClick={open}
-              className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
+              className={`absolute inset-0 flex justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded ${
+                element.textPosition === "top"
+                  ? "items-start"
+                  : element.textPosition === "bottom"
+                    ? "items-end"
+                    : "items-center"
+              }`}
               aria-label="Edit overlay text"
             >
               {element.text ? (
@@ -72,7 +90,11 @@ export function ImageTextElement({
                     className="absolute inset-0 pointer-events-none rounded"
                     style={{
                       background:
-                        "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+                        element.textPosition === "top"
+                          ? "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 60%)"
+                          : element.textPosition === "bottom"
+                            ? "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)"
+                            : "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
                     }}
                     aria-hidden="true"
                   />
@@ -127,6 +149,6 @@ export function ImageTextElement({
         onTextChange={(text) => setDraft((prev) => ({ ...prev, text }))}
         onSave={save}
       />
-    </>
+    </ElementCard>
   )
 }

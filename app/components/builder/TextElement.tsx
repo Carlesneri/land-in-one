@@ -3,13 +3,23 @@
 import { useState } from "react"
 import type { TextElement as TextElementType } from "@/types"
 import { EditContentModal } from "@/app/components/modals/EditContentModal"
+import { ElementCard } from "@/app/components/builder/ElementCard"
 
 interface TextElementProps {
   element: TextElementType
+  index: number
   onSave: (content: string) => void
+  onDelete: (index: number) => void
+  onOpenOptions?: (index: number) => void
 }
 
-export function TextElement({ element, onSave }: TextElementProps) {
+export function TextElement({
+  element,
+  index,
+  onSave,
+  onDelete,
+  onOpenOptions,
+}: TextElementProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [draft, setDraft] = useState("")
 
@@ -26,7 +36,12 @@ export function TextElement({ element, onSave }: TextElementProps) {
   }
 
   return (
-    <>
+    <ElementCard
+      element={element}
+      index={index}
+      onDelete={onDelete}
+      onOpenOptions={onOpenOptions}
+    >
       <button
         type="button"
         onClick={open}
@@ -51,6 +66,6 @@ export function TextElement({ element, onSave }: TextElementProps) {
         content={draft}
         onChange={setDraft}
       />
-    </>
+    </ElementCard>
   )
 }

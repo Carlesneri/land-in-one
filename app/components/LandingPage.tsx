@@ -2,6 +2,7 @@ import type { LandingPageElement, Status } from "@/types"
 import Link from "next/link"
 import Image from "next/image"
 import { cva } from "class-variance-authority"
+import { cn } from "@/lib/utils"
 
 const landingVariants = cva("min-h-screen flex flex-col", {
   variants: {
@@ -14,6 +15,29 @@ const landingVariants = cva("min-h-screen flex flex-col", {
     mode: "light",
   },
 })
+
+const imageTextOverlayVariants = cva(
+  "absolute inset-0 flex justify-center p-6",
+  {
+    variants: {
+      position: {
+        top: "items-start",
+        center: "items-center",
+        bottom: "items-end",
+      },
+    },
+    defaultVariants: {
+      position: "center",
+    },
+  },
+)
+
+const imageTextGradient: Record<"top" | "center" | "bottom", string> = {
+  top: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 60%)",
+  center:
+    "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+  bottom: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)",
+}
 
 interface PageViewProps {
   elements: LandingPageElement[]
@@ -133,18 +157,27 @@ export function LandingPage({
                         height={600}
                       />
                       {element.text && (
-                        <div className="absolute inset-0 flex items-center justify-center p-6">
-                          {/* Radial gradient scrim for readability */}
+                        <div
+                          className={cn(
+                            "w-full",
+                            imageTextOverlayVariants({
+                              position: element.textPosition ?? "center",
+                            }),
+                          )}
+                        >
+                          {/* Linear gradient scrim for readability */}
                           <span
                             className="absolute inset-0 pointer-events-none"
                             style={{
                               background:
-                                "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+                                imageTextGradient[
+                                  element.textPosition ?? "center"
+                                ],
                             }}
                             aria-hidden="true"
                           />
                           <div
-                            className="rich-text-lio relative text-white text-center drop-shadow-lg prose prose-invert max-w-none"
+                            className="rich-text-lio relative text-white text-center drop-shadow-lg prose prose-invert w-full"
                             // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                             dangerouslySetInnerHTML={{ __html: element.text }}
                           />

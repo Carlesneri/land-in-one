@@ -115,6 +115,13 @@ h6 {
   padding-left: 1.5rem;
 }
 
+/* RTE output*/
+.rich-text-lio {
+  :is(h1, h2, h3, h4, h5, h6, p) {
+    @apply my-0;
+  }
+}
+
 /* ─── Squircle border-radius ─────────────────────────────────────────
    Browsers that support corner-shape get true squircles.
    All others fall through to the standard border-radius fallback.
@@ -163,43 +170,5 @@ h6 {
     border-radius: 24px;
     /* biome-ignore lint/correctness/noUnknownProperty: low support */
     corner-shape: squircle;
-  }
-
-  /* RTE output*/
-  .rich-text-lio {
-    h1 {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
-
-    h2 {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
-
-    h3 {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
-
-    h4 {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
-
-    h5 {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
-
-    h6 {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
-
-    p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
-    }
   }
 }
