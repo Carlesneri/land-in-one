@@ -10,14 +10,11 @@ import { ImageTextElement } from "@/app/components/builder/ImageTextElement"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 import { AddElementModal } from "@/app/components/modals/AddElementModal"
 import { DeleteElementModal } from "@/app/components/modals/DeleteElementModal"
-import { EditContentModal } from "@/app/components/modals/EditContentModal"
-import { EditImageModal } from "@/app/components/modals/EditImageModal"
 import { ChangeSlugModal } from "@/app/components/modals/ChangeSlugModal"
 import { ElementOptionsModal } from "@/app/components/modals/ElementOptionsModal"
 import { UploadProgressModal } from "@/app/components/modals/UploadProgressModal"
 import { DeleteProjectModal } from "@/app/components/modals/DeleteProjectModal"
 import { LandingModeModal } from "@/app/components/modals/LandingModeModal"
-import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
 import {
   publishPage,
   savePreviewPage,
@@ -103,14 +100,6 @@ export function AppBuilder({
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteElementId, setDeleteElementId] = useState<string | null>(null)
-  const [editingElementId, setEditingElementId] = useState<string | null>(null)
-  const [editingContent, setEditingContent] = useState<string>("")
-  const [editingImageId, setEditingImageId] = useState<string | null>(null)
-  const [editImageTextId, setEditImageTextId] = useState<string | null>(null)
-  const [editImageTextDraft, setEditImageTextDraft] = useState<{
-    image: string
-    text: string
-  }>({ image: "", text: "" })
   const [isPublishing, setIsPublishing] = useState(false)
   const [isPublished, setIsPublished] = useState<boolean | undefined>()
   const [isUnpublishing, setIsUnpublishing] = useState(false)
@@ -123,7 +112,6 @@ export function AppBuilder({
     isOpen: false,
     progress: 0,
   })
-  const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
   const hasMounted = useRef(false)
   const router = useRouter()
   const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false)
@@ -323,83 +311,6 @@ export function AppBuilder({
       .catch(() => {
         toast.error("Failed to upload image")
       })
-  }
-
-  const openEditModal = (element: LandingPageElement, index: number) => {
-    if (element.type === "text") {
-      setEditingElementId(String(index))
-      setEditingContent(element.content)
-    }
-  }
-
-  const closeEditModal = () => {
-    setEditingElementId(null)
-    setEditingContent("")
-  }
-
-  const saveEditingContent = () => {
-    if (editingElementId !== null) {
-      const index = parseInt(editingElementId, 10)
-      handleUpdateContent(index, editingContent)
-      closeEditModal()
-    }
-  }
-
-  const openImageTextModal = (element: LandingPageElement, index: number) => {
-    if (element.type !== "image-text") return
-    setEditImageTextId(String(index))
-    setEditImageTextDraft({ image: element.image, text: element.text })
-  }
-
-  const closeImageTextModal = () => {
-    setEditImageTextId(null)
-    setEditImageTextDraft({ image: "", text: "" })
-  }
-
-  const saveImageTextModal = () => {
-    if (editImageTextId !== null) {
-      const index = parseInt(editImageTextId, 10)
-      setElements(
-        elements.map((el, idx) =>
-          idx === index && el.type === "image-text"
-            ? {
-                ...el,
-                image: editImageTextDraft.image,
-                text: editImageTextDraft.text,
-              }
-            : el,
-        ),
-      )
-      closeImageTextModal()
-    }
-  }
-
-  const closeImageEditModal = () => {
-    setEditingImageId(null)
-  }
-
-  const handleRemoveImage = () => {
-    if (editingImageId !== null) {
-      const index = parseInt(editingImageId, 10)
-      const el = elements[index]
-      const imageUrl =
-        el?.type === "image-text"
-          ? el.image
-          : el?.type === "image"
-            ? el.content
-            : undefined
-
-      // Delete image from cloud if it exists
-      if (imageUrl) {
-        deleteImageInCloud(imageUrl).catch(() => {
-          // Silent failure for cleanup
-        })
-      }
-
-      handleUpdateContent(index, "")
-      closeImageEditModal()
-      toast.success("Image removed")
-    }
   }
 
   const uploadImageToCloud = async (file: File): Promise<string> => {
@@ -684,33 +595,46 @@ export function AppBuilder({
                   {element.type === "text" && (
                     <TextElement
                       element={element}
-                      index={index}
-                      onEdit={openEditModal}
+                      onSave={(content) => handleUpdateContent(index, content)}
                     />
                   )}
                   {element.type === "image" && (
                     <ImageElement
                       element={element}
                       index={index}
-                      imageInputRef={(el) => {
-                        if (el) imageInputRefs.current[index] = el
+                      onFileChange={(file) => handleImageSelect(index, file)}
+                      onRemove={() => {
+                        const url = element.content
+                        if (url) deleteImageInCloud(url).catch(() => {})
+                        handleUpdateContent(index, "")
+                        toast.success("Image removed")
                       }}
-                      onOpenEditModal={(i) => setEditingImageId(String(i))}
-                      onFileChange={handleImageSelect}
                     />
                   )}
                   {element.type === "image-text" && (
                     <ImageTextElement
                       element={element}
-                      index={index}
-                      imageInputRef={(el) => {
-                        if (el) imageInputRefs.current[index] = el
+                      onFileChange={(file) => handleImageSelect(index, file)}
+                      onImageRemove={() => {
+                        const url = element.image
+                        if (url) deleteImageInCloud(url).catch(() => {})
+                        setElements(
+                          elements.map((el, idx) =>
+                            idx === index && el.type === "image-text"
+                              ? { ...el, image: "" }
+                              : el,
+                          ),
+                        )
                       }}
-                      onOpenEditModal={(i) =>
-                        openImageTextModal(elements[i], i)
+                      onSave={(image, text) =>
+                        setElements(
+                          elements.map((el, idx) =>
+                            idx === index && el.type === "image-text"
+                              ? { ...el, image, text }
+                              : el,
+                          ),
+                        )
                       }
-                      onOpenTextModal={(el, i) => openImageTextModal(el, i)}
-                      onFileChange={handleImageSelect}
                     />
                   )}
                 </ElementCard>
@@ -740,83 +664,6 @@ export function AppBuilder({
           setDeleteElementId(null)
         }}
         onConfirm={confirmDelete}
-      />
-
-      {/* Edit Content Modal */}
-      <EditContentModal
-        isOpen={!!editingElementId}
-        onClose={closeEditModal}
-        onSave={saveEditingContent}
-        elementType={
-          editingElementId !== null
-            ? elements[parseInt(editingElementId, 10)]?.type
-            : undefined
-        }
-        content={editingContent}
-        onChange={setEditingContent}
-      />
-
-      {/* Edit Image+Text Modal */}
-      <EditImageTextModal
-        isOpen={!!editImageTextId}
-        image={editImageTextDraft.image}
-        text={editImageTextDraft.text}
-        onClose={closeImageTextModal}
-        onImageChange={(file) => {
-          if (editImageTextId !== null) {
-            const index = parseInt(editImageTextId, 10)
-            const el = elements[index]
-            const currentImage =
-              el?.type === "image-text" ? el.image : undefined
-            uploadImageToCloud(file)
-              .then((imageUrl) => {
-                if (currentImage) {
-                  deleteImageInCloud(currentImage).catch(() => {})
-                }
-                setEditImageTextDraft((prev) => ({ ...prev, image: imageUrl }))
-                toast.success("Image uploaded")
-              })
-              .catch(() => toast.error("Failed to upload image"))
-          }
-        }}
-        onImageRemove={() => {
-          if (editImageTextId !== null) {
-            const index = parseInt(editImageTextId, 10)
-            const el = elements[index]
-            const currentImage =
-              el?.type === "image-text" ? el.image : undefined
-            if (currentImage) {
-              deleteImageInCloud(currentImage).catch(() => {})
-            }
-            setEditImageTextDraft((prev) => ({ ...prev, image: "" }))
-          }
-        }}
-        onTextChange={(text) =>
-          setEditImageTextDraft((prev) => ({ ...prev, text }))
-        }
-        onSave={saveImageTextModal}
-      />
-
-      {/* Edit Image Modal */}
-      <EditImageModal
-        isOpen={!!editingImageId}
-        editingImageId={editingImageId}
-        hasImage={(() => {
-          if (editingImageId === null) return false
-          const el = elements[parseInt(editingImageId, 10)]
-          return el?.type === "image-text"
-            ? !!el.image
-            : el?.type === "image"
-              ? !!el.content
-              : false
-        })()}
-        onClose={closeImageEditModal}
-        onFileChange={(file) => {
-          if (editingImageId !== null) {
-            handleImageSelect(parseInt(editingImageId, 10), file)
-          }
-        }}
-        onRemove={handleRemoveImage}
       />
 
       {/* Change Slug Modal */}

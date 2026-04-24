@@ -1,37 +1,53 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageTextElement as ImageTextElementType } from "@/types"
+import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
 
 interface ImageTextElementProps {
   element: ImageTextElementType
-  index: number
-  imageInputRef: (el: HTMLInputElement | null) => void
-  onOpenEditModal: (index: number) => void
-  onOpenTextModal: (element: ImageTextElementType, index: number) => void
-  onFileChange: (index: number, file: File) => void
+  onFileChange: (file: File) => void
+  onImageRemove: () => void
+  onSave: (image: string, text: string) => void
 }
 
 export function ImageTextElement({
   element,
-  index,
-  imageInputRef,
-  onOpenEditModal,
-  onOpenTextModal,
   onFileChange,
+  onImageRemove,
+  onSave,
 }: ImageTextElementProps) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [draft, setDraft] = useState({
+    image: element.image,
+    text: element.text,
+  })
+
+  const open = () => {
+    setDraft({ image: element.image, text: element.text })
+    setModalOpen(true)
+  }
+
+  const close = () => setModalOpen(false)
+
+  const save = () => {
+    onSave(draft.image, draft.text)
+    close()
+  }
+
   return (
     <>
       <div className="relative w-full rounded overflow-hidden">
         {element.image ? (
           <>
-            {/* Image */}
+            {/* Image — click opens modal */}
             <button
               type="button"
-              onClick={() => onOpenEditModal(index)}
+              onClick={open}
               className="w-full block cursor-pointer hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Edit image"
+              aria-label="Edit image and text"
             >
               <Image
                 src={element.image}
@@ -42,16 +58,16 @@ export function ImageTextElement({
               />
             </button>
 
-            {/* Overlay text */}
+            {/* Overlay text — click also opens modal */}
             <button
               type="button"
-              onClick={() => onOpenTextModal(element, index)}
+              onClick={open}
               className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
               aria-label="Edit overlay text"
             >
               {element.text ? (
                 <>
-                  {/* Radial gradient scrim for readability */}
+                  {/* Linear gradient scrim for readability */}
                   <span
                     className="absolute inset-0 pointer-events-none rounded"
                     style={{
@@ -77,14 +93,9 @@ export function ImageTextElement({
           /* Empty state — no image yet */
           <button
             type="button"
-            onClick={() => {
-              const input = document.getElementById(
-                `image-text-input-${index}`,
-              ) as HTMLInputElement | null
-              input?.click()
-            }}
+            onClick={open}
             className="w-full h-32 sm:h-40 rounded flex items-center justify-center cursor-pointer hover:bg-primary-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Select image"
+            aria-label="Add image and text"
           >
             <div className="text-center">
               <IconPhoto
@@ -93,23 +104,28 @@ export function ImageTextElement({
                 aria-hidden="true"
               />
               <p className="text-gray-600 text-sm sm:text-base">
-                Click to select image
+                Click to add image & text
               </p>
             </div>
           </button>
         )}
       </div>
 
-      <input
-        id={`image-text-input-${index}`}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        ref={imageInputRef}
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) onFileChange(index, file)
+      <EditImageTextModal
+        isOpen={modalOpen}
+        image={draft.image}
+        text={draft.text}
+        onClose={close}
+        onImageChange={(file) => {
+          onFileChange(file)
+          close()
         }}
+        onImageRemove={() => {
+          onImageRemove()
+          setDraft((prev) => ({ ...prev, image: "" }))
+        }}
+        onTextChange={(text) => setDraft((prev) => ({ ...prev, text }))}
+        onSave={save}
       />
     </>
   )

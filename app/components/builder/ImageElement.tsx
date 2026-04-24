@@ -1,30 +1,32 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageElement as ImageElementType } from "@/types"
+import { EditImageModal } from "@/app/components/modals/EditImageModal"
 
 interface ImageElementProps {
   element: ImageElementType
   index: number
-  imageInputRef: (el: HTMLInputElement | null) => void
-  onOpenEditModal: (index: number) => void
-  onFileChange: (index: number, file: File) => void
+  onFileChange: (file: File) => void
+  onRemove: () => void
 }
 
 export function ImageElement({
   element,
   index,
-  imageInputRef,
-  onOpenEditModal,
   onFileChange,
+  onRemove,
 }: ImageElementProps) {
+  const [modalOpen, setModalOpen] = useState(false)
+
   return (
     <>
       {element.content ? (
         <button
           type="button"
-          onClick={() => onOpenEditModal(index)}
+          onClick={() => setModalOpen(true)}
           className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Edit image"
         >
@@ -60,17 +62,31 @@ export function ImageElement({
           </div>
         </button>
       )}
+
       <input
         id={`image-input-${index}`}
         type="file"
         accept="image/*"
         className="hidden"
-        ref={imageInputRef}
         onChange={(e) => {
           const file = e.target.files?.[0]
-          if (file) {
-            onFileChange(index, file)
-          }
+          if (file) onFileChange(file)
+          if (e.target) e.target.value = ""
+        }}
+      />
+
+      <EditImageModal
+        isOpen={modalOpen}
+        editingImageId={String(index)}
+        hasImage={!!element.content}
+        onClose={() => setModalOpen(false)}
+        onFileChange={(file) => {
+          onFileChange(file)
+          setModalOpen(false)
+        }}
+        onRemove={() => {
+          onRemove()
+          setModalOpen(false)
         }}
       />
     </>
