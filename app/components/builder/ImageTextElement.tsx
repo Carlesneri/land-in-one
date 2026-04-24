@@ -77,7 +77,7 @@ export function ImageTextElement({
                     aria-hidden="true"
                   />
                   <div
-                    className="relative text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
+                    className="rich-text-lio relative text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
                     // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                     dangerouslySetInnerHTML={{ __html: element.text }}
                   />

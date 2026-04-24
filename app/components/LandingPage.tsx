@@ -81,7 +81,7 @@ export function LandingPage({
                 <div key={element.id} className="w-full">
                   {element.type === "text" && (
                     <div
-                      className="text-lg leading-relaxed prose prose-slate max-w-none"
+                      className="rich-text-lio text-lg leading-relaxed prose prose-slate max-w-none"
                       // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                       dangerouslySetInnerHTML={{
                         __html: element.content ?? "",
@@ -144,7 +144,7 @@ export function LandingPage({
                             aria-hidden="true"
                           />
                           <div
-                            className="relative text-white text-center drop-shadow-lg prose prose-invert max-w-none"
+                            className="rich-text-lio relative text-white text-center drop-shadow-lg prose prose-invert max-w-none"
                             // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                             dangerouslySetInnerHTML={{ __html: element.text }}
                           />

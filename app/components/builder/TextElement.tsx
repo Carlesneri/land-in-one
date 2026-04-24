@@ -34,7 +34,7 @@ export function TextElement({ element, onSave }: TextElementProps) {
       >
         {element.content ? (
           <div
-            className="prose prose-sm max-w-none text-gray-800 leading-relaxed pointer-events-none"
+            className="rich-text-lio prose prose-sm max-w-none text-gray-800 leading-relaxed pointer-events-none"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
             dangerouslySetInnerHTML={{ __html: element.content }}
           />
