@@ -17,6 +17,13 @@ const elementSchema = new Schema(
     // ImageTextElement fields
     text: { type: String, default: "" },
     image: { type: String, default: "" },
+    backdropActive: { type: Boolean, default: false },
+    backdropType: {
+      type: String,
+      enum: ["linear", "radial"],
+    },
+    backdropColors: [{ type: String, _id: false }],
+    backdropAngle: { type: Number },
   },
   { _id: false },
 )

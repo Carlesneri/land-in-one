@@ -631,11 +631,11 @@ export function AppBuilder({
                           ),
                         )
                       }}
-                      onSave={(image, text) =>
+                      onSave={(image, text, backdropActive, flat) =>
                         setElements(
                           elements.map((el, idx) =>
                             idx === index && el.type === "image-text"
-                              ? { ...el, image, text }
+                              ? { ...el, image, text, backdropActive, ...flat }
                               : el,
                           ),
                         )

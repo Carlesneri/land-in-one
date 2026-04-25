@@ -2,6 +2,7 @@ import type { LandingPageElement, Status } from "@/types"
 import Link from "next/link"
 import Image from "next/image"
 import { cva } from "class-variance-authority"
+import { buildBackdropCss } from "@/lib/backdrop"
 
 const landingVariants = cva("min-h-screen flex flex-col", {
   variants: {
@@ -121,22 +122,32 @@ export function LandingPage({
                         width={800}
                         height={600}
                       />
-                      {element.text && (
+                      {(element.text ||
+                        (element.backdropActive &&
+                          element.backdropColors?.length)) && (
                         <div className="absolute inset-0 flex items-center justify-center p-6">
-                          {/* Linear gradient scrim for readability */}
-                          <span
-                            className="absolute inset-0 pointer-events-none"
-                            style={{
-                              background:
-                                "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
-                            }}
-                            aria-hidden="true"
-                          />
-                          <div
-                            className="rich-text-lio relative text-white text-center drop-shadow-lg prose prose-invert w-full"
-                            // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
-                            dangerouslySetInnerHTML={{ __html: element.text }}
-                          />
+                          {/* Backdrop gradient — only when active */}
+                          {element.backdropActive &&
+                            element.backdropColors?.length && (
+                              <span
+                                className="absolute inset-0 pointer-events-none"
+                                style={{
+                                  background: buildBackdropCss({
+                                    backdropType: element.backdropType,
+                                    backdropColors: element.backdropColors,
+                                    backdropAngle: element.backdropAngle,
+                                  }),
+                                }}
+                                aria-hidden="true"
+                              />
+                            )}
+                          {element.text && (
+                            <div
+                              className="rich-text-lio relative text-white text-center drop-shadow-lg prose prose-invert w-full"
+                              // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                              dangerouslySetInnerHTML={{ __html: element.text }}
+                            />
+                          )}
                         </div>
                       )}
                     </div>

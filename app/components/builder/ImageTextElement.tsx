@@ -5,6 +5,7 @@ import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageTextElement as ImageTextElementType } from "@/types"
 import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
+import { buildBackdropCss, type FlatBackdrop } from "@/lib/backdrop"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 
 interface ImageTextElementProps {
@@ -12,7 +13,12 @@ interface ImageTextElementProps {
   index: number
   onFileChange: (file: File) => void
   onImageRemove: () => void
-  onSave: (image: string, text: string) => void
+  onSave: (
+    image: string,
+    text: string,
+    backdropActive: boolean,
+    flat: FlatBackdrop,
+  ) => void
   onDelete: (index: number) => void
 }
 
@@ -28,19 +34,44 @@ export function ImageTextElement({
   const [draft, setDraft] = useState({
     image: element.image,
     text: element.text,
+    backdropActive: element.backdropActive ?? false,
+    backdropType: element.backdropType,
+    backdropColors: element.backdropColors,
+    backdropAngle: element.backdropAngle,
   })
 
   const open = () => {
-    setDraft({ image: element.image, text: element.text })
+    setDraft({
+      image: element.image,
+      text: element.text,
+      backdropActive: element.backdropActive ?? false,
+      backdropType: element.backdropType,
+      backdropColors: element.backdropColors,
+      backdropAngle: element.backdropAngle,
+    })
     setModalOpen(true)
   }
 
   const close = () => setModalOpen(false)
 
   const save = () => {
-    onSave(draft.image, draft.text)
+    onSave(draft.image, draft.text, draft.backdropActive, {
+      backdropType: draft.backdropType,
+      backdropColors: draft.backdropColors,
+      backdropAngle: draft.backdropAngle,
+    })
     close()
   }
+
+  // Build backdrop CSS string for preview — only when active
+  const backdropCss =
+    element.backdropActive && element.backdropColors?.length
+      ? buildBackdropCss({
+          backdropType: element.backdropType,
+          backdropColors: element.backdropColors,
+          backdropAngle: element.backdropAngle,
+        })
+      : undefined
 
   return (
     <ElementCard element={element} index={index} onDelete={onDelete}>
@@ -70,25 +101,22 @@ export function ImageTextElement({
               className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
               aria-label="Edit overlay text"
             >
+              {/* Backdrop gradient scrim */}
+              {backdropCss && (
+                <span
+                  className="absolute inset-0 pointer-events-none rounded"
+                  style={{ background: backdropCss }}
+                  aria-hidden="true"
+                />
+              )}
               {element.text ? (
-                <>
-                  {/* Linear gradient scrim for readability */}
-                  <span
-                    className="absolute inset-0 pointer-events-none rounded"
-                    style={{
-                      background:
-                        "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
-                    }}
-                    aria-hidden="true"
-                  />
-                  <div
-                    className="rich-text-lio relative text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
-                    // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
-                    dangerouslySetInnerHTML={{ __html: element.text }}
-                  />
-                </>
+                <div
+                  className="rich-text-lio relative text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                  dangerouslySetInnerHTML={{ __html: element.text }}
+                />
               ) : (
-                <span className="text-white/70 text-sm border border-white/40 rounded px-3 py-1.5 bg-black/20 backdrop-blur-sm">
+                <span className="text-white/70 text-sm border border-white/40 rounded px-3 py-1.5 bg-black/20 backdrop-blur-sm relative">
                   Click to add overlay text
                 </span>
               )}
@@ -120,6 +148,10 @@ export function ImageTextElement({
         isOpen={modalOpen}
         image={draft.image}
         text={draft.text}
+        backdropActive={draft.backdropActive}
+        backdropType={draft.backdropType}
+        backdropColors={draft.backdropColors}
+        backdropAngle={draft.backdropAngle}
         onClose={close}
         onImageChange={(file) => {
           onFileChange(file)
@@ -130,6 +162,10 @@ export function ImageTextElement({
           setDraft((prev) => ({ ...prev, image: "" }))
         }}
         onTextChange={(text) => setDraft((prev) => ({ ...prev, text }))}
+        onBackdropActiveChange={(active) =>
+          setDraft((prev) => ({ ...prev, backdropActive: active }))
+        }
+        onBackdropChange={(flat) => setDraft((prev) => ({ ...prev, ...flat }))}
         onSave={save}
       />
     </ElementCard>
