@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor } from "@tiptap/react"
+import { useEditor, useEditorState } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import TextAlign from "@tiptap/extension-text-align"
@@ -71,6 +71,7 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
+    shouldRerenderOnTransaction: true,
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder }),
@@ -108,6 +109,15 @@ export function RichTextEditor({
     },
   })
 
+  // useEditorState subscribes to every transaction via useSyncExternalStore,
+  // giving us a stable integer that changes whenever the editor state does.
+  // We use it as a `key` on the toolbar so Mantine controls always re-render
+  // and reflect the correct isActive() / isDisabled() values.
+  const txCount = useEditorState({
+    editor,
+    selector: ({ transactionNumber }) => transactionNumber,
+  })
+
   useEffect(() => {
     if (!editor) return
     if (editor.getHTML() !== content) {
@@ -117,7 +127,7 @@ export function RichTextEditor({
 
   return (
     <MantineRTE editor={editor}>
-      <MantineRTE.Toolbar>
+      <MantineRTE.Toolbar key={txCount}>
         <MantineRTE.ControlsGroup>
           <MantineRTE.Bold />
           <MantineRTE.Italic />
