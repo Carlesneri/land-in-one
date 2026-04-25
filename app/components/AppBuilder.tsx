@@ -45,6 +45,7 @@ import { Container } from "@/app/ui/Container"
 import { cn } from "@/lib/utils"
 import type { PageModelType } from "@/lib/models/Page"
 import { Separator } from "@/app/ui/Separator"
+import { ChangeNameModal } from "@/app/components/modals/ChangeNameModal"
 const statusDotVariants = cva("w-1.5 h-1.5 rounded-full shrink-0", {
   variants: {
     status: {
@@ -74,6 +75,7 @@ export function AppBuilder({
   >(normalizedLandingPage)
 
   // Convenience accessors derived from the single source of truth
+  const name = previewPage.name
   const elements = previewPage.elements
   const pageSlug = previewPage.slug
   const pageId = previewPage.id
@@ -96,6 +98,9 @@ export function AppBuilder({
   const setPageMode = (mode: "light" | "dark") =>
     setPreviewPage((prev) => ({ ...prev, mode }))
 
+  const setPageName = (name?: string) =>
+    setPreviewPage((prev) => ({ ...prev, name }))
+
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteElementId, setDeleteElementId] = useState<string | null>(null)
@@ -103,6 +108,7 @@ export function AppBuilder({
   const [isPublished, setIsPublished] = useState<boolean | undefined>()
   const [isUnpublishing, setIsUnpublishing] = useState(false)
   const [showChangeSlugModal, setShowChangeSlugModal] = useState(false)
+  const [showChangeNameModal, setShowChangeNameModal] = useState(false)
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
     progress: number
@@ -119,6 +125,10 @@ export function AppBuilder({
     (Omit<PageModelType, "_id"> & { id: string }) | null
   >(null)
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false)
+  const [bottomMessageStatus, setBottomMessageStatus] = useState<
+    "unpublished" | "changes" | "upToDate"
+  >()
+  const [bottomMessage, setBottomMessage] = useState<string>("")
 
   // Fetch the published version on mount to determine initial status
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs once on mount
@@ -142,10 +152,6 @@ export function AppBuilder({
       setHasUnpublishedChanges(true)
     }
   }, [publishedPage, previewPage.updatedAt])
-  const [bottomMessageStatus, setBottomMessageStatus] = useState<
-    "unpublished" | "changes" | "upToDate"
-  >()
-  const [bottomMessage, setBottomMessage] = useState<string>("")
 
   // Update bottom bar message when publish state or changes flag updates
   useEffect(() => {
@@ -176,6 +182,7 @@ export function AppBuilder({
           slug: pageSlug,
           elements,
           mode: pageMode,
+          name,
         }).catch(() => {
           toast.error("Page could not be saved.")
         })
@@ -183,7 +190,7 @@ export function AppBuilder({
     }, 300) // time debounce
 
     return () => clearTimeout(timer)
-  }, [elements, pageSlug, pageId, pageMode])
+  }, [elements, pageSlug, pageId, pageMode, name])
 
   const handleDragSort = (sourceIndex: number, targetIndex: number) => {
     setElements((prev) => {
@@ -377,9 +384,24 @@ export function AppBuilder({
         <div className="bg-linear-to-b from-primary/80 to-primary-hover/70 rounded-xl shadow-md mb-4 overflow-hidden">
           {/* Header bar */}
           <div className="flex items-center justify-between gap-2 px-3 py-2 bg-black/15 border-b border-white/15">
-            <span className="text-xs font-medium text-white/60 uppercase tracking-wide">
-              Landing page
-            </span>
+            <div className="flex gap-1 items-center">
+              <span
+                className={cn(
+                  "text-sm font-semibold uppercase tracking-widest line-clamp-1",
+                  name ? "text-white" : "text-white/70",
+                )}
+              >
+                {name || "Untitled landing page"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowChangeNameModal(true)}
+                className="shrink-0 p-1.5 rounded-md text-white/70 hover:text-white transition-colors"
+                title="Change name"
+              >
+                <IconPencil size={18} aria-hidden="true" />
+              </button>
+            </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
@@ -441,9 +463,9 @@ export function AppBuilder({
 
               {/* Slug + change */}
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-semibold text-white truncate drop-shadow">
+                <h2 className="text-base font-semibold text-white truncate drop-shadow">
                   {pageSlug}
-                </h1>
+                </h2>
                 <button
                   type="button"
                   onClick={() => setShowChangeSlugModal(true)}
@@ -710,6 +732,17 @@ export function AppBuilder({
         onSave={(newSlug) => {
           setPageSlug(newSlug)
           setShowChangeSlugModal(false)
+        }}
+      />
+
+      {/* Change Name Modal */}
+      <ChangeNameModal
+        isOpen={showChangeNameModal}
+        pageName={name}
+        onClose={() => setShowChangeNameModal(false)}
+        onSave={(newName?: string) => {
+          setPageName(newName)
+          setShowChangeNameModal(false)
         }}
       />
 

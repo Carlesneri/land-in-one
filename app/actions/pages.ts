@@ -14,6 +14,7 @@ interface SavePagePayload {
   slug: string
   mode?: "light" | "dark"
   elements: LandingPageElement[]
+  name?: string
 }
 
 export async function getPreviewLandingPageById(id: string) {
@@ -135,7 +136,7 @@ export async function savePreviewPage(id: string, payload: SavePagePayload) {
       redirect("/login")
     }
 
-    const { slug, elements, mode } = payload
+    const { slug, elements, mode, name } = payload
 
     if (!slug) {
       return {
@@ -151,6 +152,7 @@ export async function savePreviewPage(id: string, payload: SavePagePayload) {
       elements,
       slug,
       userEmail: session.user.email,
+      name,
       ...(mode !== undefined && { mode }),
     }
 
@@ -305,6 +307,7 @@ export async function getUserLandings(userEmail: string) {
     const mappedPages = pages.map((page) => ({
       id: page._id.toString(),
       slug: page.slug,
+      name: page.name,
       updatedAt: page.updatedAt,
     }))
 

@@ -25,6 +25,7 @@ export interface ImageTextElement extends BaseElement {
 }
 export type LandingPageElement = TextElement | ImageElement | ImageTextElement
 export interface LandingPage {
+  name?: string
   slug: string
   elements: LandingPageElement[]
   userEmail: string

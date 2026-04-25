@@ -36,6 +36,9 @@ export type PageModelType = LandingPage & {
 
 const pageSchema = new Schema<PageModelType>(
   {
+    name: {
+      type: String,
+    },
     slug: {
       type: String,
       required: true,

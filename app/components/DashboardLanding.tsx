@@ -6,7 +6,6 @@ import {
   unpublishPage,
 } from "@/app/actions/pages"
 import { Card, CardHeader, CardTitle } from "@/app/ui/Card"
-import { Badge } from "@/app/ui/Badge"
 import { CardContent } from "@/app/ui/Card"
 import { Button } from "@/app/ui/Button"
 import Link from "next/link"
@@ -23,7 +22,7 @@ export function DashboardLanding({
   landing,
   onDeleted,
 }: {
-  landing: { id: string; slug: string }
+  landing: { id: string; slug: string; name?: string }
   onDeleted: (id: string) => void
 }) {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -74,8 +73,15 @@ export function DashboardLanding({
         <CardHeader className="flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <CardTitle className="text-lg flex items-center gap-2 justify-between">
-                <span className="line-clamp-1">{landing.slug}</span>
+              <CardTitle className="text-lg flex flex-col gap-2">
+                {landing.name && (
+                  <span className="line-clamp-1 font-semibold uppercase tracking-widest">
+                    {landing.name}
+                  </span>
+                )}
+                <span className="line-clamp-1 text-primary font-light">
+                  {landing.slug}
+                </span>
               </CardTitle>
 
               <div className="flex gap-2 mt-5 flex-wrap">
