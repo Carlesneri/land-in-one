@@ -9,9 +9,25 @@ import { TextStyle } from "@tiptap/extension-text-style"
 import {
   RichTextEditor as MantineRTE,
   Link as MantineLink,
+  useRichTextEditorContext,
 } from "@mantine/tiptap"
 import { useEffect } from "react"
 import type { AnyExtension } from "@tiptap/react"
+import HardBreak from "@tiptap/extension-hard-break"
+
+// Custom HardBreak control (Shift+Enter) — StarterKit already includes the extension
+function HardBreakControl() {
+  const { editor } = useRichTextEditorContext()
+  return (
+    <MantineRTE.Control
+      onClick={() => editor?.chain().focus().setHardBreak().run()}
+      aria-label="Hard break"
+      title="Hard break (Shift+Enter)"
+    >
+      ↵
+    </MantineRTE.Control>
+  )
+}
 
 // Extend MantineLink so setLink always produces an absolute URL
 const AbsoluteLink = MantineLink.extend({
@@ -62,10 +78,12 @@ export function RichTextEditor({
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       AbsoluteLink.configure({ openOnClick: false, defaultProtocol: "https" }),
       TextStyle,
+      HardBreak,
       Color,
     ] as unknown as AnyExtension[],
     content,
     autofocus: "end",
+
     editorProps: {
       attributes: {
         style: `min-height: ${minHeight}`,
@@ -136,6 +154,7 @@ export function RichTextEditor({
 
         <MantineRTE.ControlsGroup>
           <MantineRTE.Hr />
+          <HardBreakControl />
         </MantineRTE.ControlsGroup>
 
         {colorPicker && (
