@@ -12,9 +12,13 @@ interface EditImageModalProps {
   imageUrl?: string
   aspectRatio?: AspectRatio
   onClose: () => void
-  onSelectFile: (file: File) => void
-  onRemove: () => void
-  onSave: (aspectRatio: AspectRatio | undefined) => void
+  onSelectFile: (file: File) => void // kept for back-compat but unused when onSave carries pendingFile
+  onRemove: () => void // kept for back-compat but unused when onSave carries imageRemoved
+  onSave: (
+    aspectRatio: AspectRatio | undefined,
+    pendingFile?: File,
+    imageRemoved?: boolean,
+  ) => void
 }
 
 const ASPECT_RATIO_OPTIONS: { label: string; value: AspectRatio | "" }[] = [
@@ -32,8 +36,6 @@ export function EditImageModal({
   imageUrl,
   aspectRatio,
   onClose,
-  onSelectFile,
-  onRemove,
   onSave,
 }: EditImageModalProps) {
   const [draftRatio, setDraftRatio] = useState<AspectRatio | "">(
@@ -60,9 +62,11 @@ export function EditImageModal({
       : imageUrl || null
 
   const handleSave = () => {
-    if (draftFile) onSelectFile(draftFile)
-    else if (draftRemoved) onRemove()
-    onSave(draftRatio ? (draftRatio as AspectRatio) : undefined)
+    onSave(
+      draftRatio ? (draftRatio as AspectRatio) : undefined,
+      draftFile ?? undefined,
+      draftRemoved || undefined,
+    )
     onClose()
   }
 

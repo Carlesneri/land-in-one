@@ -26,7 +26,7 @@ import {
   deleteImageInCloud,
 } from "@/app/actions/cloud-storage"
 import { toast } from "sonner"
-import type { LandingPageElement, AspectRatio } from "@/types"
+import type { LandingPageElement } from "@/types"
 import { MAX_IMAGE_SIZE_MB, S3_BASE_URL } from "@/CONSTANTS"
 import axios, { type AxiosProgressEvent } from "axios"
 import { DragDropProvider } from "@dnd-kit/react"
@@ -260,54 +260,11 @@ export function AppBuilder({
     )
   }
 
-  const handleUpdateAspectRatio = (
-    index: number,
-    ratio: AspectRatio | undefined,
-  ) => {
-    setElements(
-      elements.map((el, idx) =>
-        idx === index && (el.type === "image" || el.type === "image-text")
-          ? { ...el, aspectRatio: ratio }
-          : el,
-      ),
-    )
-  }
-
-  const handleImageSelect = (index: number, file: File) => {
-    // Validate file size
+  const uploadImageToCloud = async (file: File): Promise<string> => {
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
       toast.error(`Image size exceeds ${MAX_IMAGE_SIZE_MB}MB limit`)
-      return
+      throw new Error("File too large")
     }
-
-    // Get the current image URL to delete it from cloud
-    const el = elements[index]
-    const currentImageUrl =
-      el?.type === "image-text"
-        ? el.image
-        : el?.type === "image"
-          ? el.content
-          : undefined
-
-    // Upload image to cloud immediately
-    uploadImageToCloud(file)
-      .then((imageUrl) => {
-        // Delete previous image from cloud if it exists
-        if (currentImageUrl) {
-          deleteImageInCloud(currentImageUrl).catch(() => {
-            // Silent failure for cleanup
-          })
-        }
-        // Update element with cloud URL
-        handleUpdateContent(index, imageUrl)
-        toast.success("Image uploaded")
-      })
-      .catch(() => {
-        toast.error("Failed to upload image")
-      })
-  }
-
-  const uploadImageToCloud = async (file: File): Promise<string> => {
     try {
       // Get presigned URL from server
       const { url: presignedUrl, imageKey } = await createPresignedUrl({
@@ -602,44 +559,116 @@ export function AppBuilder({
                     <ImageElement
                       element={element}
                       index={index}
-                      onFileChange={(file) => handleImageSelect(index, file)}
-                      onRemove={() => {
-                        const url = element.content
-                        if (url) deleteImageInCloud(url).catch(() => {})
-                        handleUpdateContent(index, "")
-                        toast.success("Image removed")
+                      onSave={({ aspectRatio, pendingFile, imageRemoved }) => {
+                        if (imageRemoved) {
+                          if (element.content)
+                            deleteImageInCloud(element.content).catch(() => {})
+                          setElements(
+                            elements.map((el, idx) =>
+                              idx === index && el.type === "image"
+                                ? { ...el, content: "", aspectRatio }
+                                : el,
+                            ),
+                          )
+                          toast.success("Image removed")
+                        } else if (pendingFile) {
+                          const oldUrl = element.content
+                          uploadImageToCloud(pendingFile)
+                            .then((imageUrl) => {
+                              if (oldUrl)
+                                deleteImageInCloud(oldUrl).catch(() => {})
+                              setElements(
+                                elements.map((el, idx) =>
+                                  idx === index && el.type === "image"
+                                    ? { ...el, content: imageUrl, aspectRatio }
+                                    : el,
+                                ),
+                              )
+                              toast.success("Image uploaded")
+                            })
+                            .catch(() => toast.error("Failed to upload image"))
+                        } else {
+                          setElements(
+                            elements.map((el, idx) =>
+                              idx === index && el.type === "image"
+                                ? { ...el, aspectRatio }
+                                : el,
+                            ),
+                          )
+                        }
                       }}
                       onDelete={handleDeleteElement}
-                      onAspectRatioChange={(ratio) =>
-                        handleUpdateAspectRatio(index, ratio)
-                      }
                     />
                   )}
                   {element.type === "image-text" && (
                     <ImageTextElement
                       element={element}
                       index={index}
-                      onFileChange={(file) => handleImageSelect(index, file)}
-                      onImageRemove={() => {
-                        const url = element.image
-                        if (url) deleteImageInCloud(url).catch(() => {})
-                        setElements(
-                          elements.map((el, idx) =>
-                            idx === index && el.type === "image-text"
-                              ? { ...el, image: "" }
-                              : el,
-                          ),
-                        )
+                      onSave={({
+                        text,
+                        backdropActive,
+                        flat,
+                        pendingFile,
+                        imageRemoved,
+                      }) => {
+                        const el = elements[index]
+                        const oldImageUrl =
+                          el?.type === "image-text" ? el.image : undefined
+
+                        if (imageRemoved) {
+                          // Delete old image from cloud if it exists
+                          if (oldImageUrl) {
+                            deleteImageInCloud(oldImageUrl).catch(() => {})
+                          }
+                          setElements(
+                            elements.map((el, idx) =>
+                              idx === index && el.type === "image-text"
+                                ? {
+                                    ...el,
+                                    image: "",
+                                    text,
+                                    backdropActive,
+                                    ...flat,
+                                  }
+                                : el,
+                            ),
+                          )
+                        } else if (pendingFile) {
+                          // Upload new image, then delete old one
+                          uploadImageToCloud(pendingFile)
+                            .then((imageUrl) => {
+                              if (oldImageUrl) {
+                                deleteImageInCloud(oldImageUrl).catch(() => {})
+                              }
+                              setElements(
+                                elements.map((el, idx) =>
+                                  idx === index && el.type === "image-text"
+                                    ? {
+                                        ...el,
+                                        image: imageUrl,
+                                        text,
+                                        backdropActive,
+                                        ...flat,
+                                      }
+                                    : el,
+                                ),
+                              )
+                              toast.success("Image uploaded")
+                            })
+                            .catch(() => {
+                              toast.error("Failed to upload image")
+                            })
+                        } else {
+                          // No image change
+                          setElements(
+                            elements.map((el, idx) =>
+                              idx === index && el.type === "image-text"
+                                ? { ...el, text, backdropActive, ...flat }
+                                : el,
+                            ),
+                          )
+                        }
                       }}
-                      onSave={(image, text, backdropActive, flat) =>
-                        setElements(
-                          elements.map((el, idx) =>
-                            idx === index && el.type === "image-text"
-                              ? { ...el, image, text, backdropActive, ...flat }
-                              : el,
-                          ),
-                        )
-                      }
                       onDelete={handleDeleteElement}
                     />
                   )}

@@ -8,22 +8,24 @@ import type { AspectRatio } from "@/types"
 import { EditImageModal } from "@/app/components/modals/EditImageModal"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 
+export interface ImageSaveParams {
+  aspectRatio: AspectRatio | undefined
+  pendingFile?: File
+  imageRemoved?: boolean
+}
+
 interface ImageElementProps {
   element: ImageElementType
   index: number
-  onFileChange: (file: File) => void
-  onRemove: () => void
+  onSave: (params: ImageSaveParams) => void
   onDelete: (index: number) => void
-  onAspectRatioChange: (ratio: AspectRatio | undefined) => void
 }
 
 export function ImageElement({
   element,
   index,
-  onFileChange,
-  onRemove,
+  onSave,
   onDelete,
-  onAspectRatioChange,
 }: ImageElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -59,9 +61,12 @@ export function ImageElement({
         imageUrl={element.content || undefined}
         aspectRatio={element.aspectRatio}
         onClose={() => setModalOpen(false)}
-        onSelectFile={(file) => onFileChange(file)}
-        onRemove={() => onRemove()}
-        onSave={(ratio) => onAspectRatioChange(ratio)}
+        onSelectFile={() => {}} // handled inside modal draft; passed via onSave
+        onRemove={() => {}} // handled inside modal draft; passed via onSave
+        onSave={(ratio, pendingFile, imageRemoved) => {
+          onSave({ aspectRatio: ratio, pendingFile, imageRemoved })
+          setModalOpen(false)
+        }}
       />
     </ElementCard>
   )

@@ -115,41 +115,41 @@ export function LandingPage({
 
                   {element.type === "image-text" && element.image && (
                     <div className="w-full relative overflow-hidden rounded-lg">
+                      {/* Image fills the container as a background */}
                       <Image
                         src={element.image}
                         alt={`Page image-text element at position ${element.position}`}
-                        className="w-full h-auto"
+                        className="absolute inset-0 w-full h-full object-cover"
                         width={800}
                         height={600}
                       />
-                      {(element.text ||
-                        (element.backdropActive &&
-                          element.backdropColors?.length)) && (
-                        <div className="absolute inset-0 flex items-center justify-center p-6">
-                          {/* Backdrop gradient — only when active */}
-                          {element.backdropActive &&
-                            element.backdropColors?.length && (
-                              <span
-                                className="absolute inset-0 pointer-events-none"
-                                style={{
-                                  background: buildBackdropCss({
-                                    backdropType: element.backdropType,
-                                    backdropColors: element.backdropColors,
-                                    backdropAngle: element.backdropAngle,
-                                  }),
-                                }}
-                                aria-hidden="true"
-                              />
-                            )}
-                          {element.text && (
-                            <div
-                              className="rich-text-lio relative text-white text-center drop-shadow-lg prose prose-invert w-full"
-                              // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
-                              dangerouslySetInnerHTML={{ __html: element.text }}
-                            />
-                          )}
+                      {/* Backdrop gradient */}
+                      {element.backdropActive &&
+                        element.backdropColors?.length && (
+                          <span
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              background: buildBackdropCss({
+                                backdropType: element.backdropType,
+                                backdropColors: element.backdropColors,
+                                backdropAngle: element.backdropAngle,
+                              }),
+                            }}
+                            aria-hidden="true"
+                          />
+                        )}
+                      {/* Text content drives the height */}
+                      {element.text && (
+                        <div className="relative px-6 py-8 flex items-center justify-center">
+                          <div
+                            className="rich-text-lio text-white text-center drop-shadow-lg prose prose-invert w-full"
+                            // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                            dangerouslySetInnerHTML={{ __html: element.text }}
+                          />
                         </div>
                       )}
+                      {/* If no text, keep a minimum visible height */}
+                      {!element.text && <div className="h-64" />}
                     </div>
                   )}
                 </div>

@@ -8,31 +8,32 @@ import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
 import { buildBackdropCss, type FlatBackdrop } from "@/lib/backdrop"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 
+export interface ImageTextSaveParams {
+  text: string
+  backdropActive: boolean
+  flat: FlatBackdrop
+  pendingFile?: File // new image selected but not yet uploaded
+  imageRemoved?: boolean // user removed the image
+}
+
 interface ImageTextElementProps {
   element: ImageTextElementType
   index: number
-  onFileChange: (file: File) => void
-  onImageRemove: () => void
-  onSave: (
-    image: string,
-    text: string,
-    backdropActive: boolean,
-    flat: FlatBackdrop,
-  ) => void
+  onSave: (params: ImageTextSaveParams) => void
   onDelete: (index: number) => void
 }
 
 export function ImageTextElement({
   element,
   index,
-  onFileChange,
-  onImageRemove,
   onSave,
   onDelete,
 }: ImageTextElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [draft, setDraft] = useState({
-    image: element.image,
+    image: element.image, // shown in modal (may be objectURL)
+    pendingFile: null as File | null,
+    imageRemoved: false,
     text: element.text,
     backdropActive: element.backdropActive ?? false,
     backdropType: element.backdropType,
@@ -43,6 +44,8 @@ export function ImageTextElement({
   const open = () => {
     setDraft({
       image: element.image,
+      pendingFile: null,
+      imageRemoved: false,
       text: element.text,
       backdropActive: element.backdropActive ?? false,
       backdropType: element.backdropType,
@@ -55,10 +58,16 @@ export function ImageTextElement({
   const close = () => setModalOpen(false)
 
   const save = () => {
-    onSave(draft.image, draft.text, draft.backdropActive, {
-      backdropType: draft.backdropType,
-      backdropColors: draft.backdropColors,
-      backdropAngle: draft.backdropAngle,
+    onSave({
+      text: draft.text,
+      backdropActive: draft.backdropActive,
+      flat: {
+        backdropType: draft.backdropType,
+        backdropColors: draft.backdropColors,
+        backdropAngle: draft.backdropAngle,
+      },
+      pendingFile: draft.pendingFile ?? undefined,
+      imageRemoved: draft.imageRemoved,
     })
     close()
   }
@@ -77,51 +86,45 @@ export function ImageTextElement({
     <ElementCard element={element} index={index} onDelete={onDelete}>
       <div className="relative w-full rounded overflow-hidden">
         {element.image ? (
-          <>
-            {/* Image — click opens modal */}
-            <button
-              type="button"
-              onClick={open}
-              className="w-full block cursor-pointer hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Edit image and text"
-            >
-              <Image
-                src={element.image}
-                alt="Element content"
-                width={800}
-                height={400}
-                className="w-full object-cover rounded"
+          <button
+            type="button"
+            onClick={open}
+            className="relative w-full rounded overflow-hidden cursor-pointer hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Edit image and text"
+          >
+            {/* Image as absolute background */}
+            <Image
+              src={element.image}
+              alt="Element content"
+              width={800}
+              height={400}
+              className="absolute inset-0 w-full h-full object-cover rounded"
+            />
+            {/* Backdrop gradient */}
+            {backdropCss && (
+              <span
+                className="absolute inset-0 pointer-events-none rounded"
+                style={{ background: backdropCss }}
+                aria-hidden="true"
               />
-            </button>
-
-            {/* Overlay text — click also opens modal */}
-            <button
-              type="button"
-              onClick={open}
-              className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
-              aria-label="Edit overlay text"
-            >
-              {/* Backdrop gradient scrim */}
-              {backdropCss && (
-                <span
-                  className="absolute inset-0 pointer-events-none rounded"
-                  style={{ background: backdropCss }}
-                  aria-hidden="true"
-                />
-              )}
+            )}
+            {/* Text drives the height */}
+            <div className="relative px-4 py-6 flex items-center justify-center">
               {element.text ? (
                 <div
-                  className="rich-text-lio relative text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
+                  className="rich-text-lio text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                   dangerouslySetInnerHTML={{ __html: element.text }}
                 />
               ) : (
-                <span className="text-white/70 text-sm border border-white/40 rounded px-3 py-1.5 bg-black/20 backdrop-blur-sm relative">
+                <span className="text-white/70 text-sm border border-white/40 rounded px-3 py-1.5 bg-black/20 backdrop-blur-sm">
                   Click to add overlay text
                 </span>
               )}
-            </button>
-          </>
+            </div>
+            {/* Minimum height when no text */}
+            {!element.text && <div className="h-32" />}
+          </button>
         ) : (
           /* Empty state — no image yet */
           <button
@@ -154,12 +157,22 @@ export function ImageTextElement({
         backdropAngle={draft.backdropAngle}
         onClose={close}
         onImageChange={(file) => {
-          onFileChange(file)
-          close()
+          // Preview locally via object URL — upload deferred to save
+          const previewUrl = URL.createObjectURL(file)
+          setDraft((prev) => ({
+            ...prev,
+            image: previewUrl,
+            pendingFile: file,
+            imageRemoved: false,
+          }))
         }}
         onImageRemove={() => {
-          onImageRemove()
-          setDraft((prev) => ({ ...prev, image: "" }))
+          setDraft((prev) => ({
+            ...prev,
+            image: "",
+            pendingFile: null,
+            imageRemoved: true,
+          }))
         }}
         onTextChange={(text) => setDraft((prev) => ({ ...prev, text }))}
         onBackdropActiveChange={(active) =>
