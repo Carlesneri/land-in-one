@@ -6,20 +6,14 @@ import { Modal } from "@/app/ui/Modal"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 import { IconPhoto } from "@tabler/icons-react"
 
-import type { AspectRatio } from "@/types"
-
 interface EditImageTextModalProps {
   isOpen: boolean
   image: string
   text: string
-  aspectRatio?: AspectRatio
-  textPosition?: "top" | "center" | "bottom"
   onClose: () => void
   onImageChange: (file: File) => void
   onImageRemove: () => void
   onTextChange: (value: string) => void
-  onAspectRatioChange: (ratio: AspectRatio | undefined) => void
-  onTextPositionChange: (position: "top" | "center" | "bottom") => void
   onSave: () => void
 }
 
@@ -27,14 +21,10 @@ export function EditImageTextModal({
   isOpen,
   image,
   text,
-  aspectRatio,
-  textPosition,
   onClose,
   onImageChange,
   onImageRemove,
   onTextChange,
-  onAspectRatioChange,
-  onTextPositionChange,
   onSave,
 }: EditImageTextModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -116,54 +106,6 @@ export function EditImageTextModal({
             Overlay text
           </p>
           <RichTextEditor content={text} onChange={onTextChange} colorPicker />
-        </div>
-
-        {/* Aspect Ratio */}
-        <div>
-          <label
-            htmlFor="image-text-aspect-ratio"
-            className="block text-sm font-medium text-slate-700 mb-1"
-          >
-            Aspect Ratio
-          </label>
-          <select
-            id="image-text-aspect-ratio"
-            value={aspectRatio ?? ""}
-            onChange={(e) =>
-              onAspectRatioChange((e.target.value as AspectRatio) || undefined)
-            }
-            className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg focus:border-primary focus:outline-none"
-          >
-            <option value="">Original (no crop)</option>
-            <option value="16/9">16:9 (Landscape)</option>
-            <option value="4/3">4:3</option>
-            <option value="1/1">1:1 (Square)</option>
-            <option value="3/4">3:4 (Portrait)</option>
-            <option value="9/16">9:16 (Portrait)</option>
-          </select>
-        </div>
-
-        {/* Text Position */}
-        <div>
-          <p className="block text-sm font-medium text-slate-700 mb-2">
-            Text Position
-          </p>
-          <div className="flex gap-2">
-            {(["top", "center", "bottom"] as const).map((pos) => (
-              <button
-                key={pos}
-                type="button"
-                onClick={() => onTextPositionChange(pos)}
-                className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium capitalize transition-colors ${
-                  (textPosition ?? "center") === pos
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-slate-200 text-slate-600 hover:border-primary/50"
-                }`}
-              >
-                {pos}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Actions */}

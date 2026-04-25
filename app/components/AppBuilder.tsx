@@ -186,10 +186,12 @@ export function AppBuilder({
   }, [elements, pageSlug, pageId, pageMode])
 
   const handleDragSort = (sourceIndex: number, targetIndex: number) => {
-    const reordered = [...elements]
-    const [draggedEl] = reordered.splice(sourceIndex, 1)
-    reordered.splice(targetIndex, 0, draggedEl)
-    setElements(reordered.map((el, idx) => ({ ...el, position: idx })))
+    setElements((prev) => {
+      const reordered = [...prev]
+      const [draggedEl] = reordered.splice(sourceIndex, 1)
+      reordered.splice(targetIndex, 0, draggedEl)
+      return reordered.map((el, idx) => ({ ...el, position: idx }))
+    })
   }
 
   const handleAddElement = (type: "text" | "image" | "image-text") => {
@@ -266,19 +268,6 @@ export function AppBuilder({
       elements.map((el, idx) =>
         idx === index && (el.type === "image" || el.type === "image-text")
           ? { ...el, aspectRatio: ratio }
-          : el,
-      ),
-    )
-  }
-
-  const handleUpdateTextPosition = (
-    index: number,
-    position: "top" | "center" | "bottom",
-  ) => {
-    setElements(
-      elements.map((el, idx) =>
-        idx === index && el.type === "image-text"
-          ? { ...el, textPosition: position }
           : el,
       ),
     )
@@ -642,12 +631,6 @@ export function AppBuilder({
                         )
                       }
                       onDelete={handleDeleteElement}
-                      onAspectRatioChange={(ratio) =>
-                        handleUpdateAspectRatio(index, ratio)
-                      }
-                      onTextPositionChange={(position) =>
-                        handleUpdateTextPosition(index, position)
-                      }
                     />
                   )}
                 </React.Fragment>

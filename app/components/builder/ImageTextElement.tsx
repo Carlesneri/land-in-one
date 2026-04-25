@@ -4,7 +4,6 @@ import { useState } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageTextElement as ImageTextElementType } from "@/types"
-import type { AspectRatio } from "@/types"
 import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 
@@ -15,8 +14,6 @@ interface ImageTextElementProps {
   onImageRemove: () => void
   onSave: (image: string, text: string) => void
   onDelete: (index: number) => void
-  onAspectRatioChange: (ratio: AspectRatio | undefined) => void
-  onTextPositionChange: (position: "top" | "center" | "bottom") => void
 }
 
 export function ImageTextElement({
@@ -26,8 +23,6 @@ export function ImageTextElement({
   onImageRemove,
   onSave,
   onDelete,
-  onAspectRatioChange,
-  onTextPositionChange,
 }: ImageTextElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [draft, setDraft] = useState({
@@ -72,13 +67,7 @@ export function ImageTextElement({
             <button
               type="button"
               onClick={open}
-              className={`absolute inset-0 flex justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded ${
-                element.textPosition === "top"
-                  ? "items-start"
-                  : element.textPosition === "bottom"
-                    ? "items-end"
-                    : "items-center"
-              }`}
+              className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
               aria-label="Edit overlay text"
             >
               {element.text ? (
@@ -88,11 +77,7 @@ export function ImageTextElement({
                     className="absolute inset-0 pointer-events-none rounded"
                     style={{
                       background:
-                        element.textPosition === "top"
-                          ? "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 60%)"
-                          : element.textPosition === "bottom"
-                            ? "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)"
-                            : "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
+                        "linear-gradient(to bottom, transparent, rgba(0,0,0,0.6) 50%, transparent)",
                     }}
                     aria-hidden="true"
                   />
@@ -135,8 +120,6 @@ export function ImageTextElement({
         isOpen={modalOpen}
         image={draft.image}
         text={draft.text}
-        aspectRatio={element.aspectRatio}
-        textPosition={element.textPosition}
         onClose={close}
         onImageChange={(file) => {
           onFileChange(file)
@@ -147,8 +130,6 @@ export function ImageTextElement({
           setDraft((prev) => ({ ...prev, image: "" }))
         }}
         onTextChange={(text) => setDraft((prev) => ({ ...prev, text }))}
-        onAspectRatioChange={onAspectRatioChange}
-        onTextPositionChange={onTextPositionChange}
         onSave={save}
       />
     </ElementCard>

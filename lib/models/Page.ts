@@ -17,7 +17,6 @@ const elementSchema = new Schema(
     // ImageTextElement fields
     text: { type: String, default: "" },
     image: { type: String, default: "" },
-    textPosition: { type: String, enum: ["top", "center", "bottom"] },
   },
   { _id: false },
 )

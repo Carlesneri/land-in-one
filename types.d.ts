@@ -17,8 +17,6 @@ export interface ImageTextElement extends BaseElement {
   type: "image-text"
   text: string
   image: string
-  aspectRatio?: AspectRatio
-  textPosition?: "top" | "center" | "bottom"
 }
 export type LandingPageElement = TextElement | ImageElement | ImageTextElement
 export interface LandingPage {
