@@ -576,6 +576,16 @@ export function AppBuilder({
                 handleDragSort(sourceIndex, targetIndex)
               }
             }}
+            onDragOver={(event) => {
+              const { operation } = event
+              if (!isSortableOperation(operation)) return
+              const sourceIndex = operation.source?.index
+              const targetIndex = operation.target?.index
+              if (sourceIndex == null || targetIndex == null) return
+              if (sourceIndex !== targetIndex) {
+                handleDragSort(sourceIndex, targetIndex)
+              }
+            }}
           >
             <div className="space-y-6">
               {elements.map((element, index) => (
