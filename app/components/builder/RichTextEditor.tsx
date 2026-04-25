@@ -69,6 +69,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         style: `min-height: ${minHeight}`,
+        ...(colorPicker && { class: "rte-checkered" }),
       },
       handleClick(_, __, event) {
         const target = event.target as HTMLElement
