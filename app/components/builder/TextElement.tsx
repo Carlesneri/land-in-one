@@ -49,7 +49,7 @@ export function TextElement({
       >
         {element.content ? (
           <div
-            className="rich-text-lio prose prose-sm max-w-none text-gray-800 leading-relaxed pointer-events-none"
+            className="rich-text-lio prose prose-sm max-w-none text-gray-800 leading-relaxed pointer-events-none overflow-hidden line-clamp-5"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
             dangerouslySetInnerHTML={{ __html: element.content }}
           />

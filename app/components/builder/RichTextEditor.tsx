@@ -79,6 +79,13 @@ export function RichTextEditor({
         }
         return false
       },
+      handlePaste(view, event) {
+        const text = event.clipboardData?.getData("text/plain")
+        if (!text) return false
+        event.preventDefault()
+        view.dispatch(view.state.tr.insertText(text))
+        return true
+      },
     },
     onUpdate({ editor }) {
       onChange(editor.getHTML())
@@ -94,7 +101,7 @@ export function RichTextEditor({
 
   return (
     <MantineRTE editor={editor}>
-      <MantineRTE.Toolbar sticky stickyOffset={0}>
+      <MantineRTE.Toolbar>
         <MantineRTE.ControlsGroup>
           <MantineRTE.Bold />
           <MantineRTE.Italic />
