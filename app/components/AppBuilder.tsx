@@ -11,7 +11,6 @@ import { ImageTextElement } from "@/app/components/builder/ImageTextElement"
 import { AddElementModal } from "@/app/components/modals/AddElementModal"
 import { DeleteElementModal } from "@/app/components/modals/DeleteElementModal"
 import { ChangeSlugModal } from "@/app/components/modals/ChangeSlugModal"
-import { ElementOptionsModal } from "@/app/components/modals/ElementOptionsModal"
 import { UploadProgressModal } from "@/app/components/modals/UploadProgressModal"
 import { DeleteProjectModal } from "@/app/components/modals/DeleteProjectModal"
 import { LandingModeModal } from "@/app/components/modals/LandingModeModal"
@@ -103,7 +102,6 @@ export function AppBuilder({
   const [isPublishing, setIsPublishing] = useState(false)
   const [isPublished, setIsPublished] = useState<boolean | undefined>()
   const [isUnpublishing, setIsUnpublishing] = useState(false)
-  const [optionsElementId, setOptionsElementId] = useState<string | null>(null)
   const [showChangeSlugModal, setShowChangeSlugModal] = useState(false)
   const [progressModal, setProgressModal] = useState<{
     isOpen: boolean
@@ -188,14 +186,10 @@ export function AppBuilder({
   }, [elements, pageSlug, pageId, pageMode])
 
   const handleDragSort = (sourceIndex: number, targetIndex: number) => {
-    const newElements = [...elements]
-    const draggedEl = newElements[sourceIndex]
-    newElements.splice(sourceIndex, 1)
-    newElements.splice(targetIndex, 0, draggedEl)
-    newElements.forEach((el, idx) => {
-      el.position = idx
-    })
-    setElements(newElements)
+    const reordered = [...elements]
+    const [draggedEl] = reordered.splice(sourceIndex, 1)
+    reordered.splice(targetIndex, 0, draggedEl)
+    setElements(reordered.map((el, idx) => ({ ...el, position: idx })))
   }
 
   const handleAddElement = (type: "text" | "image" | "image-text") => {
@@ -243,11 +237,9 @@ export function AppBuilder({
         })
       }
 
-      const newElements = elements.filter((_, idx) => idx !== index)
-      // Update positions
-      newElements.forEach((el, idx) => {
-        el.position = idx
-      })
+      const newElements = elements
+        .filter((_, idx) => idx !== index)
+        .map((el, idx) => ({ ...el, position: idx }))
       setElements(newElements)
       setShowDeleteModal(false)
       setDeleteElementId(null)
@@ -605,7 +597,6 @@ export function AppBuilder({
                       index={index}
                       onSave={(content) => handleUpdateContent(index, content)}
                       onDelete={handleDeleteElement}
-                      onOpenOptions={(i) => setOptionsElementId(String(i))}
                     />
                   )}
                   {element.type === "image" && (
@@ -620,7 +611,9 @@ export function AppBuilder({
                         toast.success("Image removed")
                       }}
                       onDelete={handleDeleteElement}
-                      onOpenOptions={(i) => setOptionsElementId(String(i))}
+                      onAspectRatioChange={(ratio) =>
+                        handleUpdateAspectRatio(index, ratio)
+                      }
                     />
                   )}
                   {element.type === "image-text" && (
@@ -649,7 +642,12 @@ export function AppBuilder({
                         )
                       }
                       onDelete={handleDeleteElement}
-                      onOpenOptions={(i) => setOptionsElementId(String(i))}
+                      onAspectRatioChange={(ratio) =>
+                        handleUpdateAspectRatio(index, ratio)
+                      }
+                      onTextPositionChange={(position) =>
+                        handleUpdateTextPosition(index, position)
+                      }
                     />
                   )}
                 </React.Fragment>
@@ -697,27 +695,6 @@ export function AppBuilder({
       <UploadProgressModal
         isOpen={progressModal.isOpen}
         progress={progressModal.progress}
-      />
-
-      {/* Element Options Modal */}
-      <ElementOptionsModal
-        isOpen={!!optionsElementId}
-        element={
-          optionsElementId !== null
-            ? elements[parseInt(optionsElementId, 10)]
-            : undefined
-        }
-        onClose={() => setOptionsElementId(null)}
-        onAspectRatioChange={(ratio) => {
-          if (optionsElementId !== null) {
-            handleUpdateAspectRatio(parseInt(optionsElementId, 10), ratio)
-          }
-        }}
-        onTextPositionChange={(position) => {
-          if (optionsElementId !== null) {
-            handleUpdateTextPosition(parseInt(optionsElementId, 10), position)
-          }
-        }}
       />
 
       {/* Delete Project Confirmation Modal */}

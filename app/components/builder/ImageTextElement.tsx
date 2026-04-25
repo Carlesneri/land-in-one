@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageTextElement as ImageTextElementType } from "@/types"
+import type { AspectRatio } from "@/types"
 import { EditImageTextModal } from "@/app/components/modals/EditImageTextModal"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 
@@ -14,7 +15,8 @@ interface ImageTextElementProps {
   onImageRemove: () => void
   onSave: (image: string, text: string) => void
   onDelete: (index: number) => void
-  onOpenOptions?: (index: number) => void
+  onAspectRatioChange: (ratio: AspectRatio | undefined) => void
+  onTextPositionChange: (position: "top" | "center" | "bottom") => void
 }
 
 export function ImageTextElement({
@@ -24,7 +26,8 @@ export function ImageTextElement({
   onImageRemove,
   onSave,
   onDelete,
-  onOpenOptions,
+  onAspectRatioChange,
+  onTextPositionChange,
 }: ImageTextElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [draft, setDraft] = useState({
@@ -45,12 +48,7 @@ export function ImageTextElement({
   }
 
   return (
-    <ElementCard
-      element={element}
-      index={index}
-      onDelete={onDelete}
-      onOpenOptions={onOpenOptions}
-    >
+    <ElementCard element={element} index={index} onDelete={onDelete}>
       <div className="relative w-full rounded overflow-hidden">
         {element.image ? (
           <>
@@ -137,6 +135,8 @@ export function ImageTextElement({
         isOpen={modalOpen}
         image={draft.image}
         text={draft.text}
+        aspectRatio={element.aspectRatio}
+        textPosition={element.textPosition}
         onClose={close}
         onImageChange={(file) => {
           onFileChange(file)
@@ -147,6 +147,8 @@ export function ImageTextElement({
           setDraft((prev) => ({ ...prev, image: "" }))
         }}
         onTextChange={(text) => setDraft((prev) => ({ ...prev, text }))}
+        onAspectRatioChange={onAspectRatioChange}
+        onTextPositionChange={onTextPositionChange}
         onSave={save}
       />
     </ElementCard>

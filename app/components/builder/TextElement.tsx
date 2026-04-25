@@ -10,7 +10,6 @@ interface TextElementProps {
   index: number
   onSave: (content: string) => void
   onDelete: (index: number) => void
-  onOpenOptions?: (index: number) => void
 }
 
 export function TextElement({
@@ -18,7 +17,6 @@ export function TextElement({
   index,
   onSave,
   onDelete,
-  onOpenOptions,
 }: TextElementProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [draft, setDraft] = useState("")
@@ -36,12 +34,7 @@ export function TextElement({
   }
 
   return (
-    <ElementCard
-      element={element}
-      index={index}
-      onDelete={onDelete}
-      onOpenOptions={onOpenOptions}
-    >
+    <ElementCard element={element} index={index} onDelete={onDelete}>
       <button
         type="button"
         onClick={open}

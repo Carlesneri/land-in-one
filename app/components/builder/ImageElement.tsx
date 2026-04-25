@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import type { ImageElement as ImageElementType } from "@/types"
+import type { AspectRatio } from "@/types"
 import { EditImageModal } from "@/app/components/modals/EditImageModal"
 import { ElementCard } from "@/app/components/builder/ElementCard"
 
@@ -13,7 +14,7 @@ interface ImageElementProps {
   onFileChange: (file: File) => void
   onRemove: () => void
   onDelete: (index: number) => void
-  onOpenOptions?: (index: number) => void
+  onAspectRatioChange: (ratio: AspectRatio | undefined) => void
 }
 
 export function ImageElement({
@@ -22,82 +23,45 @@ export function ImageElement({
   onFileChange,
   onRemove,
   onDelete,
-  onOpenOptions,
+  onAspectRatioChange,
 }: ImageElementProps) {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
-    <ElementCard
-      element={element}
-      index={index}
-      onDelete={onDelete}
-      onOpenOptions={onOpenOptions}
-    >
-      {element.content ? (
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="w-full h-40 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Edit image"
-        >
+    <ElementCard element={element} index={index} onDelete={onDelete}>
+      <button
+        type="button"
+        onClick={() => setModalOpen(true)}
+        className="w-full rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label={element.content ? "Edit image" : "Add image"}
+      >
+        {element.content ? (
           <Image
             src={element.content}
             alt="Element content"
             width={800}
             height={160}
-            className="size-full object-cover rounded"
+            className="w-full h-40 object-cover rounded"
           />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            const input = document.getElementById(
-              `image-input-${index}`,
-            ) as HTMLInputElement | null
-            input?.click()
-          }}
-          className="w-full h-24 sm:h-32 rounded flex items-center justify-center cursor-pointer hover:bg-primary-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Select image"
-        >
-          <div className="text-center">
-            <IconPhoto
-              size={40}
-              className="text-secondary mx-auto mb-2"
-              aria-hidden="true"
-            />
-            <p className="text-gray-600 text-sm sm:text-base">
-              Click to select image
-            </p>
+        ) : (
+          <div className="w-full h-24 sm:h-32 rounded flex items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200">
+            <div className="flex flex-col items-center gap-2 text-slate-400">
+              <IconPhoto size={36} aria-hidden="true" />
+              <span className="text-sm">No image selected</span>
+            </div>
           </div>
-        </button>
-      )}
-
-      <input
-        id={`image-input-${index}`}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) onFileChange(file)
-          if (e.target) e.target.value = ""
-        }}
-      />
+        )}
+      </button>
 
       <EditImageModal
         isOpen={modalOpen}
         editingImageId={String(index)}
-        hasImage={!!element.content}
+        imageUrl={element.content || undefined}
+        aspectRatio={element.aspectRatio}
         onClose={() => setModalOpen(false)}
-        onFileChange={(file) => {
-          onFileChange(file)
-          setModalOpen(false)
-        }}
-        onRemove={() => {
-          onRemove()
-          setModalOpen(false)
-        }}
+        onSelectFile={(file) => onFileChange(file)}
+        onRemove={() => onRemove()}
+        onSave={(ratio) => onAspectRatioChange(ratio)}
       />
     </ElementCard>
   )

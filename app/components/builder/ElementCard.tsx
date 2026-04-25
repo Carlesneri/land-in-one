@@ -1,6 +1,6 @@
 "use client"
 
-import { IconGripVertical, IconSettings, IconTrash } from "@tabler/icons-react"
+import { IconGripVertical, IconTrash } from "@tabler/icons-react"
 import type { LandingPageElement } from "@/types"
 import { useSortable } from "@dnd-kit/react/sortable"
 import { cn } from "@/lib/utils"
@@ -9,7 +9,6 @@ interface ElementCardProps {
   element: LandingPageElement
   index: number
   onDelete: (index: number) => void
-  onOpenOptions?: (index: number) => void
   children: React.ReactNode
 }
 
@@ -17,10 +16,8 @@ export function ElementCard({
   element,
   index,
   onDelete,
-  onOpenOptions,
   children,
 }: ElementCardProps) {
-  const hasOptions = element.type === "image" || element.type === "image-text"
   const { ref, handleRef, isDragging } = useSortable({
     id: element.id,
     index,
@@ -86,19 +83,6 @@ export function ElementCard({
             >
               <IconGripVertical size={22} aria-hidden="true" />
             </div>
-            {hasOptions && onOpenOptions && (
-              <button
-                type="button"
-                title="Element options"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onOpenOptions(index)
-                }}
-                className="flex items-center justify-center text-slate-400 hover:text-primary transition-colors"
-              >
-                <IconSettings size={18} aria-hidden="true" />
-              </button>
-            )}
           </div>
           <button
             type="button"
