@@ -44,7 +44,7 @@ export function Modal({
       >
         <div
           className={cn(
-            "bg-white rounded-xl shadow-xl p-6 w-full border border-slate-200 transition-all duration-200",
+            "bg-white rounded-xl shadow-xl p-6 w-full border border-slate-200 transition-all duration-200 max-h-[95dvh] overflow-y-auto",
             isOpen
               ? "opacity-100 scale-100 pointer-events-auto"
               : "opacity-0 scale-95 pointer-events-none",
