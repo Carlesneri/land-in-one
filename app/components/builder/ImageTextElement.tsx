@@ -110,16 +110,12 @@ export function ImageTextElement({
             )}
             {/* Text drives the height */}
             <div className="relative px-4 py-6 flex items-center justify-center">
-              {element.text ? (
+              {element.text && (
                 <div
-                  className="rich-text-lio text-white text-center drop-shadow-lg pointer-events-none prose prose-sm prose-invert max-w-none"
+                  className="rich-text-lio text-center drop-shadow-lg pointer-events-none"
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                   dangerouslySetInnerHTML={{ __html: element.text }}
                 />
-              ) : (
-                <span className="text-white/70 text-sm border border-white/40 rounded px-3 py-1.5 bg-black/20 backdrop-blur-sm">
-                  Click to add overlay text
-                </span>
               )}
             </div>
             {/* Minimum height when no text */}

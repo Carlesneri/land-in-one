@@ -265,20 +265,7 @@ export async function createNewPage() {
     // Create new page with empty elements
     const newPage = await PreviewPage.create({
       slug,
-      elements: [
-        {
-          id: crypto.randomUUID(),
-          type: "text",
-          position: 0,
-          content: "",
-        },
-        {
-          id: crypto.randomUUID(),
-          type: "image",
-          position: 1,
-          content: "",
-        },
-      ],
+      elements: [],
       userEmail: session.user.email,
     })
 

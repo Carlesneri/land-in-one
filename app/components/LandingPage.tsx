@@ -2,7 +2,7 @@ import type { LandingPageElement, Status } from "@/types"
 import Link from "next/link"
 import Image from "next/image"
 import { cva } from "class-variance-authority"
-import { buildBackdropCss } from "@/lib/backdrop"
+import { getBackdropStyle } from "@/lib/backdrop"
 
 const landingVariants = cva("min-h-screen flex flex-col", {
   variants: {
@@ -123,18 +123,16 @@ export function LandingPage({
                         width={800}
                         height={600}
                       />
-                      {/* Backdrop gradient */}
+                      {/* Backdrop */}
                       {element.backdropActive &&
                         element.backdropColors?.length && (
                           <span
                             className="absolute inset-0 pointer-events-none"
-                            style={{
-                              background: buildBackdropCss({
-                                backdropType: element.backdropType,
-                                backdropColors: element.backdropColors,
-                                backdropAngle: element.backdropAngle,
-                              }),
-                            }}
+                            style={getBackdropStyle({
+                              backdropType: element.backdropType,
+                              backdropColors: element.backdropColors,
+                              backdropAngle: element.backdropAngle,
+                            })}
                             aria-hidden="true"
                           />
                         )}
@@ -142,7 +140,7 @@ export function LandingPage({
                       {element.text && (
                         <div className="relative px-6 py-8 flex items-center justify-center">
                           <div
-                            className="rich-text-lio text-white text-center drop-shadow-lg prose prose-invert w-full"
+                            className="rich-text-lio text-center drop-shadow-lg w-full"
                             // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
                             dangerouslySetInnerHTML={{ __html: element.text }}
                           />

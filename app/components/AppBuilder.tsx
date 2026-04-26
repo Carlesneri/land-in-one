@@ -648,20 +648,13 @@ export function AppBuilder({
                                 ? {
                                     ...el,
                                     image: "",
-                                    text,
-                                    backdropActive,
-                                    ...flat,
                                   }
                                 : el,
                             ),
                           )
                         } else if (pendingFile) {
-                          // Upload new image, then delete old one
                           uploadImageToCloud(pendingFile)
                             .then((imageUrl) => {
-                              if (oldImageUrl) {
-                                deleteImageInCloud(oldImageUrl).catch(() => {})
-                              }
                               setElements(
                                 elements.map((el, idx) =>
                                   idx === index && el.type === "image-text"
@@ -670,12 +663,17 @@ export function AppBuilder({
                                         image: imageUrl,
                                         text,
                                         backdropActive,
-                                        ...flat,
+                                        ...{
+                                          ...flat,
+                                          backdropType:
+                                            flat.backdropType === "solid"
+                                              ? undefined
+                                              : flat.backdropType,
+                                        },
                                       }
                                     : el,
                                 ),
                               )
-                              toast.success("Image uploaded")
                             })
                             .catch(() => {
                               toast.error("Failed to upload image")
@@ -685,7 +683,18 @@ export function AppBuilder({
                           setElements(
                             elements.map((el, idx) =>
                               idx === index && el.type === "image-text"
-                                ? { ...el, text, backdropActive, ...flat }
+                                ? {
+                                    ...el,
+                                    text,
+                                    backdropActive,
+                                    ...(flat.backdropType === "solid"
+                                      ? Object.fromEntries(
+                                          Object.entries(flat).filter(
+                                            ([key]) => key !== "backdropType",
+                                          ),
+                                        )
+                                      : flat),
+                                  }
                                 : el,
                             ),
                           )

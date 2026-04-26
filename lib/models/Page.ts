@@ -1,5 +1,17 @@
+import type { PaletteColor } from "@/lib/backdrop"
 import type { LandingPage } from "@/types"
 import mongoose, { Schema } from "mongoose"
+
+const colorSchema = new Schema<PaletteColor>(
+  {
+    color: { type: String, required: true }, // hex
+    offset: { type: Number, required: true }, // 0–1
+    opacity: { type: Number, required: false }, // 0–1
+  },
+  {
+    _id: false,
+  },
+)
 
 const elementSchema = new Schema(
   {
@@ -20,9 +32,9 @@ const elementSchema = new Schema(
     backdropActive: { type: Boolean, default: false },
     backdropType: {
       type: String,
-      enum: ["linear", "radial"],
+      enum: ["linear", "radial", "solid"],
     },
-    backdropColors: [{ type: String, _id: false }],
+    backdropColors: [colorSchema],
     backdropAngle: { type: Number },
   },
   { _id: false },

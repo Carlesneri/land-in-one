@@ -1,6 +1,8 @@
+import type { PaletteColor } from "@/lib/backdrop"
+
 export type AspectRatio = "9/16" | "3/4" | "4/3" | "1/1" | "16/9"
 export type Status = "publish" | "preview"
-export type BackdropType = "linear" | "radial"
+export type BackdropType = "linear" | "radial" | "solid"
 export interface BaseElement {
   id: string
   position: number
@@ -20,7 +22,7 @@ export interface ImageTextElement extends BaseElement {
   image: string
   backdropActive?: boolean
   backdropType?: BackdropType
-  backdropColors?: string[] // format: "#rrggbbaa offset%" e.g. "#000000cc 0%"
+  backdropColors?: PaletteColor[]
   backdropAngle?: number
 }
 export type LandingPageElement = TextElement | ImageElement | ImageTextElement

@@ -6,9 +6,13 @@ import { Modal } from "@/app/ui/Modal"
 import { RichTextEditor } from "@/app/components/builder/RichTextEditor"
 import { IconPhoto } from "@tabler/icons-react"
 import GradientColorPicker from "react-best-gradient-color-picker"
-import type { FlatBackdrop } from "@/lib/backdrop"
+import type { FlatBackdrop, PaletteColor } from "@/lib/backdrop"
 import type { BackdropType } from "@/types"
-import { buildBackdropCss } from "@/lib/backdrop"
+import {
+  buildBackdropCss,
+  parseCssGradient,
+  rgbaToHexStop,
+} from "@/lib/backdrop"
 
 interface EditImageTextModalProps {
   isOpen: boolean
@@ -16,7 +20,7 @@ interface EditImageTextModalProps {
   text: string
   backdropActive?: boolean
   backdropType?: string
-  backdropColors?: string[]
+  backdropColors?: PaletteColor[]
   backdropAngle?: number
   onClose: () => void
   onImageChange: (file: File) => void
@@ -75,11 +79,24 @@ export function EditImageTextModal({
   const handleGradientChange = (css: string) => {
     setGradient(css)
     if (backdropActive) {
-      onBackdropChange({
-        backdropType: css.startsWith("radial") ? "radial" : "linear",
-        backdropColors: [css],
-        backdropAngle: undefined, // Not needed, encoded in css
-      })
+      const parsed = parseCssGradient(css)
+      if (parsed) {
+        onBackdropChange({
+          backdropType: parsed.stops.length === 1 ? "solid" : parsed.type,
+          backdropColors: parsed.stops,
+          backdropAngle: parsed.angle,
+        })
+      } else {
+        // fallback: save as a single color stop with correct opacity
+        const stop = rgbaToHexStop(css)
+        onBackdropChange({
+          backdropType: "solid",
+          backdropColors: [
+            { color: stop.color, offset: 0, opacity: stop.opacity },
+          ],
+          backdropAngle: undefined,
+        })
+      }
     }
   }
 
@@ -169,13 +186,29 @@ export function EditImageTextModal({
                   const newActive = !backdropActive
                   onBackdropActiveChange(newActive)
                   if (newActive) {
-                    onBackdropChange({
-                      backdropType: gradient.startsWith("radial")
-                        ? "radial"
-                        : "linear",
-                      backdropColors: [gradient],
-                      backdropAngle: undefined,
-                    })
+                    const parsed = parseCssGradient(gradient)
+                    if (parsed) {
+                      onBackdropChange({
+                        backdropType:
+                          parsed.stops.length === 1 ? "solid" : parsed.type,
+                        backdropColors: parsed.stops,
+                        backdropAngle: parsed.angle,
+                      })
+                    } else {
+                      // fallback: save as a single color stop with correct opacity
+                      const stop = rgbaToHexStop(gradient)
+                      onBackdropChange({
+                        backdropType: "solid",
+                        backdropColors: [
+                          {
+                            color: stop.color,
+                            offset: 0,
+                            opacity: stop.opacity,
+                          },
+                        ],
+                        backdropAngle: undefined,
+                      })
+                    }
                   }
                 }}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
