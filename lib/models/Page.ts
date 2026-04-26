@@ -13,29 +13,29 @@ const colorSchema = new Schema<PaletteColor>(
   },
 )
 
+// Accordion Item Schema
+const accordionItemSchema = new Schema(
+  {
+    title: { type: String, required: true },
+    content: { type: String, required: true },
+  },
+  { _id: false },
+)
+
 const elementSchema = new Schema(
   {
-    id: { type: String, required: true },
-    type: {
-      type: String,
-      enum: ["text", "image", "image-text"],
-      required: true,
-    },
-    position: { type: Number, required: true },
-    // TextElement & ImageElement fields
-    content: { type: String, default: "" },
-    // ImageElement & ImageTextElement fields
-    aspectRatio: { type: String, enum: ["9/16", "3/4", "4/3", "1/1", "16/9"] },
-    // ImageTextElement fields
-    text: { type: String, default: "" },
-    image: { type: String, default: "" },
-    backdropActive: { type: Boolean, default: false },
-    backdropType: {
-      type: String,
-      enum: ["linear", "radial", "solid"],
-    },
+    type: String,
+    id: String,
+    position: Number,
+    content: String,
+    aspectRatio: String,
+    text: String,
+    image: String,
+    backdropActive: Boolean,
+    backdropType: String,
     backdropColors: [colorSchema],
-    backdropAngle: { type: Number },
+    backdropAngle: Number,
+    items: [accordionItemSchema],
   },
   { _id: false },
 )
@@ -56,11 +56,9 @@ const pageSchema = new Schema<PageModelType>(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true,
-      match: /^[a-z0-9-]+$/,
     },
     elements: {
-      type: [elementSchema],
+      type: [elementSchema], // Accept any of the element schemas
       default: [],
     },
     userEmail: {

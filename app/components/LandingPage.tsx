@@ -1,8 +1,12 @@
+"use client"
+
 import type { LandingPageElement, Status } from "@/types"
 import Link from "next/link"
 import Image from "next/image"
 import { cva } from "class-variance-authority"
 import { getBackdropStyle } from "@/lib/backdrop"
+import { Accordion as MantineAccordion } from "@mantine/core"
+import { uid } from "react-uid"
 
 const landingVariants = cva("min-h-screen flex flex-col", {
   variants: {
@@ -34,11 +38,7 @@ export function LandingPage({
   // Sort elements by position
   const sortedElements = [...elements].sort((a, b) => a.position - b.position)
 
-  const noContent =
-    sortedElements.length === 0 ||
-    sortedElements.every((el) =>
-      el.type === "image-text" ? !el.image && !el.text : !el.content,
-    )
+  const noContent = sortedElements.length === 0
 
   return (
     <div className={landingVariants({ mode })}>
@@ -149,6 +149,31 @@ export function LandingPage({
                       {/* If no text, keep a minimum visible height */}
                       {!element.text && <div className="h-64" />}
                     </div>
+                  )}
+                  {element.type === "accordion" && element.items && (
+                    <MantineAccordion>
+                      {element.items.map((item, i) => (
+                        <MantineAccordion.Item
+                          value={String(i)}
+                          key={uid(item)}
+                        >
+                          <MantineAccordion.Control>
+                            <h3 className="text-base font-semibold text-slate-800 m-0">
+                              {item.title || `Item ${i + 1}`}
+                            </h3>
+                          </MantineAccordion.Control>
+                          <MantineAccordion.Panel>
+                            <div
+                              className="rich-text-lio text-base leading-relaxed prose prose-slate max-w-none"
+                              // biome-ignore lint/security/noDangerouslySetInnerHtml: content is user-authored rich text from Tiptap
+                              dangerouslySetInnerHTML={{
+                                __html: item.content ?? "",
+                              }}
+                            />
+                          </MantineAccordion.Panel>
+                        </MantineAccordion.Item>
+                      ))}
+                    </MantineAccordion>
                   )}
                 </div>
               ))}

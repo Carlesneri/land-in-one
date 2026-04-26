@@ -17,6 +17,20 @@ interface SavePagePayload {
   name?: string
 }
 
+// Utility to deeply remove _id and toJSON from elements and their subfields
+function sanitizeElements(elements: any[]): any[] {
+  return elements.map((el) => {
+    const { _id, toJSON, ...rest } = el
+    if (Array.isArray(el.items)) {
+      rest.items = el.items.map((item: any) => {
+        const { _id, toJSON, ...itemRest } = item
+        return itemRest
+      })
+    }
+    return rest
+  })
+}
+
 export async function getPreviewLandingPageById(id: string) {
   try {
     await connectToDatabase()

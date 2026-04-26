@@ -8,6 +8,7 @@ import { AddElementButton } from "@/app/components/AddElementButton"
 import { TextElement } from "@/app/components/builder/TextElement"
 import { ImageElement } from "@/app/components/builder/ImageElement"
 import { ImageTextElement } from "@/app/components/builder/ImageTextElement"
+import { AccordionElement } from "@/app/components/builder/AccordionElement"
 import { AddElementModal } from "@/app/components/modals/AddElementModal"
 import { DeleteElementModal } from "@/app/components/modals/DeleteElementModal"
 import { ChangeSlugModal } from "@/app/components/modals/ChangeSlugModal"
@@ -201,7 +202,9 @@ export function AppBuilder({
     })
   }
 
-  const handleAddElement = (type: "text" | "image" | "image-text") => {
+  const handleAddElement = (
+    type: "text" | "image" | "image-text" | "accordion",
+  ) => {
     if (
       (type === "image" || type === "image-text") &&
       elements.filter((el) => el.type === "image" || el.type === "image-text")
@@ -213,12 +216,19 @@ export function AppBuilder({
     }
 
     const base = { id: crypto.randomUUID(), position: elements.length }
-    const newElement: LandingPageElement =
-      type === "text"
-        ? { ...base, type: "text", content: "" }
-        : type === "image"
-          ? { ...base, type: "image", content: "" }
-          : { ...base, type: "image-text", image: "", text: "" }
+    let newElement: LandingPageElement
+
+    if (type === "text") {
+      newElement = { ...base, type: "text", content: "" }
+    } else if (type === "image") {
+      newElement = { ...base, type: "image", content: "" }
+    } else if (type === "image-text") {
+      newElement = { ...base, type: "image-text", image: "", text: "" }
+    } else if (type === "accordion") {
+      newElement = { ...base, type: "accordion", items: [] }
+    } else {
+      return
+    }
 
     setElements((prev) => [...prev, newElement])
     setShowModal(false)
@@ -566,6 +576,7 @@ export function AppBuilder({
               }
             }}
           >
+            {/* Elements Map */}
             <div className="space-y-6">
               {elements.map((element, index) => (
                 <React.Fragment key={element.id}>
@@ -700,6 +711,22 @@ export function AppBuilder({
                           )
                         }
                       }}
+                      onDelete={handleDeleteElement}
+                    />
+                  )}
+                  {element.type === "accordion" && (
+                    <AccordionElement
+                      element={element}
+                      index={index}
+                      onSave={(items) =>
+                        setElements(
+                          elements.map((el, idx) =>
+                            idx === index && el.type === "accordion"
+                              ? { ...el, items }
+                              : el,
+                          ),
+                        )
+                      }
                       onDelete={handleDeleteElement}
                     />
                   )}

@@ -68,6 +68,9 @@ export function ElementCard({
         {element.type === "image-text" && (
           <span className="uppercase tracking-wide">Image + Text</span>
         )}
+        {element.type === "accordion" && (
+          <span className="uppercase tracking-wide">Accordion</span>
+        )}
       </div>
 
       {/* Body: content + sidebar */}

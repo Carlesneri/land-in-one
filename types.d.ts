@@ -25,7 +25,18 @@ export interface ImageTextElement extends BaseElement {
   backdropColors?: PaletteColor[]
   backdropAngle?: number
 }
-export type LandingPageElement = TextElement | ImageElement | ImageTextElement
+export interface AccordionElement extends BaseElement {
+  type: "accordion"
+  items: {
+    title: string
+    content: string
+  }[]
+}
+export type LandingPageElement =
+  | TextElement
+  | ImageElement
+  | ImageTextElement
+  | AccordionElement
 export interface LandingPage {
   name?: string
   slug: string

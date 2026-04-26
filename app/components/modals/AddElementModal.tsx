@@ -3,7 +3,7 @@ import { Modal } from "@/app/ui/Modal"
 interface AddElementModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (type: "text" | "image" | "image-text") => void
+  onAdd: (type: "text" | "image" | "image-text" | "accordion") => void
 }
 
 function TextSkeleton() {
@@ -53,6 +53,15 @@ function ImageTextSkeleton() {
       <div className="absolute inset-0 bg-linear-to-t from-amber-400/50 to-transparent flex items-end p-1.5">
         <div className="h-1.5 bg-white/80 rounded-full w-2/3" />
       </div>
+    </div>
+  )
+}
+
+function AccordionSkeleton() {
+  return (
+    <div className="w-full h-10 bg-purple-100 rounded-md flex flex-col justify-center px-3">
+      <div className="h-2.5 bg-purple-300 rounded-full w-2/3 mb-1" />
+      <div className="h-2 bg-purple-200 rounded-full w-1/2" />
     </div>
   )
 }
@@ -107,6 +116,22 @@ export function AddElementModal({
             </p>
             <p className="text-slate-500 text-sm mt-0.5">
               Image with overlay text
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onAdd("accordion")}
+          className="w-full p-4 text-left border-2 border-purple-100 bg-purple-50 rounded-xl hover:border-purple-400 hover:bg-purple-100 transition-all flex items-center gap-4"
+        >
+          <div className="w-24 shrink-0">
+            <AccordionSkeleton />
+          </div>
+          <div>
+            <p className="font-semibold text-slate-800 text-base">Accordion</p>
+            <p className="text-slate-500 text-sm mt-0.5">
+              Expandable Q&amp;A or sections
             </p>
           </div>
         </button>
