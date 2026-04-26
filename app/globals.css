@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "react-linear-gradient-picker/dist/index.css";
 @plugin "@tailwindcss/typography";
 
 :root {
